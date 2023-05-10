@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.0.6</version>
+        <relativePath/>
+    </parent>
+    <groupId>at.ac.tuwien.inso</groupId>
+    <artifactId>actonawa-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>actonawa-parent</name>
+    <packaging>pom</packaging>
+    <url>https://github.com/INSO-TUWien/actconawa</url>
+    <description>Git Active Conflict Awareness</description>
+
+    <properties>
+        <java.version>17</java.version>
+
+        <jgit.version>6.5.0.202303070854</jgit.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>${jgit.version}-r</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc-openapi.version}</version>
+        </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <modules>
+        <module>application</module>
+        <module>frontend</module>
+    </modules>
+
+
+
+
+</project>
