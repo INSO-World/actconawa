@@ -22,6 +22,7 @@ public interface GitMapper {
     @Mapping(source = "headCommit", target = "headCommitId")
     GitBranchDto mapModelToDto(GitBranch branch);
 
+    @Mapping(source = "parents", target = "parentIds")
     GitCommitDto mapModelToDto(GitCommit commit);
 
     default Page<GitBranchDto> mapBranchPage(Page<GitBranch> branches) {
