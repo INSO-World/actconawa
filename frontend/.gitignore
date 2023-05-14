@@ -20,3 +20,5 @@ yarn-error.log
 /libpeerconnection.log
 testem.log
 /typings
+
+openapi-generator-cli.jar
