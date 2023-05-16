@@ -1,7 +1,6 @@
 package at.ac.tuwien.inso.actconawa.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 public class GitCommitDto {
@@ -12,7 +11,6 @@ public class GitCommitDto {
     private String authorName;
     private String authorEmail;
     private LocalDateTime commitDate;
-    private List<Long> parentIds;
 
     public Long getId() {
         return id;
@@ -60,13 +58,5 @@ public class GitCommitDto {
 
     public void setCommitDate(LocalDateTime commitDate) {
         this.commitDate = commitDate;
-    }
-
-    public List<Long> getParentIds() {
-        return parentIds;
-    }
-
-    public void setParentIds(List<Long> parentIds) {
-        this.parentIds = parentIds;
     }
 }

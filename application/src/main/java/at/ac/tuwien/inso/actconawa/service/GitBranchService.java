@@ -22,6 +22,6 @@ public class GitBranchService implements BranchService {
 
     @Override
     public Page<GitBranchDto> findAll(Pageable pageable) {
-        return gitMapper.mapBranchPage(gitBranchRepository.findAll(pageable));
+        return gitBranchRepository.findAll(pageable).map(gitMapper::mapModelToDto);
     }
 }

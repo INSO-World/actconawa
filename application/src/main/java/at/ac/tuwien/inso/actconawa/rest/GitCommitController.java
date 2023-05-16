@@ -2,6 +2,7 @@ package at.ac.tuwien.inso.actconawa.rest;
 
 import at.ac.tuwien.inso.actconawa.api.CommitService;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,7 +14,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/commit", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/commits", produces = APPLICATION_JSON_VALUE)
 public class GitCommitController {
 
     private final CommitService commitService;
@@ -25,6 +26,11 @@ public class GitCommitController {
     @GetMapping
     public Page<GitCommitDto> findAllCommits(Pageable pageable) {
         return commitService.findAll(pageable);
+    }
+
+    @GetMapping("/relations")
+    public Page<GitCommitRelationshipDto> findAllCommitRelations(Pageable pageable) {
+        return commitService.findAllRelations(pageable);
     }
 
 }

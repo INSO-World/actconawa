@@ -1,40 +1,49 @@
 package at.ac.tuwien.inso.actconawa.persistence;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import org.springframework.context.annotation.Lazy;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-public class GitCommit {
+@Table(name = "commit")
+public class GitCommit implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String sha;
 
+    @Column(nullable = false)
     private String message;
 
+    @Column(nullable = false)
     private String authorName;
 
+    @Column(nullable = false)
     private String authorEmail;
 
+    @Column(nullable = false)
     private LocalDateTime commitDate;
 
-    @ManyToMany
-    @JoinTable(
-            name = "commit_parent",
-            joinColumns = @JoinColumn(name = "commit_id"),
-            inverseJoinColumns = @JoinColumn(name = "parent_id")
-    )
-    private List<GitCommit> parents;
+    @Lazy
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.PERSIST)
+    private List<GitCommitRelationship> parents;
+
+    @Lazy
+    @OneToMany(mappedBy = "child")
+    private List<GitCommitRelationship> children;
 
     public GitCommit() {
     }
@@ -87,11 +96,19 @@ public class GitCommit {
         this.commitDate = commitDate;
     }
 
-    public List<GitCommit> getParents() {
+    public List<GitCommitRelationship> getParents() {
         return parents;
     }
 
-    public void setParents(List<GitCommit> parents) {
+    public void setParents(List<GitCommitRelationship> parents) {
         this.parents = parents;
+    }
+
+    public List<GitCommitRelationship> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<GitCommitRelationship> children) {
+        this.children = children;
     }
 }

@@ -13,7 +13,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/branch", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/branches", produces = APPLICATION_JSON_VALUE)
 public class GitBranchController {
     private final BranchService branchService;
 

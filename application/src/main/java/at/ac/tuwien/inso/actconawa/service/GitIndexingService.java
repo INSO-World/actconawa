@@ -2,7 +2,10 @@ package at.ac.tuwien.inso.actconawa.service;
 
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
+import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
+import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationshipKey;
 import at.ac.tuwien.inso.actconawa.repository.GitBranchRepository;
+import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRepository;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -30,13 +32,19 @@ public class GitIndexingService {
 
     private final GitCommitRepository gitCommitRepository;
 
+    private final GitCommitRelationshipRepository gitCommitRelationshipRepository;
+
     @Value("${actconawa.repo}")
     private String repo;
 
-    public GitIndexingService(GitBranchRepository gitBranchRepository,
-            GitCommitRepository gitCommitRepository) {
+    public GitIndexingService(
+            GitBranchRepository gitBranchRepository,
+            GitCommitRepository gitCommitRepository,
+            GitCommitRelationshipRepository gitCommitRelationshipRepository
+    ) {
         this.gitBranchRepository = gitBranchRepository;
         this.gitCommitRepository = gitCommitRepository;
+        this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -48,8 +56,7 @@ public class GitIndexingService {
             git = new Git(repository);
             var commitCache = new HashMap<String, GitCommit>();
             for (RevCommit commit : git.log().all().call()) {
-                GitCommit gitCommit = commitCache.computeIfAbsent(commit.getName(),
-                        (k) -> new GitCommit());
+                GitCommit gitCommit = new GitCommit();
                 gitCommit.setSha(commit.getName());
                 gitCommit.setMessage(commit.getShortMessage()
                         .substring(0, Math.min(commit.getShortMessage().length(), 255)));
@@ -59,17 +66,28 @@ public class GitIndexingService {
                 gitCommit.setCommitDate(LocalDateTime.ofEpochSecond(commit.getCommitTime(),
                         0,
                         ZoneOffset.UTC));
+                gitCommit = gitCommitRepository.save(gitCommit);
+                commitCache.put(commit.getName(), gitCommit);
+            }
+            for (RevCommit commit : git.log().all().call()) {
                 Arrays.stream(commit.getParents()).forEach(x -> {
-                            var parent = commitCache.computeIfAbsent(x.getId().getName(),
-                                    (k) -> new GitCommit());
-                            if (gitCommit.getParents() == null) {
-                                gitCommit.setParents(new ArrayList<>());
+                            var parent = commitCache.get(x.getId().getName());
+                            if (parent == null) {
+                                throw new IllegalArgumentException("No such parent commit existing");
                             }
-                            gitCommit.getParents().add(parent);
+                            var child = commitCache.get(commit.getName());
+                            if (child == null) {
+                                throw new IllegalArgumentException("No such child commit existing");
+                            }
+                            var relationship = new GitCommitRelationship();
+                            var relationshipKey = new GitCommitRelationshipKey();
+                            relationshipKey.setChild(child.getId());
+                            relationshipKey.setParent(parent.getId());
+                            relationship.setId(relationshipKey);
+                            gitCommitRelationshipRepository.save(relationship);
                         }
                 );
             }
-            gitCommitRepository.saveAll(commitCache.values());
 
             String[] prefixes = repository.getRemoteNames()
                     .stream()
