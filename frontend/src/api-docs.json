@@ -11,7 +11,7 @@
         }
     ],
     "paths": {
-        "/commit": {
+        "/commits": {
             "get": {
                 "tags": [
                     "git-commit-controller"
@@ -41,7 +41,37 @@
                 }
             }
         },
-        "/branch": {
+        "/commits/relations": {
+            "get": {
+                "tags": [
+                    "git-commit-controller"
+                ],
+                "operationId": "findAllCommitRelations",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageGitCommitRelationshipDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/branches": {
             "get": {
                 "tags": [
                     "git-branch-controller"
@@ -117,13 +147,6 @@
                     "commitDate": {
                         "type": "string",
                         "format": "date-time"
-                    },
-                    "parentIds": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
                     }
                 }
             },
@@ -158,15 +181,15 @@
                     "pageable": {
                         "$ref": "#/components/schemas/PageableObject"
                     },
-                    "numberOfElements": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
                     "first": {
                         "type": "boolean"
                     },
                     "last": {
                         "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
                     },
                     "empty": {
                         "type": "boolean"
@@ -191,10 +214,10 @@
                         "type": "integer",
                         "format": "int32"
                     },
-                    "unpaged": {
+                    "paged": {
                         "type": "boolean"
                     },
-                    "paged": {
+                    "unpaged": {
                         "type": "boolean"
                     }
                 }
@@ -209,6 +232,65 @@
                         "type": "boolean"
                     },
                     "unsorted": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "GitCommitRelationshipDto": {
+                "type": "object",
+                "properties": {
+                    "parentId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "childId": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "PageGitCommitRelationshipDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GitCommitRelationshipDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "empty": {
                         "type": "boolean"
                     }
                 }
@@ -260,15 +342,15 @@
                     "pageable": {
                         "$ref": "#/components/schemas/PageableObject"
                     },
-                    "numberOfElements": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
                     "first": {
                         "type": "boolean"
                     },
                     "last": {
                         "type": "boolean"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
                     },
                     "empty": {
                         "type": "boolean"

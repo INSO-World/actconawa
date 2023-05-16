@@ -10,14 +10,21 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { PageableObject } from './pageableObject';
+import { GitCommitRelationshipDto } from './gitCommitRelationshipDto';
 import { SortObject } from './sortObject';
 
-export interface PageableObject {
-  offset?: number;
+export interface PageGitCommitRelationshipDto {
+  totalPages?: number;
+  totalElements?: number;
+  size?: number;
+  content?: Array<GitCommitRelationshipDto>;
+  number?: number;
   sort?: SortObject;
-  pageNumber?: number;
-  pageSize?: number;
-  paged?: boolean;
-  unpaged?: boolean;
+  pageable?: PageableObject;
+  first?: boolean;
+  last?: boolean;
+  numberOfElements?: number;
+  empty?: boolean;
 }
 

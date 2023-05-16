@@ -7,9 +7,11 @@ encoder.ts
 index.ts
 model/gitBranchDto.ts
 model/gitCommitDto.ts
+model/gitCommitRelationshipDto.ts
 model/models.ts
 model/pageGitBranchDto.ts
 model/pageGitCommitDto.ts
+model/pageGitCommitRelationshipDto.ts
 model/pageable.ts
 model/pageableObject.ts
 model/sortObject.ts
