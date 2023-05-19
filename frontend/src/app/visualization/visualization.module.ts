@@ -5,6 +5,7 @@ import { VisualizationRoutingModule } from './visualization-routing.module';
 import {
   ActiveConflictAwarenessComponent
 } from "./active-conflict-awareness/active-conflict-awareness.component";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @NgModule({
   declarations: [
@@ -12,7 +13,8 @@ import {
   ],
   imports: [
     CommonModule,
-    VisualizationRoutingModule
+    VisualizationRoutingModule,
+    MatProgressSpinnerModule,
   ]
 })
 export class VisualizationModule {
