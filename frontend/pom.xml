@@ -47,8 +47,8 @@
         </plugins>
         <resources>
             <resource>
-                <directory>./target/generated-resources/static/ui</directory>
-                <targetPath>static/ui</targetPath>
+                <directory>./target/generated-resources/static</directory>
+                <targetPath>static</targetPath>
             </resource>
         </resources>
     </build>

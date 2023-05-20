@@ -8,18 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @CrossOrigin("*")
 public class UiController {
 
-    @GetMapping("/")
-    public String home() {
-        return "redirect:/ui/";
-    }
-
-    @GetMapping("/ui")
-    public String redirectUi() {
-        return "redirect:/ui/";
-    }
-
-    @GetMapping("/ui/")
-    public String index() {
-        return "/ui/index.html";
+    @GetMapping({"/", "/#/?"})
+    public String forwardToUi() {
+        return "forward:/index.html";
     }
 }
