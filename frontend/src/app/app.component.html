@@ -1,15 +1,15 @@
-<div class="main-navbar-container">
-  <mat-toolbar color="primary">
-    <mat-toolbar-row class="main-toolbar">
-      <button mat-icon-button (click)="snav.toggle()">
+<div>
+  <mat-toolbar color="primary" class="app-header">
+    <mat-toolbar-row>
+      <button mat-icon-button (click)="sidebar.toggle()">
         <mat-icon>menu</mat-icon>
       </button>
       <img ngSrc="assets/logo-white.svg" alt="actonawa-logo-white" height="64" width="64">
       <h1>ACONAWA</h1>
     </mat-toolbar-row>
   </mat-toolbar>
-  <mat-sidenav-container [hasBackdrop]= false class="main-navbar-sidenav-container">
-    <mat-sidenav #snav mode="side">
+  <mat-sidenav-container [hasBackdrop]=false class="app-container">
+    <mat-sidenav #sidebar mode="side" class="app-sidenav">
       <mat-nav-list>
         <a mat-list-item routerLink="visualization/active-conflict-awareness">
           <mat-icon>account_tree</mat-icon>
@@ -23,8 +23,8 @@
       </mat-nav-list>
     </mat-sidenav>
     <mat-sidenav-content>
-      <div class="main-content">
-      <router-outlet></router-outlet>
+      <div>
+        <router-outlet></router-outlet>
       </div>
     </mat-sidenav-content>
   </mat-sidenav-container>

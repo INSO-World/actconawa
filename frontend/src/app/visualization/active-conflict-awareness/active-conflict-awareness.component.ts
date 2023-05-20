@@ -74,7 +74,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     renderer(g, graph);
 
     svg.attr("width", "100%")
-    svg.attr("height", "95vh")
+    svg.attr("height", "90vh")
     svg.call(d3.zoom<any, any>()
             .scaleExtent([0.1, 8])
             .on('zoom', function ({transform}) {

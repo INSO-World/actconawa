@@ -1,5 +1,6 @@
-<div *ngIf="loading"
-     style="display: flex; align-items: center; justify-content: center; flex-direction: column; height: 95vh;">
+<div *ngIf="loading" class="loading-spinner">
   <mat-spinner></mat-spinner>
 </div>
-<svg id="git-graph"></svg>
+<mat-card class="git-graph-card">
+  <svg id="git-graph"></svg>
+</mat-card>
