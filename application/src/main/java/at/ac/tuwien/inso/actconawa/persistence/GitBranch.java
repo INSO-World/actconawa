@@ -26,6 +26,8 @@ public class GitBranch implements Serializable {
     @JoinColumn(name = "head_commit_id")
     private GitCommit headCommit;
 
+    private boolean isRemoteHead;
+
     public GitBranch() {
     }
 
@@ -51,5 +53,13 @@ public class GitBranch implements Serializable {
 
     public void setHeadCommit(GitCommit headCommit) {
         this.headCommit = headCommit;
+    }
+
+    public boolean isRemoteHead() {
+        return isRemoteHead;
+    }
+
+    public void setRemoteHead(boolean remoteHead) {
+        isRemoteHead = remoteHead;
     }
 }

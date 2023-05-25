@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @Embeddable
 public class GitCommitRelationshipKey implements Serializable {
@@ -28,5 +29,18 @@ public class GitCommitRelationshipKey implements Serializable {
 
     public void setChild(Long child) {
         this.child = child;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GitCommitRelationshipKey that = (GitCommitRelationshipKey) o;
+        return Objects.equals(parent, that.parent) && Objects.equals(child, that.child);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(parent, child);
     }
 }

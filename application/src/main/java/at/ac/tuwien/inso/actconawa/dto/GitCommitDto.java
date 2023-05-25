@@ -1,16 +1,24 @@
 package at.ac.tuwien.inso.actconawa.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 public class GitCommitDto {
 
     private Long id;
+
     private String sha;
+
     private String message;
+
     private String authorName;
+
     private String authorEmail;
+
     private LocalDateTime commitDate;
+
+    private List<Long> branchIds;
 
     public Long getId() {
         return id;
@@ -58,5 +66,13 @@ public class GitCommitDto {
 
     public void setCommitDate(LocalDateTime commitDate) {
         this.commitDate = commitDate;
+    }
+
+    public List<Long> getBranchIds() {
+        return branchIds;
+    }
+
+    public void setBranchIds(List<Long> branchIds) {
+        this.branchIds = branchIds;
     }
 }

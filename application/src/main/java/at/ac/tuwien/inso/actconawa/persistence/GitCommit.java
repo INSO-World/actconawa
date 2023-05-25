@@ -45,6 +45,10 @@ public class GitCommit implements Serializable {
     @OneToMany(mappedBy = "child")
     private List<GitCommitRelationship> children;
 
+    @Lazy
+    @OneToMany(mappedBy = "commit")
+    private List<GitBranchCommit> branchRelationships;
+
     public GitCommit() {
     }
 
@@ -110,5 +114,13 @@ public class GitCommit implements Serializable {
 
     public void setChildren(List<GitCommitRelationship> children) {
         this.children = children;
+    }
+
+    public List<GitBranchCommit> getBranchRelationships() {
+        return branchRelationships;
+    }
+
+    public void setBranchRelationships(List<GitBranchCommit> branches) {
+        this.branchRelationships = branches;
     }
 }

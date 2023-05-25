@@ -41,8 +41,9 @@ import { Configuration } from '../configuration';
 })
 export class GitCommitControllerService {
 
-    protected basePath = 'http://localhost:8080';
-    public defaultHeaders = new HttpHeaders();
+  protected basePath = 'http://localhost:8080';
+
+  public defaultHeaders = new HttpHeaders();
     public configuration = new Configuration();
     public encoder: HttpParameterCodec;
 
@@ -89,8 +90,8 @@ export class GitCommitControllerService {
                    throw Error("key may not be null if value is Date");
                 }
             } else {
-                Object.keys(value).forEach( k => httpParams = this.addToHttpParamsRecursive(
-                        httpParams, value[ k ], key != null ? `${key}.${k}` : k));
+              Object.keys(value).forEach(k => httpParams = this.addToHttpParamsRecursive(
+                      httpParams, value[ k ], key != null ? `${key}.${k}` : k));
             }
         } else if (key != null) {
           httpParams = httpParams.append(key, value);
@@ -200,15 +201,16 @@ export class GitCommitControllerService {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<any> {
-        if (pageable === null || pageable === undefined) {
-            throw new Error('Required parameter pageable was null or undefined when calling findAllCommits.');
-        }
+    if (pageable === null || pageable === undefined) {
+      throw new Error(
+              'Required parameter pageable was null or undefined when calling findAllCommits.');
+    }
 
-        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-        if (pageable !== undefined && pageable !== null) {
-          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-            <any>pageable, 'pageable');
-        }
+    let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+    if (pageable !== undefined && pageable !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>pageable, 'pageable');
+    }
 
         let localVarHeaders = this.defaultHeaders;
 

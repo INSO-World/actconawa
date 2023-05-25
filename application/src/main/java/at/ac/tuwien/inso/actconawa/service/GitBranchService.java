@@ -4,11 +4,13 @@ import at.ac.tuwien.inso.actconawa.api.BranchService;
 import at.ac.tuwien.inso.actconawa.dto.GitBranchDto;
 import at.ac.tuwien.inso.actconawa.mapper.GitMapper;
 import at.ac.tuwien.inso.actconawa.repository.GitBranchRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 public class GitBranchService implements BranchService {
 
     private final GitBranchRepository gitBranchRepository;

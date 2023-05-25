@@ -39,8 +39,9 @@ import { Configuration } from '../configuration';
 })
 export class GitBranchControllerService {
 
-    protected basePath = 'http://localhost:8080';
-    public defaultHeaders = new HttpHeaders();
+  protected basePath = 'http://localhost:8080';
+
+  public defaultHeaders = new HttpHeaders();
     public configuration = new Configuration();
     public encoder: HttpParameterCodec;
 
@@ -98,12 +99,12 @@ export class GitBranchControllerService {
         return httpParams;
     }
 
-    /**
-     * @param pageable
-     * @param observe set whether or not to return the data Observable as the body, response or
-     *         events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
+  /**
+   * @param pageable
+   * @param observe set whether or not to return the data Observable as the body, response or
+   *         events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
     public findAllBranches(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<PageGitBranchDto>;
     public findAllBranches(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<PageGitBranchDto>>;
     public findAllBranches(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<PageGitBranchDto>>;

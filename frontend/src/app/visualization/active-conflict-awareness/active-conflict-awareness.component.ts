@@ -24,7 +24,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected links?: GitCommitRelationshipDto[];
 
-  protected branches?: GitBranchDto[];
+  //head commit id as key
+  protected branches = new Map<number, GitBranchDto[]>;
 
   protected loading = true;
 
@@ -48,6 +49,13 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         this.commitsRelationships = v?.relationships?.content || [];
         this.nodes = v?.commits?.content;
         this.links = v?.relationships?.content;
+        v?.branches.content?.forEach(b => {
+          if (this.branches.has(b.headCommitId!!)) {
+            this.branches.get(b.headCommitId!!)?.push(b);
+          } else {
+            this.branches.set(b.headCommitId!!, [b]);
+          }
+        });
         this.render()
         this.loading = false;
       },
@@ -65,12 +73,17 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     });
     graph.setDefaultEdgeLabel(() => ({}));
 
-    this.nodes?.forEach(x => this.setCommit(graph, x))
-    this.links?.forEach(x => this.setEdge(graph, x))
-
     const svg = d3.select('#git-graph')
     const g = svg.append('g');
     const renderer: any = render();
+
+    this.nodes?.forEach(x => this.setCommit(graph, x))
+    this.links?.forEach(x => this.setEdge(graph, x))
+    this.nodes?.forEach(x => {
+      if (this.branches.has(x.id!!)) {
+        this.setBranchLabel(graph, this.branches.get(x.id!!)!!, g);
+      }
+    })
     renderer(g, graph);
 
     svg.attr("width", "100%")
@@ -88,6 +101,22 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       shape: 'circle',
       style: 'stroke: black; fill:none; stroke-width: 1px;'
     });
+  }
+
+  private setBranchLabel(graph: graphlib.Graph, gitBranches: GitBranchDto[], g: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
+    gitBranches.forEach(branch => {
+      graph.setNode('branch-' + branch.id, {
+        label: branch.name,
+        height: 5,
+        shape: 'rect',
+        style: 'stroke: brown; fill:beige; stroke-width: 1px;'
+      });
+      graph.setEdge(branch.headCommitId + '', 'branch-' + branch.id, {
+        lineInterpolate: 'basis',
+        style: 'stroke: grey; fill:none; stroke-width: 1px; stroke-dasharray="5,5" d="M5 20 l215 0',
+      });
+    });
+
   }
 
   private setEdge(graph: graphlib.Graph, gitCommitRelation: GitCommitRelationshipDto) {

@@ -147,6 +147,13 @@
                     "commitDate": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "branchIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
                     }
                 }
             },
