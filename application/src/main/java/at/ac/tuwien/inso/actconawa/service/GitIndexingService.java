@@ -1,12 +1,9 @@
 package at.ac.tuwien.inso.actconawa.service;
 
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
-import at.ac.tuwien.inso.actconawa.persistence.GitBranchCommit;
-import at.ac.tuwien.inso.actconawa.persistence.GitBranchCommitKey;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationshipKey;
-import at.ac.tuwien.inso.actconawa.repository.GitBranchCommitRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitBranchRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRepository;
@@ -31,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,7 +44,6 @@ public class GitIndexingService {
 
     private final GitCommitRelationshipRepository gitCommitRelationshipRepository;
 
-    private final GitBranchCommitRepository gitBranchCommitRepository;
 
     @Value("${actconawa.repo}")
     private String repo;
@@ -54,12 +51,10 @@ public class GitIndexingService {
     public GitIndexingService(
             GitBranchRepository gitBranchRepository,
             GitCommitRepository gitCommitRepository,
-            GitCommitRelationshipRepository gitCommitRelationshipRepository,
-            GitBranchCommitRepository gitBranchCommitRepository) {
+            GitCommitRelationshipRepository gitCommitRelationshipRepository) {
         this.gitBranchRepository = gitBranchRepository;
         this.gitCommitRepository = gitCommitRepository;
         this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
-        this.gitBranchCommitRepository = gitBranchCommitRepository;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -126,25 +121,28 @@ public class GitIndexingService {
 
             // Branches of Commits
             LOG.info("Starting indexing of commit-branch relationships");
-            var commitBranches = new ArrayList<GitBranchCommit>();
+            var count = 0;
             for (GitCommit gitCommit : commitCache.values()) {
-                git.branchList()
-                        .setListMode(ListBranchCommand.ListMode.REMOTE)
-                        .setContains(gitCommit.getSha())
-                        .call()
-                        .stream().filter(x -> !x.isSymbolic())
-                        .forEach(branchWithCommit -> {
-                            var gitBranchCommit = new GitBranchCommit();
-                            var gitBranchCommitKey = new GitBranchCommitKey();
-                            gitBranchCommitKey.setBranch(nameToBranchCache.get(branchWithCommit.getName())
-                                    .getId());
-                            gitBranchCommitKey.setCommit(gitCommit.getId());
-                            gitBranchCommit.setId(gitBranchCommitKey);
-                            commitBranches.add(gitBranchCommit);
+                List<GitBranch> commitsBranches = Optional.ofNullable(gitCommit.getBranches())
+                        .orElseGet(() -> {
+                            var list = new ArrayList<GitBranch>();
+                            gitCommit.setBranches(list);
+                            return list;
                         });
+                commitsBranches.addAll(
+                        git.branchList()
+                                .setListMode(ListBranchCommand.ListMode.REMOTE)
+                                .setContains(gitCommit.getSha())
+                                .call()
+                                .stream().filter(x -> !x.isSymbolic())
+                                .map(branchWithCommit ->
+                                        nameToBranchCache.get(branchWithCommit.getName())
+
+                                ).toList()
+                );
+                count += commitsBranches.size();
             }
-            gitBranchCommitRepository.saveAll(commitBranches);
-            LOG.info("Done indexing of {} commit-branch relationships", commitBranches.size());
+            LOG.info("Done indexing of {} commit-branch relationships", count);
 
             // CommitRelations
             LOG.info("Start indexing of parent-child relationship of the commits");

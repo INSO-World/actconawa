@@ -6,6 +6,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.springframework.context.annotation.Lazy;
@@ -46,8 +49,12 @@ public class GitCommit implements Serializable {
     private List<GitCommitRelationship> children;
 
     @Lazy
-    @OneToMany(mappedBy = "commit")
-    private List<GitBranchCommit> branchRelationships;
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(
+            name = "branch_commit",
+            joinColumns = @JoinColumn(name = "commit_id"),
+            inverseJoinColumns = @JoinColumn(name = "branch_id"))
+    private List<GitBranch> branches;
 
     public GitCommit() {
     }
@@ -116,11 +123,11 @@ public class GitCommit implements Serializable {
         this.children = children;
     }
 
-    public List<GitBranchCommit> getBranchRelationships() {
-        return branchRelationships;
+    public List<GitBranch> getBranches() {
+        return branches;
     }
 
-    public void setBranchRelationships(List<GitBranchCommit> branches) {
-        this.branchRelationships = branches;
+    public void setBranches(List<GitBranch> branches) {
+        this.branches = branches;
     }
 }
