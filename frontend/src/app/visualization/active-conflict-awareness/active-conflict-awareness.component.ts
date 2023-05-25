@@ -27,6 +27,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   //head commit id as key
   protected branches = new Map<number, GitBranchDto[]>;
 
+  protected commits = new Map<number, GitCommitDto>;
+
   protected loading = true;
 
   private margin = {top: 10, right: 30, bottom: 30, left: 30};
@@ -34,6 +36,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   protected width = 1920 - (this.margin.left + this.margin.right);
 
   protected height = 1080 - (this.margin.top + this.margin.bottom);
+
+  protected commitInfo?: string;
 
   constructor(private gitCommitService: GitCommitControllerService, private gitBranchService: GitBranchControllerService) {
   }
@@ -48,6 +52,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       next: (v) => {
         this.commitsRelationships = v?.relationships?.content || [];
         this.nodes = v?.commits?.content;
+        v?.commits?.content?.forEach(c => {
+          this.commits.set(c.id!!, c)
+        })
         this.links = v?.relationships?.content;
         v?.branches.content?.forEach(b => {
           if (this.branches.has(b.headCommitId!!)) {
@@ -93,6 +100,12 @@ export class ActiveConflictAwarenessComponent implements OnInit {
             .on('zoom', function ({transform}) {
               g.attr('transform', transform);
             }));
+    g.selectAll("g.node").on('mouseover', (event, commitId) => {
+      // TODO: find way to only react on commit nodes
+      console.log(commitId as number)
+      const commit = this.commits.get(+(commitId as number));
+      this.commitInfo = commit!!.sha + "~" + commit!!.message
+    })
   }
 
   private setCommit(graph: graphlib.Graph, gitCommit: GitCommitDto) {

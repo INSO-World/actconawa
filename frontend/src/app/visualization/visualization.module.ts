@@ -7,6 +7,7 @@ import {
 } from "./active-conflict-awareness/active-conflict-awareness.component";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatCardModule } from "@angular/material/card";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { MatCardModule } from "@angular/material/card";
     VisualizationRoutingModule,
     MatProgressSpinnerModule,
     MatCardModule,
+    MatTooltipModule,
   ]
 })
 export class VisualizationModule {
