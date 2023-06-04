@@ -119,9 +119,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     })
     g.selectAll('g.node').on('mouseout', () => {
       this.commitInfo = undefined;
-
     })
-    console.log('Done rendering base')
   }
 
   private drawBaseGraph(graph: Graph, g: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
@@ -136,7 +134,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     const branchLabelG = g.select('.output')
             .append('g')
             .attr('class', 'branch-label') as d3.Selection<SVGGElement, unknown, HTMLElement, any>;
+    ;
     this.nodes?.forEach(x => {
+      let offset = 0;
       if (this.branchesByHeadCommitId.has(x.id!)) {
         const gitBranches = this.branchesByHeadCommitId.get(x.id!)!;
         gitBranches.forEach(branch => {
@@ -145,7 +145,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           const branchLabelPadding = 10;
           const branchLabelHeight = 20;
           const branchLabel = branchLabelG.append('g')
-                  .attr('class', 'branch-label');
+                  .attr('class', 'branch-label')
+                  .attr('id', this.BRANCH_NODE_ID_PREFIX + branch.id);
 
           const branchLabelContainer = branchLabel.append('rect')
                   .attr('class', 'branch-label-container')
@@ -176,7 +177,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           const y = commitNodeBBox.y
                   - branchLabel.node()!.getBoundingClientRect().y
                   + branchLabelHeight
-                  / 2;
+                  / 2
+                  + offset;
+          offset += branchLabelHeight;
           branchLabel.attr('transform', `translate(${x},${y})`);
         });
       }
