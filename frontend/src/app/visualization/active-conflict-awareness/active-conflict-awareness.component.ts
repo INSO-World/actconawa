@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import {
   GitBranchControllerService,
   GitBranchDto,
@@ -10,6 +10,7 @@ import * as d3 from 'd3';
 import { forkJoin } from 'rxjs';
 import { graphlib, render } from 'dagre-d3-es';
 import { Graph } from 'dagre-d3-es/src/graphlib';
+import { MatTooltip } from "@angular/material/tooltip";
 
 @Component({
   selector: 'app-active-conflict-awareness',
@@ -22,7 +23,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   private readonly BRANCH_NODE_ID_PREFIX: string = 'branch-';
 
-  @ViewChild('gitGraph', {static: true}) graphContainer?: ElementRef;
+  @ViewChild('commitInfoTooltip', {static: true}) commitInfoTooltip?: MatTooltip;
 
   protected commitsRelationships: GitCommitRelationshipDto[] = [];
 
@@ -95,30 +96,39 @@ export class ActiveConflictAwarenessComponent implements OnInit {
                     .scaleExtent([0.1, 8])
                     .on('zoom', function ({transform}) {
                       g.attr('transform', transform);
+                      tooltipRef?.hide(0);
                     }))
     const g = svg.append('g').attr('id', 'git-graph-group');
+    const tooltipRef = this.commitInfoTooltip;
 
     this.drawBaseGraph(graph, g);
-    this.setBranchLabel();
+    this.drawBranchLabel();
+    this.configureCommitInfoTooltip(g);
 
-    g.selectAll('g.node').on('mouseover', (event, commitNodeId) => {
+  }
+
+  private configureCommitInfoTooltip(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
+    g.selectAll('g.node').on('mouseenter', (event, commitNodeId) => {
+      // make sure previous tooltip is not reused including the origin
+      this.commitInfoTooltip?.ngOnDestroy();
       if ((commitNodeId as string).indexOf(this.COMMIT_NODE_ID_PREFIX) === 0) {
+        if (this.commitInfoTooltip?._isTooltipVisible()) {
+          this.commitInfoTooltip?.hide();
+        } else {
+          this.commitInfoTooltip?.show(0, {"x": event.x, "y": event.y});
+        }
         const commitId = (commitNodeId as string).replace(this.COMMIT_NODE_ID_PREFIX, '');
         const commit = this.commits.get(+commitId);
-        this.commitInfo = commit!.sha
-                + '~'
-                + commit!.message
-                + ' Branches :'
-                + commit!.branchIds!.map(x => this.branchById.get(x)!.name).join(', \n')
-                + ' '
-                + commit!.branchIds!.length
-                + '/'
-                + this.branchById.size
+        this.commitInfo = commit!.sha!!.substring(0, 8)
+                + ' | ' + commit!.message;
       }
-
     })
     g.selectAll('g.node').on('mouseout', () => {
-      this.commitInfo = undefined;
+      this.commitInfoTooltip?.hide(this.commitInfoTooltip?.hideDelay);
+    })
+    g.selectAll('g.node').on('scroll', () => {
+      console.log("wheel")
+      this.commitInfoTooltip?.hide(0);
     })
   }
 
@@ -129,12 +139,12 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     renderer(g, graph);
   }
 
-  private setBranchLabel() {
+  private drawBranchLabel() {
     const g = d3.select('#git-graph-group') as d3.Selection<SVGGElement, unknown, HTMLElement, any>;
     const branchLabelG = g.select('.output')
             .append('g')
             .attr('class', 'branch-label') as d3.Selection<SVGGElement, unknown, HTMLElement, any>;
-    ;
+
     this.nodes?.forEach(x => {
       let offset = 0;
       if (this.branchesByHeadCommitId.has(x.id!)) {
@@ -219,4 +229,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     return `rgb(${red}, ${green}, ${blue})`;
 
   }
+
+  protected readonly String = String;
 }
