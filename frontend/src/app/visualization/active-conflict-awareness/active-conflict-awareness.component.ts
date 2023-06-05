@@ -7,6 +7,7 @@ import {
   GitCommitRelationshipDto
 } from '../../../api';
 import * as d3 from 'd3';
+import { json } from 'd3';
 import { forkJoin } from 'rxjs';
 import { graphlib, render } from 'dagre-d3-es';
 import { Graph } from 'dagre-d3-es/src/graphlib';
@@ -46,6 +47,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   protected height = 1080 - (this.margin.top + this.margin.bottom);
 
   protected commitInfo?: string;
+
+  protected selectedCommit?: GitCommitDto;
 
   constructor(private gitCommitService: GitCommitControllerService, private gitBranchService: GitBranchControllerService) {
   }
@@ -104,7 +107,15 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     this.drawBaseGraph(graph, g);
     this.drawBranchLabel();
     this.configureCommitInfoTooltip(g);
+    this.configureCommitOnClick(g);
+  }
 
+  private configureCommitOnClick(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
+    g.selectAll('g.commit-node').on('click', (event, commitNodeId) => {
+      const commitId = (commitNodeId as string).replace(this.COMMIT_NODE_ID_PREFIX, '');
+      this.selectedCommit = this.commits.get(+commitId);
+      event.stopPropagation();
+    });
   }
 
   private configureCommitInfoTooltip(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
@@ -115,7 +126,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         if (this.commitInfoTooltip?._isTooltipVisible()) {
           this.commitInfoTooltip?.hide();
         } else {
-          this.commitInfoTooltip?.show(0, {"x": event.x, "y": event.y});
+          this.commitInfoTooltip?.show(this.commitInfoTooltip?.showDelay,
+                  {"x": event.x, "y": event.y});
         }
         const commitId = (commitNodeId as string).replace(this.COMMIT_NODE_ID_PREFIX, '');
         const commit = this.commits.get(+commitId);
@@ -125,10 +137,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     })
     g.selectAll('g.node').on('mouseout', () => {
       this.commitInfoTooltip?.hide(this.commitInfoTooltip?.hideDelay);
-    })
-    g.selectAll('g.node').on('scroll', () => {
-      console.log("wheel")
-      this.commitInfoTooltip?.hide(0);
     })
   }
 
@@ -197,7 +205,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   }
 
   private setCommit(graph: graphlib.Graph, gitCommit: GitCommitDto) {
-    let color = 'none';
+    // must have a color, never none, otherwise click and hover handling chooses svg
+    let color = 'white';
     if (gitCommit.branchIds?.length == 1) {
       const sha = this.commits.get(this.branchById.get(gitCommit.branchIds[ 0 ])!.headCommitId!)!.sha!;
       color = this.getColorFromShaString(sha);
@@ -231,4 +240,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   }
 
   protected readonly String = String;
+
+  protected readonly json = json;
 }
