@@ -26,7 +26,9 @@ public class GitBranch implements Serializable {
     @JoinColumn(name = "head_commit_id")
     private GitCommit headCommit;
 
-    private boolean isRemoteHead;
+    private boolean remoteHead;
+
+    private boolean containingExclusiveCommits;
 
     public GitBranch() {
     }
@@ -56,10 +58,18 @@ public class GitBranch implements Serializable {
     }
 
     public boolean isRemoteHead() {
-        return isRemoteHead;
+        return remoteHead;
     }
 
     public void setRemoteHead(boolean remoteHead) {
-        isRemoteHead = remoteHead;
+        this.remoteHead = remoteHead;
+    }
+
+    public boolean isContainingExclusiveCommits() {
+        return containingExclusiveCommits;
+    }
+
+    public void setContainingExclusiveCommits(boolean containingExclusiveCommits) {
+        this.containingExclusiveCommits = containingExclusiveCommits;
     }
 }
