@@ -20,7 +20,8 @@ export interface ConfigurationParameters {
     encoder?: HttpParameterCodec;
     /**
      * Override the default method for encoding path parameters in various
-     * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#style-values">styles</a>.
+     * <a
+     * href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#style-values">styles</a>.
      * <p>
      * See {@link README.md} for more details
      * </p>
@@ -53,7 +54,8 @@ export class Configuration {
     encoder?: HttpParameterCodec;
     /**
      * Encoding of various path parameter
-     * <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#style-values">styles</a>.
+     * <a
+     * href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#style-values">styles</a>.
      * <p>
      * See {@link README.md} for more details
      * </p>
@@ -137,7 +139,8 @@ export class Configuration {
      * @return True if the given MIME is JSON, false otherwise.
      */
     public isJsonMime(mime: string): boolean {
-        const jsonMime: RegExp = new RegExp('^(application\/json|[^;/ \t]+\/[^;/ \t]+[+]json)[ \t]*(;.*)?$', 'i');
+        const jsonMime = new RegExp('^(application\/json|[^;/ \t]+\/[^;/ \t]+[+]json)[ \t]*(;.*)?$',
+                'i');
         return mime !== null && (jsonMime.test(mime) || mime.toLowerCase() === 'application/json-patch+json');
     }
 

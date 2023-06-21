@@ -28,12 +28,12 @@
               "assets": [
                   "src/favicon.ico",
                   "src/assets"
-            ],
-            "styles": [
-              "@angular/material/prebuilt-themes/indigo-pink.css",
-              "src/styles.scss"
-            ],
-            "scripts": []
+              ],
+              "styles": [
+                  "@angular/material/prebuilt-themes/indigo-pink.css",
+                  "src/styles.scss"
+              ],
+              "scripts": []
           },
           "configurations": {
             "production": {
@@ -48,9 +48,9 @@
                         "type": "anyComponentStyle",
                         "maximumWarning": "2kb",
                         "maximumError": "4kb"
-                }
-              ],
-              "outputHashing": "all"
+                    }
+                ],
+                "outputHashing": "all"
             },
             "development": {
               "buildOptimizer": false,
@@ -90,18 +90,32 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "@angular/material/prebuilt-themes/indigo-pink.css",
-              "src/styles.scss"
-            ],
-            "scripts": []
+              "assets": [
+                  "src/favicon.ico",
+                  "src/assets"
+              ],
+              "styles": [
+                  "@angular/material/prebuilt-themes/indigo-pink.css",
+                  "src/styles.scss"
+              ],
+              "scripts": []
           }
-        }
+        },
+          "lint": {
+              "builder": "@angular-eslint/builder:lint",
+              "options": {
+                  "lintFilePatterns": [
+                      "src/**/*.ts",
+                      "src/**/*.html"
+                  ]
+              }
+          }
       }
     }
-  }
+  },
+    "cli": {
+        "schematicCollections": [
+            "@angular-eslint/schematics"
+        ]
+    }
 }
