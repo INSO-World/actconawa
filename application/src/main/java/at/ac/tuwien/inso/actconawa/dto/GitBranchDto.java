@@ -1,15 +1,24 @@
 package at.ac.tuwien.inso.actconawa.dto;
 
-public class GitBranchDto {
-    private Long id;
-    private String name;
-    private Long headCommitId;
+import java.util.UUID;
 
-    public Long getId() {
+public class GitBranchDto {
+
+    private UUID id;
+
+    private String name;
+
+    private UUID headCommitId;
+
+    private boolean remoteHead;
+
+    private boolean containingExclusiveCommits;
+
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -21,11 +30,27 @@ public class GitBranchDto {
         this.name = name;
     }
 
-    public Long getHeadCommitId() {
+    public UUID getHeadCommitId() {
         return headCommitId;
     }
 
-    public void setHeadCommitId(Long headCommitId) {
+    public void setHeadCommitId(UUID headCommitId) {
         this.headCommitId = headCommitId;
+    }
+
+    public boolean isRemoteHead() {
+        return remoteHead;
+    }
+
+    public void setRemoteHead(boolean remoteHead) {
+        this.remoteHead = remoteHead;
+    }
+
+    public boolean isContainingExclusiveCommits() {
+        return containingExclusiveCommits;
+    }
+
+    public void setContainingExclusiveCommits(boolean containingExclusiveCommits) {
+        this.containingExclusiveCommits = containingExclusiveCommits;
     }
 }

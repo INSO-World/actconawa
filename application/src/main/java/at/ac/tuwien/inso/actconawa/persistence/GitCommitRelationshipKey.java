@@ -5,29 +5,30 @@ import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 @Embeddable
 public class GitCommitRelationshipKey implements Serializable {
 
     @Column(name = "parent_id", nullable = false)
-    private Long parent;
+    private UUID parent;
 
     @Column(name = "child_id", nullable = false)
-    private Long child;
+    private UUID child;
 
-    public Long getParent() {
+    public UUID getParent() {
         return parent;
     }
 
-    public void setParent(Long parent) {
+    public void setParent(UUID parent) {
         this.parent = parent;
     }
 
-    public Long getChild() {
+    public UUID getChild() {
         return child;
     }
 
-    public void setChild(Long child) {
+    public void setChild(UUID child) {
         this.child = child;
     }
 

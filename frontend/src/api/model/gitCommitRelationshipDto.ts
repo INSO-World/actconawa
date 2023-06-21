@@ -12,7 +12,7 @@
  */
 
 export interface GitCommitRelationshipDto {
-  parentId?: number;
-  childId?: number;
+  parentId?: string;
+  childId?: string;
 }
 

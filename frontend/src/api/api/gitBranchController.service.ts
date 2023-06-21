@@ -42,16 +42,18 @@ export class GitBranchControllerService {
   protected basePath = 'http://localhost:8080';
 
   public defaultHeaders = new HttpHeaders();
-    public configuration = new Configuration();
-    public encoder: HttpParameterCodec;
 
-    constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string|string[], @Optional() configuration: Configuration) {
-        if (configuration) {
-            this.configuration = configuration;
-        }
-        if (typeof this.configuration.basePath !== 'string') {
-            if (Array.isArray(basePath) && basePath.length > 0) {
-                basePath = basePath[0];
+  public configuration = new Configuration();
+
+  public encoder: HttpParameterCodec;
+
+  constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string | string[], @Optional() configuration: Configuration) {
+    if (configuration) {
+      this.configuration = configuration;
+    }
+    if (typeof this.configuration.basePath !== 'string') {
+      if (Array.isArray(basePath) && basePath.length > 0) {
+        basePath = basePath[ 0 ];
             }
 
             if (typeof basePath !== 'string') {
@@ -89,14 +91,14 @@ export class GitBranchControllerService {
                 }
             } else {
                 Object.keys(value).forEach( k => httpParams = this.addToHttpParamsRecursive(
-                    httpParams, value[k], key != null ? `${key}.${k}` : k));
+                        httpParams, value[ k ], key != null ? `${key}.${k}` : k));
             }
         } else if (key != null) {
-            httpParams = httpParams.append(key, value);
+          httpParams = httpParams.append(key, value);
         } else {
-            throw Error("key may not be null if value is not object or array");
+          throw Error("key may not be null if value is not object or array");
         }
-        return httpParams;
+      return httpParams;
     }
 
   /**
@@ -105,19 +107,32 @@ export class GitBranchControllerService {
    *         events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-    public findAllBranches(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<PageGitBranchDto>;
-    public findAllBranches(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<PageGitBranchDto>>;
-    public findAllBranches(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<PageGitBranchDto>>;
-    public findAllBranches(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
-        if (pageable === null || pageable === undefined) {
-            throw new Error('Required parameter pageable was null or undefined when calling findAllBranches.');
-        }
+  public findAllBranches(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<PageGitBranchDto>;
+  public findAllBranches(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpResponse<PageGitBranchDto>>;
+  public findAllBranches(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpEvent<PageGitBranchDto>>;
+  public findAllBranches(pageable: Pageable, observe: any = 'body', reportProgress = false, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<any> {
+    if (pageable === null || pageable === undefined) {
+      throw new Error(
+              'Required parameter pageable was null or undefined when calling findAllBranches.');
+    }
 
-        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-        if (pageable !== undefined && pageable !== null) {
-          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-            <any>pageable, 'pageable');
-        }
+    let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+    if (pageable !== undefined && pageable !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>pageable, 'pageable');
+    }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -150,7 +165,7 @@ export class GitBranchControllerService {
             }
         }
 
-        let localVarPath = `/branches`;
+    const localVarPath = `/branches`;
         return this.httpClient.request<PageGitBranchDto>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

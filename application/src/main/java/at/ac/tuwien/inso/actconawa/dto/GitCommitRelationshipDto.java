@@ -1,33 +1,35 @@
 package at.ac.tuwien.inso.actconawa.dto;
 
 
+import java.util.UUID;
+
 public class GitCommitRelationshipDto {
 
-    private Long parentId;
+    private UUID parentId;
 
-    private Long childId;
+    private UUID childId;
 
     public GitCommitRelationshipDto() {
     }
 
-    public GitCommitRelationshipDto(Long parentId, Long childId) {
+    public GitCommitRelationshipDto(UUID parentId, UUID childId) {
         this.parentId = parentId;
         this.childId = childId;
     }
 
-    public Long getParentId() {
+    public UUID getParentId() {
         return parentId;
     }
 
-    public void setParentId(Long parentId) {
+    public void setParentId(UUID parentId) {
         this.parentId = parentId;
     }
 
-    public Long getChildId() {
+    public UUID getChildId() {
         return childId;
     }
 
-    public void setChildId(Long childId) {
+    public void setChildId(UUID childId) {
         this.childId = childId;
     }
 }

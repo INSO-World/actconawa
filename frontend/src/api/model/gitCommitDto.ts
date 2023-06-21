@@ -11,14 +11,13 @@
  * Do not edit the class manually.
  */
 
-
 export interface GitCommitDto {
-  id?: number;
+  id?: string;
   sha?: string;
   message?: string;
   authorName?: string;
   authorEmail?: string;
   commitDate?: string;
-  branchIds?: Array<number>;
+  branchIds?: Array<string>;
 }
 

@@ -2,11 +2,12 @@ package at.ac.tuwien.inso.actconawa.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 
 public class GitCommitDto {
 
-    private Long id;
+    private UUID id;
 
     private String sha;
 
@@ -18,13 +19,13 @@ public class GitCommitDto {
 
     private LocalDateTime commitDate;
 
-    private List<Long> branchIds;
+    private List<UUID> branchIds;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -68,11 +69,11 @@ public class GitCommitDto {
         this.commitDate = commitDate;
     }
 
-    public List<Long> getBranchIds() {
+    public List<UUID> getBranchIds() {
         return branchIds;
     }
 
-    public void setBranchIds(List<Long> branchIds) {
+    public void setBranchIds(List<UUID> branchIds) {
         this.branchIds = branchIds;
     }
 }

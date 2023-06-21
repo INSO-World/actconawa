@@ -44,16 +44,18 @@ export class GitCommitControllerService {
   protected basePath = 'http://localhost:8080';
 
   public defaultHeaders = new HttpHeaders();
-    public configuration = new Configuration();
-    public encoder: HttpParameterCodec;
 
-    constructor(protected httpClient: HttpClient, @Optional()@Inject(BASE_PATH) basePath: string|string[], @Optional() configuration: Configuration) {
-        if (configuration) {
-            this.configuration = configuration;
-        }
-        if (typeof this.configuration.basePath !== 'string') {
-            if (Array.isArray(basePath) && basePath.length > 0) {
-                basePath = basePath[0];
+  public configuration = new Configuration();
+
+  public encoder: HttpParameterCodec;
+
+  constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string | string[], @Optional() configuration: Configuration) {
+    if (configuration) {
+      this.configuration = configuration;
+    }
+    if (typeof this.configuration.basePath !== 'string') {
+      if (Array.isArray(basePath) && basePath.length > 0) {
+        basePath = basePath[ 0 ];
             }
 
             if (typeof basePath !== 'string') {
@@ -119,7 +121,7 @@ export class GitCommitControllerService {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<HttpEvent<PageGitCommitRelationshipDto>>;
-  public findAllCommitRelations(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
+  public findAllCommitRelations(pageable: Pageable, observe: any = 'body', reportProgress = false, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<any> {
@@ -164,7 +166,7 @@ export class GitCommitControllerService {
       }
     }
 
-    let localVarPath = `/commits/relations`;
+    const localVarPath = `/commits/relations`;
     return this.httpClient.request<PageGitCommitRelationshipDto>('get',
             `${this.configuration.basePath}${localVarPath}`,
             {
@@ -197,7 +199,7 @@ export class GitCommitControllerService {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<HttpEvent<PageGitCommitDto>>;
-  public findAllCommits(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
+  public findAllCommits(pageable: Pageable, observe: any = 'body', reportProgress = false, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<any> {
@@ -212,15 +214,15 @@ export class GitCommitControllerService {
               <any>pageable, 'pageable');
     }
 
-        let localVarHeaders = this.defaultHeaders;
+    let localVarHeaders = this.defaultHeaders;
 
-        let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
-        if (localVarHttpHeaderAcceptSelected === undefined) {
-            // to determine the Accept header
-            const httpHeaderAccepts: string[] = [
-                'application/json'
-            ];
-            localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+    let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+    if (localVarHttpHeaderAcceptSelected === undefined) {
+      // to determine the Accept header
+      const httpHeaderAccepts: string[] = [
+        'application/json'
+      ];
+      localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
         }
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -243,7 +245,7 @@ export class GitCommitControllerService {
             }
         }
 
-    let localVarPath = `/commits`;
+    const localVarPath = `/commits`;
         return this.httpClient.request<PageGitCommitDto>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

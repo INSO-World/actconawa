@@ -9,14 +9,16 @@ import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.UUID;
+
 @Mapper(componentModel = "spring")
 public interface GitMapper {
 
-    default Long idFromModel(GitBranch gitBranch) {
+    default UUID idFromModel(GitBranch gitBranch) {
         return gitBranch.getId();
     }
 
-    default Long idFromModel(GitCommit branch) {
+    default UUID idFromModel(GitCommit branch) {
         return branch.getId();
     }
 

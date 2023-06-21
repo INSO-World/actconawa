@@ -14,7 +14,7 @@ import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +24,14 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,10 +66,9 @@ public class GitIndexingService {
         var repository = new FileRepository(repo);
         try (Git git = new Git(repository)) {
             var commitCache = new HashMap<String, GitCommit>();
-
+            var startTimestamp = Instant.now();
             LOG.info("Starting indexing of {}", repo);
 
-            // Branches
             LOG.info("Start indexing branches");
             final var allRemoteBranches = git.branchList()
                     .setListMode(ListBranchCommand.ListMode.REMOTE)
@@ -85,63 +87,47 @@ public class GitIndexingService {
                 gitBranch.setRemoteHead(remoteHeads.contains(remoteBranch.getName()));
                 gitBranch.setName(StringUtils.removeStart(remoteBranch.getName(), "refs/remotes/"));
                 branches.add(gitBranch);
-                var revWalk = new RevWalk(repository);
-                revWalk.markStart(revWalk.parseCommit(remoteBranch.getObjectId()));
-                indexCommits(revWalk, gitBranch, commitCache);
+
+                indexCommits(repository, remoteBranch, gitBranch, commitCache);
             }
             gitBranchRepository.saveAll(branches);
-            LOG.info("Done indexing {} branches", branches.size());
-
-            // CommitRelations
-            LOG.info("Start indexing of parent-child relationship of the commits");
-            var relationShipCounter = 0;
-            for (RevCommit commit : git.log().all().call()) {
-                if (!commitCache.containsKey(commit.getId().getName())) {
-                    continue;
-                }
-                relationShipCounter += Arrays.stream(commit.getParents()).mapToInt(x -> {
-                            var parent = commitCache.get(x.getId().getName());
-                            if (parent == null) {
-                                throw new IllegalArgumentException("No such parent commit existing");
-                            }
-                            var child = commitCache.get(commit.getName());
-                            if (child == null) {
-                                throw new IllegalArgumentException("No such child commit existing");
-                            }
-                            var relationship = new GitCommitRelationship();
-                            var relationshipKey = new GitCommitRelationshipKey();
-                            relationshipKey.setChild(child.getId());
-                            relationshipKey.setParent(parent.getId());
-                            relationship.setId(relationshipKey);
-                            gitCommitRelationshipRepository.save(relationship);
-                            return 1;
-                        }
-                ).sum();
-            }
-            LOG.info("Done indexing {} commits relationships", relationShipCounter);
+            LOG.info("Done indexing {} branches in {}",
+                    branches.size(),
+                    Duration.between(startTimestamp, Instant.now()));
         } catch (GitAPIException e) {
             // TODO: Exception Handling
         }
 
     }
 
-    private void indexCommits(RevWalk revWalk, GitBranch gitBranch, HashMap<String, GitCommit> commitCache) {
-        LOG.info("Start indexing commits of branch {}", gitBranch.getName());
+    private void indexCommits(Repository repository,
+            Ref remoteBranchRef,
+            GitBranch gitBranch,
+            HashMap<String, GitCommit> commitCache)
+            throws IOException {
+        var revWalk = new RevWalk(repository);
+        revWalk.markStart(revWalk.parseCommit(remoteBranchRef.getObjectId()));
+        LOG.debug("Start indexing commits of branch {}", gitBranch.getName());
         // first commit of revwalk is always the head commit of the branch,
         // so no string sha comparisons are necessary
         boolean headCommitProcessed = false;
-        int indexedCommitCount = 0;
+        var indexedCommitCount = 0;
+        var relationships = new ArrayList<GitCommitRelationship>();
         for (var commit : revWalk) {
             if (commitCache.containsKey(commit.getId().getName())) {
                 var cachedCommit = commitCache.get(commit.getId().getName());
-                cachedCommit.getBranches().add(gitBranch);
-                if (!headCommitProcessed) {
-                    gitBranch.setHeadCommit(cachedCommit);
-                    headCommitProcessed = true;
+                if (cachedCommit.getId() != null) {
+                    cachedCommit.getBranches().add(gitBranch);
+                    if (!headCommitProcessed) {
+                        gitBranch.setHeadCommit(cachedCommit);
+                        headCommitProcessed = true;
+                    }
+                    continue;
                 }
-                continue;
             }
-            final GitCommit gitCommit = new GitCommit();
+
+            commitCache.putIfAbsent(commit.getId().getName(), new GitCommit());
+            final GitCommit gitCommit = commitCache.get(commit.getId().getName());
             gitCommit.setSha(commit.getName());
             gitCommit.setMessage(commit.getShortMessage()
                     .substring(0,
@@ -160,12 +146,28 @@ public class GitIndexingService {
                 gitBranch.setHeadCommit(gitCommit);
                 headCommitProcessed = true;
             }
-            final var savedGitCommit = gitCommitRepository.save(gitCommit);
+            Optional.ofNullable(commit.getParents()).stream()
+                    .flatMap(Arrays::stream)
+                    .forEach(x -> {
+                        commitCache.putIfAbsent(x.getId().getName(), new GitCommit());
+                        var parentCommit = commitCache.get(x.getId().getName());
+                        var relationship = new GitCommitRelationship();
+                        var relationshipKey = new GitCommitRelationshipKey();
+                        relationship.setChild(gitCommit);
+                        relationship.setParent(parentCommit);
+                        relationship.setId(relationshipKey);
+                        relationships.add(relationship);
+                    });
+            gitCommit.setId(gitCommitRepository.save(gitCommit).getId());
             indexedCommitCount++;
-            commitCache.put(commit.getName(), savedGitCommit);
         }
+        relationships.forEach(x -> {
+            x.getId().setChild(x.getChild().getId());
+            x.getId().setParent(x.getParent().getId());
+        });
+        gitCommitRelationshipRepository.saveAll(relationships);
         gitBranch.setContainingExclusiveCommits(indexedCommitCount != 0);
-        LOG.info("Done indexing {} unique commits of branch {}",
+        LOG.debug("Done indexing {} unique commits of branch {}",
                 indexedCommitCount,
                 gitBranch.getName());
     }

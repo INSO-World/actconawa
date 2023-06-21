@@ -32,11 +32,11 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected links?: GitCommitRelationshipDto[];
 
-  protected branchesByHeadCommitId = new Map<number, GitBranchDto[]>;
+  protected branchesByHeadCommitId = new Map<string, GitBranchDto[]>;
 
-  protected branchById = new Map<number, GitBranchDto>;
+  protected branchById = new Map<string, GitBranchDto>;
 
-  protected commits = new Map<number, GitCommitDto>;
+  protected commits = new Map<string, GitCommitDto>;
 
   protected loading = true;
 
@@ -113,7 +113,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   private configureCommitOnClick(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
     g.selectAll('g.commit-node').on('click', (event, commitNodeId) => {
       const commitId = (commitNodeId as string).replace(this.COMMIT_NODE_ID_PREFIX, '');
-      this.selectedCommit = this.commits.get(+commitId);
+      this.selectedCommit = this.commits.get(commitId);
       event.stopPropagation();
     });
   }
@@ -130,8 +130,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
                   {"x": event.x, "y": event.y});
         }
         const commitId = (commitNodeId as string).replace(this.COMMIT_NODE_ID_PREFIX, '');
-        const commit = this.commits.get(+commitId);
-        this.commitInfo = commit!.sha!!.substring(0, 8)
+        const commit = this.commits.get(commitId);
+        this.commitInfo = commit!.sha!.substring(0, 8)
                 + ' | ' + commit!.message;
       }
     })
@@ -214,8 +214,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     graph.setNode(this.COMMIT_NODE_ID_PREFIX + gitCommit.id, {
       id: this.COMMIT_NODE_ID_PREFIX + gitCommit.id,
       class: 'commit-node',
-      label: gitCommit.id + '',
-      radius: 5,
+      label: '  ',
+      radius: 5, // TODO: seems to have no effect
       shape: 'circle',
       style: `stroke: black; fill:${color}; stroke-width: 1px;`
     });
