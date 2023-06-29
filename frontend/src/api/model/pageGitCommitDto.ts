@@ -17,14 +17,14 @@ import { GitCommitDto } from './gitCommitDto';
 export interface PageGitCommitDto {
   totalPages?: number;
   totalElements?: number;
+  first?: boolean;
+  last?: boolean;
   size?: number;
   content?: Array<GitCommitDto>;
   number?: number;
   sort?: SortObject;
-  pageable?: PageableObject;
-  first?: boolean;
-  last?: boolean;
   numberOfElements?: number;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 

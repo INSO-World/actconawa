@@ -21,6 +21,8 @@ public class GitCommitDto {
 
     private List<UUID> branchIds;
 
+    private List<UUID> parentIds;
+
     public UUID getId() {
         return id;
     }
@@ -75,5 +77,13 @@ public class GitCommitDto {
 
     public void setBranchIds(List<UUID> branchIds) {
         this.branchIds = branchIds;
+    }
+
+    public List<UUID> getParentIds() {
+        return parentIds;
+    }
+
+    public void setParentIds(List<UUID> parentIds) {
+        this.parentIds = parentIds;
     }
 }

@@ -17,14 +17,14 @@ import { SortObject } from './sortObject';
 export interface PageGitBranchDto {
   totalPages?: number;
   totalElements?: number;
+  first?: boolean;
+  last?: boolean;
   size?: number;
   content?: Array<GitBranchDto>;
   number?: number;
   sort?: SortObject;
-  pageable?: PageableObject;
-  first?: boolean;
-  last?: boolean;
   numberOfElements?: number;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 

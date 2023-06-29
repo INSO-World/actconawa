@@ -26,6 +26,8 @@ import { CustomHttpParameterCodec } from '../encoder';
 import { Observable } from 'rxjs';
 
 // @ts-ignore
+import { GitCommitDto } from '../model/gitCommitDto';
+// @ts-ignore
 import { PageGitCommitDto } from '../model/pageGitCommitDto';
 // @ts-ignore
 import { PageGitCommitRelationshipDto } from '../model/pageGitCommitRelationshipDto';
@@ -56,52 +58,53 @@ export class GitCommitControllerService {
     if (typeof this.configuration.basePath !== 'string') {
       if (Array.isArray(basePath) && basePath.length > 0) {
         basePath = basePath[ 0 ];
-            }
+      }
 
-            if (typeof basePath !== 'string') {
-                basePath = this.basePath;
-            }
-            this.configuration.basePath = basePath;
-        }
-        this.encoder = this.configuration.encoder || new CustomHttpParameterCodec();
+      if (typeof basePath !== 'string') {
+        basePath = this.basePath;
+      }
+      this.configuration.basePath = basePath;
     }
+    this.encoder = this.configuration.encoder || new CustomHttpParameterCodec();
+  }
 
-
-    // @ts-ignore
-    private addToHttpParams(httpParams: HttpParams, value: any, key?: string): HttpParams {
-        if (typeof value === "object" && value instanceof Date === false) {
-            httpParams = this.addToHttpParamsRecursive(httpParams, value);
-        } else {
-            httpParams = this.addToHttpParamsRecursive(httpParams, value, key);
-        }
-        return httpParams;
+  // @ts-ignore
+  private addToHttpParams(httpParams: HttpParams, value: any, key?: string): HttpParams {
+    if (typeof value === "object" && value instanceof Date === false) {
+      httpParams = this.addToHttpParamsRecursive(httpParams, value);
+    } else {
+      httpParams = this.addToHttpParamsRecursive(httpParams, value, key);
     }
+    return httpParams;
+  }
 
-    private addToHttpParamsRecursive(httpParams: HttpParams, value?: any, key?: string): HttpParams {
-        if (value == null) {
-            return httpParams;
-        }
-
-        if (typeof value === "object") {
-            if (Array.isArray(value)) {
-                (value as any[]).forEach( elem => httpParams = this.addToHttpParamsRecursive(httpParams, elem, key));
-            } else if (value instanceof Date) {
-                if (key != null) {
-                    httpParams = httpParams.append(key, (value as Date).toISOString().substr(0, 10));
-                } else {
-                   throw Error("key may not be null if value is Date");
-                }
-            } else {
-              Object.keys(value).forEach(k => httpParams = this.addToHttpParamsRecursive(
-                      httpParams, value[ k ], key != null ? `${key}.${k}` : k));
-            }
-        } else if (key != null) {
-          httpParams = httpParams.append(key, value);
-        } else {
-          throw Error("key may not be null if value is not object or array");
-        }
+  private addToHttpParamsRecursive(httpParams: HttpParams, value?: any, key?: string): HttpParams {
+    if (value == null) {
       return httpParams;
     }
+
+    if (typeof value === "object") {
+      if (Array.isArray(value)) {
+        (value as any[]).forEach(elem => httpParams = this.addToHttpParamsRecursive(httpParams,
+                elem,
+                key));
+      } else if (value instanceof Date) {
+        if (key != null) {
+          httpParams = httpParams.append(key, (value as Date).toISOString().substr(0, 10));
+        } else {
+          throw Error("key may not be null if value is Date");
+        }
+      } else {
+        Object.keys(value).forEach(k => httpParams = this.addToHttpParamsRecursive(
+                httpParams, value[ k ], key != null ? `${key}.${k}` : k));
+      }
+    } else if (key != null) {
+      httpParams = httpParams.append(key, value);
+    } else {
+      throw Error("key may not be null if value is not object or array");
+    }
+    return httpParams;
+  }
 
   /**
    * @param pageable
@@ -121,7 +124,7 @@ export class GitCommitControllerService {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<HttpEvent<PageGitCommitRelationshipDto>>;
-  public findAllCommitRelations(pageable: Pageable, observe: any = 'body', reportProgress = false, options?: {
+  public findAllCommitRelations(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<any> {
@@ -166,7 +169,7 @@ export class GitCommitControllerService {
       }
     }
 
-    const localVarPath = `/commits/relations`;
+    let localVarPath = `/commits/relations`;
     return this.httpClient.request<PageGitCommitRelationshipDto>('get',
             `${this.configuration.basePath}${localVarPath}`,
             {
@@ -199,7 +202,7 @@ export class GitCommitControllerService {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<HttpEvent<PageGitCommitDto>>;
-  public findAllCommits(pageable: Pageable, observe: any = 'body', reportProgress = false, options?: {
+  public findAllCommits(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<any> {
@@ -223,40 +226,127 @@ export class GitCommitControllerService {
         'application/json'
       ];
       localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-        }
-        if (localVarHttpHeaderAcceptSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-        }
-
-        let localVarHttpContext: HttpContext | undefined = options && options.context;
-        if (localVarHttpContext === undefined) {
-            localVarHttpContext = new HttpContext();
-        }
-
-
-        let responseType_: 'text' | 'json' | 'blob' = 'json';
-        if (localVarHttpHeaderAcceptSelected) {
-            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-                responseType_ = 'text';
-            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-                responseType_ = 'json';
-            } else {
-                responseType_ = 'blob';
-            }
-        }
-
-    const localVarPath = `/commits`;
-        return this.httpClient.request<PageGitCommitDto>('get', `${this.configuration.basePath}${localVarPath}`,
-            {
-                context: localVarHttpContext,
-                params: localVarQueryParameters,
-                responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
-                headers: localVarHeaders,
-                observe: observe,
-                reportProgress: reportProgress
-            }
-        );
     }
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    let localVarHttpContext: HttpContext | undefined = options && options.context;
+    if (localVarHttpContext === undefined) {
+      localVarHttpContext = new HttpContext();
+    }
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/commits`;
+    return this.httpClient.request<PageGitCommitDto>('get',
+            `${this.configuration.basePath}${localVarPath}`,
+            {
+              context: localVarHttpContext,
+              params: localVarQueryParameters,
+              responseType: <any>responseType_,
+              withCredentials: this.configuration.withCredentials,
+              headers: localVarHeaders,
+              observe: observe,
+              reportProgress: reportProgress
+            }
+    );
+  }
+
+  /**
+   * @param commitId
+   * @param maxDepth
+   * @param observe set whether or not to return the data Observable as the body, response or
+   *         events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public findAncestors(commitId: string, maxDepth?: number, observe?: 'body', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<Array<GitCommitDto>>;
+  public findAncestors(commitId: string, maxDepth?: number, observe?: 'response', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpResponse<Array<GitCommitDto>>>;
+  public findAncestors(commitId: string, maxDepth?: number, observe?: 'events', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpEvent<Array<GitCommitDto>>>;
+  public findAncestors(commitId: string, maxDepth?: number, observe: any = 'body', reportProgress: boolean = false, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<any> {
+    if (commitId === null || commitId === undefined) {
+      throw new Error(
+              'Required parameter commitId was null or undefined when calling findAncestors.');
+    }
+
+    let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+    if (maxDepth !== undefined && maxDepth !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>maxDepth, 'maxDepth');
+    }
+
+    let localVarHeaders = this.defaultHeaders;
+
+    let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+    if (localVarHttpHeaderAcceptSelected === undefined) {
+      // to determine the Accept header
+      const httpHeaderAccepts: string[] = [
+        'application/json'
+      ];
+      localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+    }
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    let localVarHttpContext: HttpContext | undefined = options && options.context;
+    if (localVarHttpContext === undefined) {
+      localVarHttpContext = new HttpContext();
+    }
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/commits/${this.configuration.encodeParam({
+      name: "commitId",
+      value: commitId,
+      in: "path",
+      style: "simple",
+      explode: false,
+      dataType: "string",
+      dataFormat: "uuid"
+    })}/ancestors`;
+    return this.httpClient.request<Array<GitCommitDto>>('get',
+            `${this.configuration.basePath}${localVarPath}`,
+            {
+              context: localVarHttpContext,
+              params: localVarQueryParameters,
+              responseType: <any>responseType_,
+              withCredentials: this.configuration.withCredentials,
+              headers: localVarHeaders,
+              observe: observe,
+              reportProgress: reportProgress
+            }
+    );
+  }
 
 }

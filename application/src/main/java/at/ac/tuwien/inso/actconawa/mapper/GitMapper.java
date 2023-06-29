@@ -9,7 +9,9 @@ import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface GitMapper {
@@ -33,7 +35,14 @@ public interface GitMapper {
 
 
     @Mapping(source = "branches", target = "branchIds")
+    @Mapping(target = "parentIds", expression = "java(getParentCommitIds(commit.getParents()))")
     GitCommitDto mapModelToDto(GitCommit commit);
+
+    // TODO: This one is fishy
+    default List<UUID> getParentCommitIds(List<GitCommitRelationship> gitCommitRelationships) {
+        return gitCommitRelationships.stream()
+                .map(x -> x.getId().getParent()).collect(Collectors.toList());
+    }
 
 
 }
