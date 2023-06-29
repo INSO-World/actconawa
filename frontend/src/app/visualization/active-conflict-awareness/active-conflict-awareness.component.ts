@@ -87,20 +87,18 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     const graph = new graphlib.Graph({directed: true});
     graph.setGraph({
       rankdir: 'RL',
-      ranksep: 40,
-      nodesep: 5
+      align: 'UL',
+      ranksep: 100,
+      nodesep: 100,
+      ranker: 'tight-tree',
+      animate: 1000,
+
     });
     graph.setDefaultEdgeLabel(() => ({}));
 
     const svg = d3.select('#git-graph')
             .attr('width', '100%')
-            .attr('height', '90vh')
-            .call(d3.zoom<any, any>()
-                    .scaleExtent([0.1, 8])
-                    .on('zoom', function ({transform}) {
-                      g.attr('transform', transform);
-                      tooltipRef?.hide(0);
-                    }))
+            .attr('height', '90vh');
     const g = svg.append('g').attr('id', 'git-graph-group');
     const tooltipRef = this.commitInfoTooltip;
 
@@ -108,6 +106,24 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     this.drawBranchLabel();
     this.configureCommitInfoTooltip(g);
     this.configureCommitOnClick(g);
+
+    const zoomFunction = d3.zoom<any, any>()
+            .scaleExtent([0.1, 8])
+            .on('zoom', function ({transform}) {
+              g.attr('transform', transform);
+              tooltipRef?.hide(0);
+              console.log(window.innerWidth + " " + graph.graph().width)
+              console.log(Math.max(0.5, window.innerWidth / graph.graph().width))
+            });
+
+    svg.call(zoomFunction)
+            .call(zoomFunction.transform,
+                    d3.zoomIdentity
+                            .translate(window.innerWidth < graph.graph().width
+                                            ? 0
+                                            : (window.innerWidth - graph.graph().width) / 2,
+                                    window.innerHeight / 3)
+            );
   }
 
   private configureCommitOnClick(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
