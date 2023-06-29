@@ -23,6 +23,8 @@ public interface GitMapper {
     }
 
     @Mapping(source = "headCommit", target = "headCommitId")
+    @Mapping(source = "remoteHead", target = "remoteHead")
+    @Mapping(source = "containingExclusiveCommits", target = "containingExclusiveCommits")
     GitBranchDto mapModelToDto(GitBranch branch);
 
     @Mapping(source = "parent", target = "parentId")

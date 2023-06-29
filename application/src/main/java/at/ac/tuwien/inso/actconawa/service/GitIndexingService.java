@@ -15,6 +15,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +107,7 @@ public class GitIndexingService {
             HashMap<String, GitCommit> commitCache)
             throws IOException {
         var revWalk = new RevWalk(repository);
+        revWalk.sort(RevSort.TOPO);
         revWalk.markStart(revWalk.parseCommit(remoteBranchRef.getObjectId()));
         LOG.debug("Start indexing commits of branch {}", gitBranch.getName());
         // first commit of revwalk is always the head commit of the branch,
