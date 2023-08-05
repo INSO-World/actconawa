@@ -92,7 +92,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       rankdir: 'RL',
       align: 'UL',
       ranksep: 100,
-      nodesep: 100,
+      nodesep: 300,
       ranker: 'tight-tree',
       animate: 1000,
 
@@ -222,7 +222,14 @@ export class ActiveConflictAwarenessComponent implements OnInit {
             .append('g')
             .attr('class', 'branch-label') as d3.Selection<SVGGElement, unknown, HTMLElement, any>;
 
+    const commitLabelCount = new Map<string, number>();
     this.branches.forEach(branch => {
+      if (commitLabelCount.has(branch.headCommitId!!)) {
+        commitLabelCount.set(branch.headCommitId!!,
+                commitLabelCount.get(branch.headCommitId!!)!! + 1)
+      } else {
+        commitLabelCount.set(branch.headCommitId!!, 1);
+      }
       const commitNode = g.select('#' + this.COMMIT_NODE_ID_PREFIX + branch.headCommitId);
       if (commitNode && commitNode.node()) {
         const branchLabelPadding = 10;
@@ -256,7 +263,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         branchLabelContainer.attr('transform', branchLabelWidth);
         // Position the branchLabel
         const x = -20 - branchLabelWidth;
-        const y = -branchLabelHeight / 2;
+        const y = -branchLabelHeight
+                / 2
+                + branchLabelHeight
+                * (commitLabelCount.get(branch.headCommitId!!)!! - 1);
         const commitNodeTransform =
                 (commitNode.node() as HTMLElement).attributes.getNamedItem("transform")?.textContent
         branchLabel.attr('transform', `${commitNodeTransform} rotate(-90) translate(${x},${y})`);
