@@ -186,7 +186,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   private configureCommitInfoTooltip(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>) {
     g.selectAll('g.node').on('mouseenter', (event, commitNodeId) => {
-      console.log("menter " + commitNodeId)
       // make sure previous tooltip is not reused including the origin
       this.commitInfoTooltip?.ngOnDestroy();
       if ((commitNodeId as string).indexOf(this.COMMIT_NODE_ID_PREFIX) === 0) {
@@ -222,13 +221,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     const branchLabelG = g.select('.output')
             .append('g')
             .attr('class', 'branch-label') as d3.Selection<SVGGElement, unknown, HTMLElement, any>;
-    // TODO
-    let offset = 0;
+
     this.branches.forEach(branch => {
       const commitNode = g.select('#' + this.COMMIT_NODE_ID_PREFIX + branch.headCommitId);
       if (commitNode && commitNode.node()) {
-        const commitNodeBBox = (commitNode.node()! as SVGSVGElement).getBoundingClientRect();
-        console.log((commitNode.node() as HTMLElement).attributes.getNamedItem("transform")?.textContent)
         const branchLabelPadding = 10;
         const branchLabelHeight = 20;
         const branchLabel = branchLabelG.append('g')
@@ -254,17 +250,16 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
         // Calculate width of the label text
         const textWidth = label.node()?.getComputedTextLength() || 0;
+        const branchLabelWidth = textWidth + branchLabelPadding * 2;
         // Set width of branch label container
-        branchLabelContainer.attr('width', textWidth + branchLabelPadding * 2);
-        branchLabelContainer.attr('transform', textWidth + branchLabelPadding * 2);
+        branchLabelContainer.attr('width', branchLabelWidth);
+        branchLabelContainer.attr('transform', branchLabelWidth);
         // Position the branchLabel
-        const x = 20;
-        const y = 0;
-        offset += branchLabelHeight;
-        branchLabel.attr('transform', `translate(${x},${y})`);
-        branchLabel.attr('transform',
+        const x = -20 - branchLabelWidth;
+        const y = -branchLabelHeight / 2;
+        const commitNodeTransform =
                 (commitNode.node() as HTMLElement).attributes.getNamedItem("transform")?.textContent
-                + "");
+        branchLabel.attr('transform', `${commitNodeTransform} rotate(-90) translate(${x},${y})`);
       } else {
         console.log("cannot find commit node "
                 + '#'
