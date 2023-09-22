@@ -155,7 +155,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
     this.renderGraph(g);
 
-    const graph = this.graph;
     const zoomFunction = d3.zoom<any, any>()
             .scaleExtent([0.1, 8])
             .on('zoom', function ({transform}) {

@@ -1,0 +1,82 @@
+package at.ac.tuwien.inso.actconawa.persistence;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import org.eclipse.jgit.diff.DiffEntry;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+@Entity
+@Table(name = "commit_diff_file")
+public class GitCommitDiffFile implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "commit_id", nullable = false)
+    private GitCommit commit;
+
+    @Column(nullable = false)
+    private String newFilePath;
+
+    @Column
+    private String oldFilePath;
+
+    @Enumerated(value = EnumType.STRING)
+    private DiffEntry.ChangeType changeType;
+
+    public GitCommitDiffFile() {
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public GitCommit getCommit() {
+        return commit;
+    }
+
+    public void setCommit(GitCommit commit) {
+        this.commit = commit;
+    }
+
+    public String getNewFilePath() {
+        return newFilePath;
+    }
+
+    public void setNewFilePath(String newFilePath) {
+        this.newFilePath = newFilePath;
+    }
+
+    public String getOldFilePath() {
+        return oldFilePath;
+    }
+
+    public void setOldFilePath(String oldFilePath) {
+        this.oldFilePath = oldFilePath;
+    }
+
+    public DiffEntry.ChangeType getChangeType() {
+        return changeType;
+    }
+
+    public void setChangeType(DiffEntry.ChangeType changeType) {
+        this.changeType = changeType;
+    }
+}
