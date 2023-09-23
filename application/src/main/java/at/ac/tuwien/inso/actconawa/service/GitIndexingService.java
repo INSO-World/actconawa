@@ -39,6 +39,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -100,7 +101,7 @@ public class GitIndexingService {
                 gitBranch.setName(StringUtils.removeStart(remoteBranch.getName(), "refs/remotes/"));
                 branches.add(gitBranch);
 
-                indexCommits(repository, remoteBranch, gitBranch, commitCache);
+                indexCommits(git, repository, remoteBranch, gitBranch, commitCache);
             }
             gitBranchRepository.saveAll(branches);
             LOG.info("Done indexing {} branches in {}",
@@ -112,7 +113,9 @@ public class GitIndexingService {
 
     }
 
-    private void indexCommits(Repository repository,
+    private void indexCommits(
+            Git git,
+            Repository repository,
             Ref remoteBranchRef,
             GitBranch gitBranch,
             HashMap<String, GitCommit> commitCache)
@@ -126,6 +129,7 @@ public class GitIndexingService {
         boolean headCommitProcessed = false;
         var indexedCommitCount = 0;
         var relationships = new ArrayList<GitCommitRelationship>();
+        var commitDiffFiles = new ArrayList<GitCommitDiffFile>();
         for (var commit : revWalk) {
             if (commitCache.containsKey(commit.getId().getName())) {
                 var cachedCommit = commitCache.get(commit.getId().getName());
@@ -161,72 +165,84 @@ public class GitIndexingService {
             }
             Optional.ofNullable(commit.getParents()).stream()
                     .flatMap(Arrays::stream)
-                    .forEach(x -> {
-                        commitCache.putIfAbsent(x.getId().getName(), new GitCommit());
-                        var parentCommit = commitCache.get(x.getId().getName());
+                    .forEach(parent -> {
+                        commitCache.putIfAbsent(parent.getId().getName(), new GitCommit());
+                        var parentCommit = commitCache.get(parent.getId().getName());
                         var relationship = new GitCommitRelationship();
                         var relationshipKey = new GitCommitRelationshipKey();
                         relationship.setChild(gitCommit);
                         relationship.setParent(parentCommit);
                         relationship.setId(relationshipKey);
+                        relationship.setDiff(getDiff(git, commit, parent));
                         relationships.add(relationship);
+                        commitDiffFiles.addAll(getDiffFileData(git, commit, parent, relationship));
                     });
             gitCommit.setId(gitCommitRepository.save(gitCommit).getId());
             indexedCommitCount++;
-            indexDiffData(repository, commit, gitCommit);
         }
         relationships.forEach(x -> {
             x.getId().setChild(x.getChild().getId());
             x.getId().setParent(x.getParent().getId());
         });
-        gitCommitRelationshipRepository.saveAll(relationships);
+        gitCommitRelationshipRepository.saveAllAndFlush(relationships);
+        gitCommitDiffFileRepository.saveAll(commitDiffFiles);
         gitBranch.setContainingExclusiveCommits(indexedCommitCount != 0);
         LOG.debug("Done indexing {} unique commits of branch {}",
                 indexedCommitCount,
                 gitBranch.getName());
     }
 
-    void indexDiffData(Repository repository, RevCommit commit, GitCommit gitCommit)
-            throws IOException {
-        try (Git git = new Git(repository)) {
-            for (var parentCommit : commit.getParents()) {
-                var treeId = commit.getTree().getId();
-                try (var reader = git.getRepository().newObjectReader()) {
-                    var commitTree = new CanonicalTreeParser(null, reader, treeId);
-                    var parentCommitTree = new CanonicalTreeParser(null,
-                            reader,
-                            parentCommit.getTree().getId());
-                    var outputStream = new ByteArrayOutputStream();
+    private String getDiff(Git git, RevCommit commit, RevCommit parentCommit) {
+        var commitTreeId = commit.getTree().getId();
+        var parentTreeId = parentCommit.getTree().getId();
+        try (var reader = git.getRepository().newObjectReader();
+             var outputStream = new ByteArrayOutputStream();
+             var formatter = new DiffFormatter(outputStream)
+        ) {
+            var commitTree = new CanonicalTreeParser(null, reader, commitTreeId);
+            var parentCommitTree = new CanonicalTreeParser(null, reader, parentTreeId);
 
-                    try (var formatter = new DiffFormatter(outputStream)) {
-                        formatter.setRepository(git.getRepository());
-                        formatter.format(parentCommitTree, commitTree);
-                        gitCommit.setDiff(outputStream.toString());
+            formatter.setRepository(git.getRepository());
+            formatter.format(parentCommitTree, commitTree);
 
-                        commitTree.reset();
-                        parentCommitTree.reset();
+            return outputStream.toString();
+        } catch (IOException e) {
+            LOG.error("Creating diff between {} and {} failed.",
+                    commit.getId().getName(),
+                    parentCommit.getId().getName(),
+                    e);
+            return null;
+        }
+    }
 
-                        gitCommitDiffFileRepository.saveAll(
-                                git.diff()
-                                        .setNewTree(commitTree)
-                                        .setOldTree(parentCommitTree)
-                                        .call().stream().map(change -> {
-                                            var entity = new GitCommitDiffFile();
-                                            entity.setCommit(gitCommit);
-                                            entity.setNewFilePath(change.getNewPath());
-                                            entity.setOldFilePath(
-                                                    change.getChangeType() == DiffEntry.ChangeType.ADD
-                                                            ? null
-                                                            : change.getOldPath()
-                                            );
-                                            entity.setChangeType(change.getChangeType());
-                                            return entity;
-                                        }).collect(Collectors.toList()));
-                    } catch (GitAPIException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+    List<GitCommitDiffFile> getDiffFileData(Git git, RevCommit commit, RevCommit parentCommit, GitCommitRelationship gitCommitRelationship) {
+        var commitTreeId = commit.getTree().getId();
+        var parentTreeId = parentCommit.getTree().getId();
+        try (var reader = git.getRepository().newObjectReader()) {
+            var commitTree = new CanonicalTreeParser(null, reader, commitTreeId);
+            var parentCommitTree = new CanonicalTreeParser(null, reader, parentTreeId);
+
+            return git.diff()
+                    .setNewTree(commitTree)
+                    .setOldTree(parentCommitTree)
+                    .call().stream().map(change -> {
+                        var entity = new GitCommitDiffFile();
+                        entity.setCommitRelationship(gitCommitRelationship);
+                        entity.setNewFilePath(change.getNewPath());
+                        entity.setOldFilePath(
+                                change.getChangeType() == DiffEntry.ChangeType.ADD
+                                        ? null
+                                        : change.getOldPath()
+                        );
+                        entity.setChangeType(change.getChangeType());
+                        return entity;
+                    }).collect(Collectors.toList());
+        } catch (GitAPIException | IOException e) {
+            // No information can be gathered for this commit
+            LOG.error("Collecting modified/added files between {} and {} failed.",
+                    commit.getId().getName(), parentCommit.getId().getName(), e
+            );
+            return new ArrayList<>();
         }
     }
 

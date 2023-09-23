@@ -1,16 +1,13 @@
 package at.ac.tuwien.inso.actconawa.persistence;
 
-import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -51,14 +48,6 @@ public class GitCommit implements Serializable {
     @Lazy
     @OneToMany(mappedBy = "parent")
     private List<GitCommitRelationship> children;
-
-    @Lazy
-    @OneToMany(mappedBy = "commit")
-    private List<GitCommitDiffFile> affectedFiles;
-
-    @Lob
-    @Basic(fetch = FetchType.LAZY)
-    private String diff;
 
     @Lazy
     @ManyToMany(cascade = CascadeType.PERSIST)
@@ -143,19 +132,4 @@ public class GitCommit implements Serializable {
         this.branches = branches;
     }
 
-    public List<GitCommitDiffFile> getAffectedFiles() {
-        return affectedFiles;
-    }
-
-    public void setAffectedFiles(List<GitCommitDiffFile> affectedFiles) {
-        this.affectedFiles = affectedFiles;
-    }
-
-    public String getDiff() {
-        return diff;
-    }
-
-    public void setDiff(String diff) {
-        this.diff = diff;
-    }
 }

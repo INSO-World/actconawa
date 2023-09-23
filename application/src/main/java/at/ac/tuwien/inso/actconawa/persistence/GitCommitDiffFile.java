@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -25,8 +26,11 @@ public class GitCommitDiffFile implements Serializable {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "commit_id", nullable = false)
-    private GitCommit commit;
+    @JoinColumns({
+            @JoinColumn(referencedColumnName = "parent_id"),
+            @JoinColumn(referencedColumnName = "child_id")
+    })
+    private GitCommitRelationship commitRelationship;
 
     @Column(nullable = false)
     private String newFilePath;
@@ -48,12 +52,12 @@ public class GitCommitDiffFile implements Serializable {
         this.id = id;
     }
 
-    public GitCommit getCommit() {
-        return commit;
+    public GitCommitRelationship getCommitRelationship() {
+        return commitRelationship;
     }
 
-    public void setCommit(GitCommit commit) {
-        this.commit = commit;
+    public void setCommitRelationship(GitCommitRelationship commitRelationship) {
+        this.commitRelationship = commitRelationship;
     }
 
     public String getNewFilePath() {
