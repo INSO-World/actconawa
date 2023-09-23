@@ -56,7 +56,6 @@ public class GitCommitService implements CommitService {
             if (Optional.ofNullable(commit.getParents()).map(List::size).orElse(0) > 0) {
                 result.add(gitMapper.mapModelToDto(commit));
                 if (commit.getParents().size() > 1) {
-                    //commit.getParents().forEach(x -> result.add(gitMapper.mapModelToDto(x.getParent())));
                     // return as the commit has multiple parents
                     return result;
                 }
