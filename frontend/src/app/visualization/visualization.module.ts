@@ -9,10 +9,16 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatCardModule } from "@angular/material/card";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatExpansionModule } from "@angular/material/expansion";
+import {
+  ActiveConflictAwarenessCommitComponent
+} from './active-conflict-awareness/active-conflict-awareness-commit/active-conflict-awareness-commit.component';
+import { MatGridListModule } from "@angular/material/grid-list";
+import { MatChipsModule } from "@angular/material/chips";
 
 @NgModule({
   declarations: [
-    ActiveConflictAwarenessComponent
+    ActiveConflictAwarenessComponent,
+    ActiveConflictAwarenessCommitComponent
   ],
   imports: [
     CommonModule,
@@ -21,6 +27,8 @@ import { MatExpansionModule } from "@angular/material/expansion";
     MatCardModule,
     MatTooltipModule,
     MatExpansionModule,
+    MatGridListModule,
+    MatChipsModule,
   ]
 })
 export class VisualizationModule {

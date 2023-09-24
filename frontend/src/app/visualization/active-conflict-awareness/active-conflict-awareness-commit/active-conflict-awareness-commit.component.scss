@@ -1,0 +1,20 @@
+.commit-info-extension-panel {
+  margin: 2em;
+  padding: 1em;
+  overflow: hidden;
+}
+
+.branch-tag {
+  white-space: nowrap;
+  text-wrap: none;
+  overflow: visible;
+  text-overflow: ellipsis;
+  background-color: #eeeeee;
+  margin-right: 1px;
+  padding: 0.5em;
+  border-radius: 2em;
+}
+
+.branch-tag-container {
+  overflow: scroll;
+}

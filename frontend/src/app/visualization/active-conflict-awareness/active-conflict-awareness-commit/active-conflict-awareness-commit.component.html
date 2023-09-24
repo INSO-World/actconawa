@@ -1,0 +1,56 @@
+<mat-expansion-panel class="commit-info-extension-panel" hideToggle [disabled]="!commit">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Commit Information
+    </mat-panel-title>
+    <mat-panel-description>
+      <ng-container *ngIf="!commit">Select a commit to show the information</ng-container>
+      <ng-container *ngIf="commit">
+        <strong>{{commit.sha}} - {{commit.message}}</strong>
+      </ng-container>
+
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <ng-container *ngIf="commit">
+    <mat-grid-list cols="12" rowHeight="3em">
+      <mat-grid-tile colspan="1">
+        <div><strong>Id:</strong></div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="5">
+        <div>{{commit.id}}</div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="1">
+        <div><strong>Sha:</strong></div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="5">
+        <div>{{commit.sha}}</div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="1">
+        <div><strong>Author:</strong></div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="5">
+        <div>{{commit.authorName}} &lt;{{commit.authorEmail}}&gt;</div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="1">
+        <div><strong>Date:</strong></div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="5">
+        <div>{{commit.commitDate}}</div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="1">
+        <div><strong>Message:</strong></div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="11">
+        <div>{{commit.message}}</div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="1">
+        <div><strong>Branches:</strong></div>
+      </mat-grid-tile>
+      <mat-grid-tile class="branch-tag-container" colspan="10">
+        <span class="branch-tag" *ngFor="let branchId of commit.branchIds">
+          {{branchById.get(branchId)?.name}}
+        </span>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </ng-container>
+</mat-expansion-panel>

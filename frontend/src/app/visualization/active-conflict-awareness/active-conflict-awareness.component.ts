@@ -107,7 +107,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
    * @param previousChildCommitId
    */
   fetchAndAddAncestors(commitId: string, previousChildCommitId?: string): GitCommitDto[] {
-    this.gitCommitService.findAncestors(commitId, 1).subscribe({
+    this.gitCommitService.findAncestors(commitId, 10).subscribe({
       next: ancestors => {
         for (let i = 0; i < ancestors.length; i++) {
           const c = ancestors[ i ];

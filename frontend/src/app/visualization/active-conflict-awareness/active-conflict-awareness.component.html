@@ -1,20 +1,12 @@
 <div *ngIf="loading" class="loading-spinner">
   <mat-spinner></mat-spinner>
 </div>
-<mat-expansion-panel class="commit-info-extension-panel" hideToggle [disabled]="!selectedCommit">
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      Commit Information
-    </mat-panel-title>
-    <mat-panel-description>
-      <ng-container *ngIf="!selectedCommit">Select a commit to show the information</ng-container>
-      <ng-container *ngIf="selectedCommit">{{selectedCommit.sha}}
-        - {{selectedCommit.message}}</ng-container>
 
-    </mat-panel-description>
-  </mat-expansion-panel-header>
-  {{selectedCommit | json}}
-</mat-expansion-panel>
+<app-active-conflict-awareness-commit
+        [commit]="selectedCommit"
+        [branchById]="branchById">
+</app-active-conflict-awareness-commit>
+
 <mat-card class="git-graph-card">
   <svg id="git-graph" (click)="selectedCommit=undefined"></svg>
 </mat-card>
