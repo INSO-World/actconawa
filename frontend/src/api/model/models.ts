@@ -1,4 +1,5 @@
 export * from './gitBranchDto';
+export * from './gitCommitDiffFileDto';
 export * from './gitCommitDto';
 export * from './gitCommitRelationshipDto';
 export * from './pageGitBranchDto';

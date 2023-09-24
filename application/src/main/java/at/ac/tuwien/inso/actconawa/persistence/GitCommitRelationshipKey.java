@@ -16,6 +16,14 @@ public class GitCommitRelationshipKey implements Serializable {
     @Column(name = "child_id", nullable = false)
     private UUID child;
 
+    public GitCommitRelationshipKey() {
+    }
+
+    public GitCommitRelationshipKey(UUID parent, UUID child) {
+        this.parent = parent;
+        this.child = child;
+    }
+
     public UUID getParent() {
         return parent;
     }

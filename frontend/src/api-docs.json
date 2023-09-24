@@ -41,6 +41,49 @@
                 }
             }
         },
+        "/commits/{commitId}/diff/{parentCommitId}": {
+            "get": {
+                "tags": [
+                    "git-commit-controller"
+                ],
+                "operationId": "findAllModifiedFiles",
+                "parameters": [
+                    {
+                        "name": "commitId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "parentCommitId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GitCommitDiffFileDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/commits/{commitId}/ancestors": {
             "get": {
                 "tags": [
@@ -242,12 +285,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
-                    },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
                     },
                     "empty": {
                         "type": "boolean"
@@ -286,11 +329,29 @@
                     "empty": {
                         "type": "boolean"
                     },
-                    "unsorted": {
-                        "type": "boolean"
-                    },
                     "sorted": {
                         "type": "boolean"
+                    },
+                    "unsorted": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "GitCommitDiffFileDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "newFilePath": {
+                        "type": "string"
+                    },
+                    "oldFilePath": {
+                        "type": "string"
+                    },
+                    "changeType": {
+                        "type": "string"
                     }
                 }
             },
@@ -341,12 +402,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
-                    },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
                     },
                     "empty": {
                         "type": "boolean"
@@ -409,12 +470,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
-                    },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
                     },
                     "empty": {
                         "type": "boolean"

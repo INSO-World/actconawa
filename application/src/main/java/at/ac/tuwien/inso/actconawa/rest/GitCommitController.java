@@ -1,6 +1,7 @@
 package at.ac.tuwien.inso.actconawa.rest;
 
 import at.ac.tuwien.inso.actconawa.api.CommitService;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,14 @@ public class GitCommitController {
     @GetMapping("/relations")
     public Page<GitCommitRelationshipDto> findAllCommitRelations(Pageable pageable) {
         return commitService.findAllRelations(pageable);
+    }
+
+    @GetMapping("/{commitId}/diff/{parentCommitId}")
+    public List<GitCommitDiffFileDto> findAllModifiedFiles(
+            @PathVariable UUID commitId,
+            @PathVariable UUID parentCommitId
+    ) {
+        return commitService.findModifiedFiles(commitId, parentCommitId);
     }
 
     @GetMapping("/{commitId}/ancestors")

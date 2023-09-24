@@ -1,5 +1,6 @@
 package at.ac.tuwien.inso.actconawa.api;
 
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,8 @@ public interface CommitService {
     Page<GitCommitDto> findAll(Pageable pageable);
 
     Page<GitCommitRelationshipDto> findAllRelations(Pageable pageable);
+
+    List<GitCommitDiffFileDto> findModifiedFiles(UUID gitCommitId, UUID parentCommitId);
 
 
     /**

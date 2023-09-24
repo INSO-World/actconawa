@@ -1,10 +1,12 @@
 package at.ac.tuwien.inso.actconawa.mapper;
 
 import at.ac.tuwien.inso.actconawa.dto.GitBranchDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
+import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -37,6 +39,8 @@ public interface GitMapper {
     @Mapping(source = "branches", target = "branchIds")
     @Mapping(target = "parentIds", expression = "java(getParentCommitIds(commit.getParents()))")
     GitCommitDto mapModelToDto(GitCommit commit);
+
+    GitCommitDiffFileDto mapModelToDto(GitCommitDiffFile gitCommitDiffFileDto);
 
     // TODO: This one is fishy
     default List<UUID> getParentCommitIds(List<GitCommitRelationship> gitCommitRelationships) {
