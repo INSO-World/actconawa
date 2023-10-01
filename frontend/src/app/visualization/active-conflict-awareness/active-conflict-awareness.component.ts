@@ -3,6 +3,7 @@ import {
   GitBranchControllerService,
   GitBranchDto,
   GitCommitControllerService,
+  GitCommitDiffFileDto,
   GitCommitDto
 } from '../../../api';
 import * as d3 from 'd3';
@@ -46,6 +47,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   protected commitInfo?: string;
 
   protected selectedCommit?: GitCommitDto;
+
+  // key is parents commit id
+  protected selectedCommitParentDiff = new Map<string, GitCommitDiffFileDto[]>;
 
   private graph: graphlib.Graph;
 
@@ -179,6 +183,18 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       console.log("clicked " + commitNodeId)
       const commitId = (commitNodeId as string).replace(this.COMMIT_NODE_ID_PREFIX, '');
       this.selectedCommit = this.commits.get(commitId);
+      this.selectedCommit?.parentIds?.forEach(parentId => {
+        this.gitCommitService.findAllModifiedFiles(commitId, parentId).subscribe({
+                  next: value => {
+                    this.selectedCommitParentDiff.set(parentId, value);
+                    console.log(value)
+                  },
+                  error: err => {
+                    console.error(err)
+                  }
+                }
+        )
+      })
       event.stopPropagation();
     });
   }

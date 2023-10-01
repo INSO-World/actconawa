@@ -19,6 +19,9 @@ import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.patch.FileHeader;
+import org.eclipse.jgit.patch.HunkHeader;
+import org.eclipse.jgit.patch.Patch;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -30,6 +33,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Duration;
@@ -39,6 +43,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -175,7 +180,7 @@ public class GitIndexingService {
                         relationship.setId(relationshipKey);
                         relationship.setDiff(getDiff(git, commit, parent));
                         relationships.add(relationship);
-                        commitDiffFiles.addAll(getDiffFileData(git, commit, parent, relationship));
+                        commitDiffFiles.addAll(processDiffData(git, commit, parent, relationship));
                     });
             gitCommit.setId(gitCommitRepository.save(gitCommit).getId());
             indexedCommitCount++;
@@ -215,28 +220,50 @@ public class GitIndexingService {
         }
     }
 
-    List<GitCommitDiffFile> getDiffFileData(Git git, RevCommit commit, RevCommit parentCommit, GitCommitRelationship gitCommitRelationship) {
-        var commitTreeId = commit.getTree().getId();
-        var parentTreeId = parentCommit.getTree().getId();
-        try (var reader = git.getRepository().newObjectReader()) {
-            var commitTree = new CanonicalTreeParser(null, reader, commitTreeId);
-            var parentCommitTree = new CanonicalTreeParser(null, reader, parentTreeId);
+    List<GitCommitDiffFile> processDiffData(Git git, RevCommit commit, RevCommit parentCommit, GitCommitRelationship gitCommitRelationship) {
+        try {
+            var p = new Patch();
+            p.parse(new ByteArrayInputStream(gitCommitRelationship.getDiff().getBytes()));
+            var entities = new ArrayList<GitCommitDiffFile>();
+            for (FileHeader fileHeader : p.getFiles()) {
+                LOG.info("Collecting hunk information for {} ", fileHeader.getNewPath());
+                var entity = new GitCommitDiffFile();
+                entity.setCommitRelationship(gitCommitRelationship);
+                entity.setNewFilePath(fileHeader.getNewPath());
+                entity.setOldFilePath(
+                        fileHeader.getChangeType() == DiffEntry.ChangeType.ADD
+                                ? null
+                                : fileHeader.getOldPath()
+                );
+                entity.setChangeType(fileHeader.getChangeType());
+                entities.add(entity);
+                if (fileHeader.getChangeType() != DiffEntry.ChangeType.ADD) {
+                    var blame = git.blame()
+                            .setStartCommit(parentCommit.getId())
+                            .setFollowFileRenames(true)
+                            .setFilePath(fileHeader.getOldPath())
+                            .call();
+                    for (HunkHeader hunk : fileHeader.getHunks()) {
+                        LOG.info("Processing {} {}", hunk.toString(), commit.getId().getName());
 
-            return git.diff()
-                    .setNewTree(commitTree)
-                    .setOldTree(parentCommitTree)
-                    .call().stream().map(change -> {
-                        var entity = new GitCommitDiffFile();
-                        entity.setCommitRelationship(gitCommitRelationship);
-                        entity.setNewFilePath(change.getNewPath());
-                        entity.setOldFilePath(
-                                change.getChangeType() == DiffEntry.ChangeType.ADD
-                                        ? null
-                                        : change.getOldPath()
-                        );
-                        entity.setChangeType(change.getChangeType());
-                        return entity;
-                    }).collect(Collectors.toList());
+                        blame.computeRange(hunk.getOldImage().getStartLine(),
+                                hunk.getOldImage().getLineCount());
+                        var line = hunk.getOldImage().getStartLine() - 1;
+                        var relatedAncestorCommits = new HashSet<RevCommit>();
+                        for (var i = 0; i < hunk.getOldImage().getLineCount(); ) {
+                            var srcCommit = blame.getSourceCommit(line + i++);
+                            relatedAncestorCommits.add(srcCommit);
+                        }
+                        // TODO: Persist the dependency information
+                        LOG.info("{} {} depends on {}",
+                                hunk.toString(),
+                                commit.getId().getName(),
+                                relatedAncestorCommits.stream().map(RevCommit::getName).collect(
+                                        Collectors.joining(",")));
+                    }
+                }
+            }
+            return entities;
         } catch (GitAPIException | IOException e) {
             // No information can be gathered for this commit
             LOG.error("Collecting modified/added files between {} and {} failed.",
