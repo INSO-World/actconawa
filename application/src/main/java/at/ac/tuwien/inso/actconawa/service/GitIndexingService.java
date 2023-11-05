@@ -81,22 +81,37 @@ public class GitIndexingService {
                 .call();
         final var remoteHeads = allRemoteBranches.stream()
                 .filter(x -> x.isSymbolic() && StringUtils.endsWith(x.getName(), "/HEAD"))
-                    .map(x -> x.getTarget().getName())
-                    .collect(Collectors.toSet());
+                .map(x -> x.getTarget().getName())
+                .collect(Collectors.toSet());
 
-            final var branches = new ArrayList<GitBranch>();
-            for (Ref remoteBranch : allRemoteBranches) {
-                if (remoteBranch.isSymbolic()) {
-                    continue;
-                }
-                var gitBranch = new GitBranch();
-                gitBranch.setRemoteHead(remoteHeads.contains(remoteBranch.getName()));
-                gitBranch.setName(StringUtils.removeStart(remoteBranch.getName(), "refs/remotes/"));
-                branches.add(gitBranch);
-
-                indexCommits(remoteBranch, gitBranch, commitCache);
+        final var branches = new ArrayList<GitBranch>();
+        final var branchMap = new HashMap<String, GitBranch>();
+        for (Ref remoteBranch : allRemoteBranches) {
+            if (remoteBranch.isSymbolic()) {
+                continue;
             }
-            gitBranchRepository.saveAll(branches);
+            var gitBranch = new GitBranch();
+            gitBranch.setRemoteHead(remoteHeads.contains(remoteBranch.getName()));
+            gitBranch.setName(StringUtils.removeStart(remoteBranch.getName(), "refs/remotes/"));
+            branches.add(gitBranch);
+            branchMap.put(remoteBranch.getName(), gitBranch);
+
+            indexCommits(remoteBranch, gitBranch, commitCache);
+        }
+        gitBranchRepository.saveAll(branches);
+        for (var commitCacheEntry : commitCache.entrySet()) {
+            var branchesOfCommit = git.branchList()
+                    .setListMode(ListBranchCommand.ListMode.REMOTE)
+                    .setContains(commitCacheEntry.getKey()).call()
+                    .stream()
+                    .map(x -> x.getObjectId().getName())
+                    .map(branchMap::get)
+                    .toList();
+            if (commitCacheEntry.getValue().getBranches() == null) {
+                commitCacheEntry.getValue().setBranches(new ArrayList<>());
+            }
+            commitCacheEntry.getValue().getBranches().addAll(branchesOfCommit);
+        }
 
         LOG.info("Done indexing {} branches in {}",
                 branches.size(),
@@ -122,7 +137,6 @@ public class GitIndexingService {
             if (commitCache.containsKey(commit.getId().getName())) {
                 var cachedCommit = commitCache.get(commit.getId().getName());
                 if (cachedCommit.getId() != null) {
-                    cachedCommit.getBranches().add(gitBranch);
                     if (!headCommitProcessed) {
                         gitBranch.setHeadCommit(cachedCommit);
                         headCommitProcessed = true;
@@ -143,10 +157,6 @@ public class GitIndexingService {
             gitCommit.setCommitDate(LocalDateTime.ofEpochSecond(commit.getCommitTime(),
                     0,
                     ZoneOffset.UTC));
-            if (gitCommit.getBranches() == null) {
-                gitCommit.setBranches(new ArrayList<>());
-            }
-            gitCommit.getBranches().add(gitBranch);
             if (!headCommitProcessed) {
                 gitBranch.setHeadCommit(gitCommit);
                 headCommitProcessed = true;
