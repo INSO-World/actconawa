@@ -43,15 +43,18 @@ public class GitDependencyIndexingService {
 
     private final GitCommitService gitCommitService;
 
+    private final GitDiffService gitDiffService;
+
     private final GitCommitDiffHunkRepository gitDiffHunkRepository;
 
     private final GitCommitDiffFileRepository gitCommitDiffFileRepository;
 
     private final GitCommitRelationshipRepository gitCommitRelationshipRepository;
 
-    public GitDependencyIndexingService(Git git, GitCommitService gitCommitService, GitCommitDiffHunkRepository gitDiffHunkRepository, GitCommitDiffFileRepository gitCommitDiffFileRepository, GitCommitRelationshipRepository gitCommitRelationshipRepository) {
+    public GitDependencyIndexingService(Git git, GitCommitService gitCommitService, GitDiffService gitDiffService, GitCommitDiffHunkRepository gitDiffHunkRepository, GitCommitDiffFileRepository gitCommitDiffFileRepository, GitCommitRelationshipRepository gitCommitRelationshipRepository) {
         this.git = git;
         this.gitCommitService = gitCommitService;
+        this.gitDiffService = gitDiffService;
         this.gitDiffHunkRepository = gitDiffHunkRepository;
         this.gitCommitDiffFileRepository = gitCommitDiffFileRepository;
         this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
@@ -121,10 +124,10 @@ public class GitDependencyIndexingService {
         try {
             var p = new Patch();
             if (parentCommit != null) {
-                p.parse(new ByteArrayInputStream(gitCommitService.getDiff(commit, parentCommit)
+                p.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit, parentCommit)
                         .getBytes()));
             } else {
-                p.parse(new ByteArrayInputStream(gitCommitService.getDiff(commit)
+                p.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit)
                         .getBytes()));
             }
             var entities = new ArrayList<GitCommitDiffFile>();

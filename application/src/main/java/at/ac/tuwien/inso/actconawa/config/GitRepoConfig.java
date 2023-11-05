@@ -23,6 +23,7 @@ public class GitRepoConfig {
 
     @Bean
     public Repository repository() throws IOException {
+        // FileRepository is threadsafe.
         return new FileRepository(repo);
     }
 
