@@ -11,10 +11,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.eclipse.jgit.diff.DiffEntry;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -40,6 +42,9 @@ public class GitCommitDiffFile implements Serializable {
 
     @Enumerated(value = EnumType.STRING)
     private DiffEntry.ChangeType changeType;
+
+    @OneToMany(mappedBy = "diffFile")
+    private List<GitCommitDiffHunk> gitCommitDiffHunks;
 
     public GitCommitDiffFile() {
     }
@@ -82,5 +87,13 @@ public class GitCommitDiffFile implements Serializable {
 
     public void setChangeType(DiffEntry.ChangeType changeType) {
         this.changeType = changeType;
+    }
+
+    public List<GitCommitDiffHunk> getGitCommitDiffHunks() {
+        return gitCommitDiffHunks;
+    }
+
+    public void setGitCommitDiffHunks(List<GitCommitDiffHunk> gitCommitDiffHunks) {
+        this.gitCommitDiffHunks = gitCommitDiffHunks;
     }
 }

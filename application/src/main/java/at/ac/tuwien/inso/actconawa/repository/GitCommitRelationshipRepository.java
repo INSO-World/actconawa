@@ -1,5 +1,6 @@
 package at.ac.tuwien.inso.actconawa.repository;
 
+import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationshipKey;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,11 @@ import java.util.UUID;
 
 public interface GitCommitRelationshipRepository
         extends JpaRepository<GitCommitRelationship, GitCommitRelationshipKey> {
+
+    @Query(value = "select c"
+            + " from GitCommit c"
+            + " where c.id not in (select cr.child.id from GitCommitRelationship cr)")
+    List<GitCommit> findRootCommits();
 
     @Query(value = "WITH RECURSIVE linked_entries(parent_id, child_id) AS (\n"
             + "  SELECT parent_id  , child_id\n"
