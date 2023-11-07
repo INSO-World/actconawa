@@ -1,9 +1,10 @@
 package at.ac.tuwien.inso.actconawa.dto;
 
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class GitCommitRelationshipDto {
+public class GitCommitRelationshipDto implements Serializable {
 
     private UUID parentId;
 

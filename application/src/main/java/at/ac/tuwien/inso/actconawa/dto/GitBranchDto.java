@@ -1,8 +1,9 @@
 package at.ac.tuwien.inso.actconawa.dto;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class GitBranchDto {
+public class GitBranchDto implements Serializable {
 
     private UUID id;
 

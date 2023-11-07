@@ -2,11 +2,13 @@ package at.ac.tuwien.inso.actconawa.mapper;
 
 import at.ac.tuwien.inso.actconawa.dto.GitBranchDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
+import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,6 +28,10 @@ public interface GitMapper {
         return branch.getId();
     }
 
+    default UUID idFromModel(GitCommitDiffFile diffFile) {
+        return diffFile.getId();
+    }
+
     @Mapping(source = "headCommit", target = "headCommitId")
     @Mapping(source = "remoteHead", target = "remoteHead")
     @Mapping(source = "containingExclusiveCommits", target = "containingExclusiveCommits")
@@ -40,9 +46,12 @@ public interface GitMapper {
     @Mapping(target = "parentIds", expression = "java(getParentCommitIds(commit.getParents()))")
     GitCommitDto mapModelToDto(GitCommit commit);
 
-    GitCommitDiffFileDto mapModelToDto(GitCommitDiffFile gitCommitDiffFileDto);
+    GitCommitDiffFileDto mapModelToDto(GitCommitDiffFile gitCommitDiffFile);
 
-    // TODO: This one is fishy
+    @Mapping(source = "diffFile", target = "diffFileId")
+    @Mapping(source = "dependencies", target = "commitDependencyIds")
+    GitCommitDiffHunkDto mapModelToDto(GitCommitDiffHunk gitCommitDiffFile);
+
     default List<UUID> getParentCommitIds(List<GitCommitRelationship> gitCommitRelationships) {
         return gitCommitRelationships.stream()
                 .map(x -> x.getId().getParent()).collect(Collectors.toList());

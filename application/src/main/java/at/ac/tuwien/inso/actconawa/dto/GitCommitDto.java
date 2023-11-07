@@ -1,11 +1,12 @@
 package at.ac.tuwien.inso.actconawa.dto;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 
-public class GitCommitDto {
+public class GitCommitDto implements Serializable {
 
     private UUID id;
 

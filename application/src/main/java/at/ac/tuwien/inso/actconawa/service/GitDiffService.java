@@ -1,6 +1,9 @@
 package at.ac.tuwien.inso.actconawa.service;
 
 import at.ac.tuwien.inso.actconawa.api.DiffService;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
+import at.ac.tuwien.inso.actconawa.mapper.GitMapper;
+import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -12,6 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class GitDiffService implements DiffService {
@@ -20,8 +26,17 @@ public class GitDiffService implements DiffService {
 
     private final Git git;
 
-    public GitDiffService(Git git) {
+    private final GitCommitDiffHunkRepository gitCommitDiffHunkRepository;
+
+
+    private final GitMapper gitMapper;
+
+    public GitDiffService(Git git,
+            GitCommitDiffHunkRepository gitCommitDiffHunkRepository,
+            GitMapper gitMapper) {
         this.git = git;
+        this.gitCommitDiffHunkRepository = gitCommitDiffHunkRepository;
+        this.gitMapper = gitMapper;
     }
 
     @Override
@@ -67,6 +82,13 @@ public class GitDiffService implements DiffService {
                     e);
             return null;
         }
+    }
+
+    @Override
+    public List<GitCommitDiffHunkDto> findGitCommitDiffHunksByDiffFileId(UUID commitDiffFileId) {
+        return gitCommitDiffHunkRepository.findByCommitDiffFile(commitDiffFileId).stream()
+                .map(gitMapper::mapModelToDto)
+                .collect(Collectors.toList());
     }
 
 }
