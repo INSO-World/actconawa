@@ -23,19 +23,30 @@
         <jgit.version>6.5.0.202303070854</jgit.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
+        <java-parser.version>3.25.6</java-parser.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-        <dependency>
-            <groupId>org.eclipse.jgit</groupId>
-            <artifactId>org.eclipse.jgit</artifactId>
-            <version>${jgit.version}-r</version>
-        </dependency>
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>${jgit.version}-r</version>
+            </dependency>
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.javaparser</groupId>
+                <artifactId>javaparser-symbol-solver-core</artifactId>
+                <version>${java-parser.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.javaparser</groupId>
+                <artifactId>javaparser-core-serialization</artifactId>
+                <version>${java-parser.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
