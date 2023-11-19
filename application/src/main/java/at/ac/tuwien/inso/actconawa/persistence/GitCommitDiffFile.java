@@ -37,8 +37,14 @@ public class GitCommitDiffFile implements Serializable {
     @Column(nullable = false)
     private String newFilePath;
 
+    @Column(nullable = false)
+    private String newFileObjectId;
+
     @Column
     private String oldFilePath;
+
+    @Column
+    private String oldFileObjectId;
 
     @Enumerated(value = EnumType.STRING)
     private DiffEntry.ChangeType changeType;
@@ -73,12 +79,28 @@ public class GitCommitDiffFile implements Serializable {
         this.newFilePath = newFilePath;
     }
 
+    public String getNewFileObjectId() {
+        return newFileObjectId;
+    }
+
+    public void setNewFileObjectId(String newFileObjectId) {
+        this.newFileObjectId = newFileObjectId;
+    }
+
     public String getOldFilePath() {
         return oldFilePath;
     }
 
     public void setOldFilePath(String oldFilePath) {
         this.oldFilePath = oldFilePath;
+    }
+
+    public String getOldFileObjectId() {
+        return oldFileObjectId;
+    }
+
+    public void setOldFileObjectId(String oldFileObjectId) {
+        this.oldFileObjectId = oldFileObjectId;
     }
 
     public DiffEntry.ChangeType getChangeType() {

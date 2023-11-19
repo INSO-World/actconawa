@@ -8,10 +8,17 @@ import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffFileRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.Position;
+import com.github.javaparser.Range;
+import com.github.javaparser.ast.Node;
 import jakarta.annotation.Nullable;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.lib.AbbreviatedObjectId;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.patch.Patch;
@@ -24,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +39,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
+
+import static com.github.javaparser.ParseStart.COMPILATION_UNIT;
+import static com.github.javaparser.Providers.provider;
 
 
 @Service
@@ -98,6 +111,7 @@ public class GitDependencyIndexingService {
 
         gitCommitDiffFileRepository.saveAll(commitDiffFiles);
 
+        indexMethods();
         LOG.info("Indexing dependency info done");
     }
 
@@ -121,7 +135,7 @@ public class GitDependencyIndexingService {
             @Nullable RevCommit parentCommit,
             @Nullable GitCommitRelationship gitCommitRelationship
     ) {
-        try {
+        try (var gitObjectReader = git.getRepository().newObjectReader()) {
             var p = new Patch();
             if (parentCommit != null) {
                 p.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit, parentCommit)
@@ -136,11 +150,17 @@ public class GitDependencyIndexingService {
                 var entity = new GitCommitDiffFile();
                 entity.setCommitRelationship(gitCommitRelationship);
                 entity.setNewFilePath(fileHeader.getNewPath());
+                entity.setNewFileObjectId(resolveObjectId(gitObjectReader,
+                        fileHeader.getNewId()).getName());
                 entity.setOldFilePath(
                         fileHeader.getChangeType() == DiffEntry.ChangeType.ADD
                                 ? null
                                 : fileHeader.getOldPath()
                 );
+                if (fileHeader.getChangeType() != DiffEntry.ChangeType.ADD) {
+                    entity.setOldFileObjectId(resolveObjectId(gitObjectReader,
+                            fileHeader.getOldId()).getName());
+                }
                 entity.setChangeType(fileHeader.getChangeType());
                 entities.add(entity);
                 // Check for parentCommit != null is not necessary, since root commits must be ADD.
@@ -188,6 +208,68 @@ public class GitDependencyIndexingService {
             );
             return new ArrayList<>();
         }
+    }
+
+    public void indexMethods() {
+        for (GitCommitDiffFile commitDiffFile : this.gitCommitDiffFileRepository.findAll()) {
+            try (var or = git.getRepository().newObjectReader()) {
+                var ol = or.open(ObjectId.fromString(commitDiffFile.getNewFileObjectId()));
+                var file = new String(ol.getBytes());
+                LOG.debug("Successfully loaded file {} at {}",
+                        commitDiffFile.getNewFilePath(),
+                        commitDiffFile.getCommitRelationship().getChild().getSha());
+                if (commitDiffFile.getNewFilePath().endsWith(".java")) {
+                    new JavaParser().parse(COMPILATION_UNIT, provider(file)).ifSuccessful(cu ->
+                            cu.getTypes().forEach(typeDeclaration -> {
+                                Optional.ofNullable(commitDiffFile.getGitCommitDiffHunks())
+                                        .orElse(List.of())
+                                        .forEach(gitCommitDiffHunk -> {
+                                            var start = gitCommitDiffHunk.getNewStartLine();
+                                            var end = gitCommitDiffHunk.getNewStartLine()
+                                                    + gitCommitDiffHunk.getNewLineCount();
+                                            LOG.debug("Find whats happening between {} and {}",
+                                                    start,
+                                                    end);
+                                            // TODO: More than depth == 1?
+                                            var map = new TreeMap<Integer, String>();
+                                            typeDeclaration.getChildNodes().stream()
+                                                    .map(x -> x.getClass().getName()
+                                                            + " "
+                                                            + x.getRange())
+                                                    .forEach(LOG::trace);
+                                            for (Node x : typeDeclaration.getChildNodes()) {
+                                                var isInRange = x.getRange()
+                                                        .map(range -> range
+                                                                .overlapsWith(new Range(
+                                                                        new Position(start, 0),
+                                                                        new Position(end,
+                                                                                Integer.MAX_VALUE))))
+                                                        .orElse(false);
+                                                LOG.debug("{} is in range {}",
+                                                        x.getClass().getName(),
+                                                        isInRange);
+                                            }
+
+
+                                        });
+                            })
+                    );
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
+
+    private ObjectId resolveObjectId(
+            ObjectReader objectReader,
+            AbbreviatedObjectId abbreviatedObjectId
+    ) throws IOException {
+        return objectReader.resolve(abbreviatedObjectId)
+                .stream()
+                .findFirst()
+                .orElseThrow(FileNotFoundException::new);
     }
 
 }
