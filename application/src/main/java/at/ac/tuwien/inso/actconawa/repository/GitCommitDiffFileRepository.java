@@ -10,8 +10,8 @@ import java.util.UUID;
 public interface GitCommitDiffFileRepository extends JpaRepository<GitCommitDiffFile, UUID> {
 
     @Query("select d from GitCommitDiffFile d where"
-            + " d.commitRelationship.id.child = :commitId and"
-            + " d.commitRelationship.id.parent = :parentId"
+            + " d.commitRelationship.child.id = :commitId and"
+            + " d.commitRelationship.parent.id = :parentId"
     )
     List<GitCommitDiffFile> findByCommitAndParent(UUID commitId, UUID parentId);
 

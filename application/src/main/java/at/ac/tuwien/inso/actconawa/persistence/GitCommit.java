@@ -41,7 +41,7 @@ public class GitCommit implements Serializable {
     @Column(nullable = false)
     private LocalDateTime commitDate;
 
-    @Lazy
+
     @OneToMany(mappedBy = "child", cascade = CascadeType.PERSIST)
     private List<GitCommitRelationship> parents;
 

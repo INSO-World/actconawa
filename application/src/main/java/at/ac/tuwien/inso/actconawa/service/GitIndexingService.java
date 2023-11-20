@@ -4,17 +4,18 @@ import at.ac.tuwien.inso.actconawa.events.CommitIndexingDoneEvent;
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
-import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationshipKey;
 import at.ac.tuwien.inso.actconawa.repository.GitBranchRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRepository;
 import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.slf4j.Logger;
@@ -30,9 +31,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -161,24 +160,28 @@ public class GitIndexingService {
                 gitBranch.setHeadCommit(gitCommit);
                 headCommitProcessed = true;
             }
-            Optional.ofNullable(commit.getParents()).stream()
-                    .flatMap(Arrays::stream)
-                    .forEach(parent -> {
-                        commitCache.putIfAbsent(parent.getId().getName(), new GitCommit());
-                        var parentCommit = commitCache.get(parent.getId().getName());
-                        var relationship = new GitCommitRelationship();
-                        var relationshipKey = new GitCommitRelationshipKey();
-                        relationship.setChild(gitCommit);
-                        relationship.setParent(parentCommit);
-                        relationship.setId(relationshipKey);
-                        relationships.add(relationship);
-                    });
+            var parents = commit.getParents();
+            if (ArrayUtils.isNotEmpty(parents)) {
+                for (RevCommit parent : parents) {
+                    commitCache.putIfAbsent(parent.getId().getName(), new GitCommit());
+                    var parentCommit = commitCache.get(parent.getId().getName());
+                    var relationship = new GitCommitRelationship();
+                    relationship.setChild(gitCommit);
+                    relationship.setParent(parentCommit);
+                    relationships.add(relationship);
+                }
+            } else {
+                var relationship = new GitCommitRelationship();
+                relationship.setChild(gitCommit);
+                relationships.add(relationship);
+            }
+
             gitCommit.setId(gitCommitRepository.save(gitCommit).getId());
             indexedCommitCount++;
         }
         relationships.forEach(x -> {
-            x.getId().setChild(x.getChild().getId());
-            x.getId().setParent(x.getParent().getId());
+            x.setChild(x.getChild());
+            x.setParent(x.getParent() == null ? null : x.getParent());
         });
         gitCommitRelationshipRepository.saveAllAndFlush(relationships);
         gitBranch.setContainingExclusiveCommits(indexedCommitCount != 0);

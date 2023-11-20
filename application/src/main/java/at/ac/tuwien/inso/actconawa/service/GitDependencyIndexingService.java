@@ -84,13 +84,10 @@ public class GitDependencyIndexingService {
         // Generic commits
         gitCommitRelationshipRepository.findAll().forEach(cr -> {
             commitCache.putIfAbsent(cr.getChild().getSha(), cr.getChild());
-            commitCache.putIfAbsent(cr.getParent().getSha(), cr.getParent());
+            if (cr.getParent() != null) {
+                commitCache.putIfAbsent(cr.getParent().getSha(), cr.getParent());
+            }
             commitDiffFiles.addAll(processDiffData(cr));
-        });
-        // Root commits
-        gitCommitRelationshipRepository.findRootCommits().forEach(c -> {
-            commitCache.putIfAbsent(c.getSha(), c);
-            commitDiffFiles.addAll(processDiffData(c));
         });
         // TODO: Empty commits?
 
@@ -114,19 +111,16 @@ public class GitDependencyIndexingService {
         indexMethods();
         LOG.info("Indexing dependency info done");
     }
-
-    private List<GitCommitDiffFile> processDiffData(GitCommit gitCommit) {
-        var commit = gitCommitService
-                .getRevCommitByGitCommitId(gitCommit.getId());
-        return processDiffData(commit, null, null);
-    }
-
     private List<GitCommitDiffFile> processDiffData(GitCommitRelationship gitCommitRelationship) {
         var commit = gitCommitService
                 .getRevCommitByGitCommitId(gitCommitRelationship.getChild().getId());
-        var parentCommit = gitCommitService
-                .getRevCommitByGitCommitId(gitCommitRelationship.getParent().getId());
-        return processDiffData(commit, parentCommit, gitCommitRelationship);
+        if (gitCommitRelationship.getParent() != null) {
+            var parentCommit = gitCommitService
+                    .getRevCommitByGitCommitId(gitCommitRelationship.getParent().getId());
+            return processDiffData(commit, parentCommit, gitCommitRelationship);
+        } else {
+            return processDiffData(commit, null, gitCommitRelationship);
+        }
 
     }
 
@@ -204,7 +198,9 @@ public class GitDependencyIndexingService {
         } catch (GitAPIException | IOException e) {
             // No information can be gathered for this commit
             LOG.error("Collecting modified/added files between {} and {} failed.",
-                    commit.getId().getName(), parentCommit.getId().getName(), e
+                    commit.getId().getName(),
+                    parentCommit == null ? "root" : parentCommit.getId().getName(),
+                    e
             );
             return new ArrayList<>();
         }
@@ -250,7 +246,6 @@ public class GitDependencyIndexingService {
                                                         isInRange);
                                             }
 
-
                                         });
                             })
                     );
@@ -259,7 +254,6 @@ public class GitDependencyIndexingService {
                 throw new RuntimeException(e);
             }
         }
-
     }
 
     private ObjectId resolveObjectId(
