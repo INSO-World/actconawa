@@ -14,6 +14,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -54,7 +55,10 @@ public interface GitMapper {
 
     default List<UUID> getParentCommitIds(List<GitCommitRelationship> gitCommitRelationships) {
         return gitCommitRelationships.stream()
-                .map(x -> x.getId().getParent()).collect(Collectors.toList());
+                .map(GitCommitRelationship::getParent)
+                .filter(Objects::nonNull)
+                .map(GitCommit::getId)
+                .collect(Collectors.toList());
     }
 
 

@@ -92,7 +92,7 @@ public class GitCommitService implements CommitService {
         var commit = gitCommitRepository.findById(gitCommitId)
                 .orElseThrow(CommitNotFoundException::new);
 
-        for (int depth = 0; depth <= maxDepth; depth++) {
+        for (int depth = 0; depth <= maxDepth && commit != null; depth++) {
             if (Optional.ofNullable(commit.getParents()).map(List::size).orElse(0) > 0) {
                 result.add(gitMapper.mapModelToDto(commit));
                 if (commit.getParents().size() > 1) {
