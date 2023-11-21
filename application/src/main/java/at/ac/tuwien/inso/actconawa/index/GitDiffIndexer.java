@@ -1,4 +1,4 @@
-package at.ac.tuwien.inso.actconawa.service;
+package at.ac.tuwien.inso.actconawa.index;
 
 import at.ac.tuwien.inso.actconawa.events.CommitIndexingDoneEvent;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
@@ -8,10 +8,8 @@ import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffFileRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.Position;
-import com.github.javaparser.Range;
-import com.github.javaparser.ast.Node;
+import at.ac.tuwien.inso.actconawa.service.GitCommitService;
+import at.ac.tuwien.inso.actconawa.service.GitDiffService;
 import jakarta.annotation.Nullable;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -26,7 +24,8 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -39,18 +38,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static com.github.javaparser.ParseStart.COMPILATION_UNIT;
-import static com.github.javaparser.Providers.provider;
 
+@Component
+@Order(2)
+public class GitDiffIndexer implements Indexer {
 
-@Service
-public class GitDependencyIndexingService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(GitDependencyIndexingService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GitDiffIndexer.class);
 
     private final Git git;
 
@@ -64,7 +59,7 @@ public class GitDependencyIndexingService {
 
     private final GitCommitRelationshipRepository gitCommitRelationshipRepository;
 
-    public GitDependencyIndexingService(Git git, GitCommitService gitCommitService, GitDiffService gitDiffService, GitCommitDiffHunkRepository gitDiffHunkRepository, GitCommitDiffFileRepository gitCommitDiffFileRepository, GitCommitRelationshipRepository gitCommitRelationshipRepository) {
+    public GitDiffIndexer(Git git, GitCommitService gitCommitService, GitDiffService gitDiffService, GitCommitDiffHunkRepository gitDiffHunkRepository, GitCommitDiffFileRepository gitCommitDiffFileRepository, GitCommitRelationshipRepository gitCommitRelationshipRepository) {
         this.git = git;
         this.gitCommitService = gitCommitService;
         this.gitDiffService = gitDiffService;
@@ -76,9 +71,7 @@ public class GitDependencyIndexingService {
 
     @EventListener(CommitIndexingDoneEvent.class)
     @Transactional
-    public void indexDependencies() {
-        LOG.info("Start indexing dependency information");
-
+    public void index() {
         var commitDiffFiles = new ArrayList<GitCommitDiffFile>();
         var commitCache = new HashMap<String, GitCommit>();
         // Generic commits
@@ -107,10 +100,13 @@ public class GitDependencyIndexingService {
                         .collect(Collectors.toList()));
 
         gitCommitDiffFileRepository.saveAll(commitDiffFiles);
-
-        indexMethods();
-        LOG.info("Indexing dependency info done");
     }
+
+    @Override
+    public String getIndexedContentDescription() {
+        return "git diff and hunk dependency information";
+    }
+
     private List<GitCommitDiffFile> processDiffData(GitCommitRelationship gitCommitRelationship) {
         var commit = gitCommitService
                 .getRevCommitByGitCommitId(gitCommitRelationship.getChild().getId());
@@ -121,7 +117,6 @@ public class GitDependencyIndexingService {
         } else {
             return processDiffData(commit, null, gitCommitRelationship);
         }
-
     }
 
     private List<GitCommitDiffFile> processDiffData(
@@ -203,56 +198,6 @@ public class GitDependencyIndexingService {
                     e
             );
             return new ArrayList<>();
-        }
-    }
-
-    public void indexMethods() {
-        for (GitCommitDiffFile commitDiffFile : this.gitCommitDiffFileRepository.findAll()) {
-            try (var or = git.getRepository().newObjectReader()) {
-                var ol = or.open(ObjectId.fromString(commitDiffFile.getNewFileObjectId()));
-                var file = new String(ol.getBytes());
-                LOG.debug("Successfully loaded file {} at {}",
-                        commitDiffFile.getNewFilePath(),
-                        commitDiffFile.getCommitRelationship().getChild().getSha());
-                if (commitDiffFile.getNewFilePath().endsWith(".java")) {
-                    new JavaParser().parse(COMPILATION_UNIT, provider(file)).ifSuccessful(cu ->
-                            cu.getTypes().forEach(typeDeclaration -> {
-                                Optional.ofNullable(commitDiffFile.getGitCommitDiffHunks())
-                                        .orElse(List.of())
-                                        .forEach(gitCommitDiffHunk -> {
-                                            var start = gitCommitDiffHunk.getNewStartLine();
-                                            var end = gitCommitDiffHunk.getNewStartLine()
-                                                    + gitCommitDiffHunk.getNewLineCount();
-                                            LOG.debug("Find whats happening between {} and {}",
-                                                    start,
-                                                    end);
-                                            // TODO: More than depth == 1?
-                                            var map = new TreeMap<Integer, String>();
-                                            typeDeclaration.getChildNodes().stream()
-                                                    .map(x -> x.getClass().getName()
-                                                            + " "
-                                                            + x.getRange())
-                                                    .forEach(LOG::trace);
-                                            for (Node x : typeDeclaration.getChildNodes()) {
-                                                var isInRange = x.getRange()
-                                                        .map(range -> range
-                                                                .overlapsWith(new Range(
-                                                                        new Position(start, 0),
-                                                                        new Position(end,
-                                                                                Integer.MAX_VALUE))))
-                                                        .orElse(false);
-                                                LOG.debug("{} is in range {}",
-                                                        x.getClass().getName(),
-                                                        isInRange);
-                                            }
-
-                                        });
-                            })
-                    );
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
