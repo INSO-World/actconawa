@@ -1,6 +1,7 @@
-package at.ac.tuwien.inso.actconawa.service;
+package at.ac.tuwien.inso.actconawa.index;
 
-import at.ac.tuwien.inso.actconawa.events.CommitIndexingDoneEvent;
+import at.ac.tuwien.inso.actconawa.exception.IndexingGitApiException;
+import at.ac.tuwien.inso.actconawa.exception.IndexingIOException;
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
@@ -20,25 +21,22 @@ import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
-@Service
-public class GitIndexingService {
+@Component
+@Order(1)
+public class GitCommitIndexer implements Indexer {
 
 
-    private static final Logger LOG = LoggerFactory.getLogger(GitIndexingService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GitCommitIndexer.class);
 
     private final GitBranchRepository gitBranchRepository;
 
@@ -50,28 +48,36 @@ public class GitIndexingService {
 
     private final Repository repository;
 
-    private final ApplicationEventPublisher applicationEventPublisher;
-
-
-    public GitIndexingService(
+    public GitCommitIndexer(
             GitBranchRepository gitBranchRepository,
             GitCommitRepository gitCommitRepository,
             GitCommitRelationshipRepository gitCommitRelationshipRepository,
-            Git git,
-            ApplicationEventPublisher applicationEventPublisher) {
+            Git git) {
         this.gitBranchRepository = gitBranchRepository;
         this.gitCommitRepository = gitCommitRepository;
         this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
         this.git = git;
         this.repository = git.getRepository();
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    @EventListener(ApplicationReadyEvent.class)
     @Transactional
-    public void index() throws IOException, GitAPIException {
+    public void index() {
+        try {
+            indexInternal();
+        } catch (GitAPIException e) {
+            throw new IndexingGitApiException(e);
+        } catch (IOException e) {
+            throw new IndexingIOException(e);
+        }
+    }
+
+    @Override
+    public String getIndexedContentDescription() {
+        return "commit and branch information";
+    }
+
+    private void indexInternal() throws GitAPIException, IOException {
         var commitCache = new HashMap<String, GitCommit>();
-        var startTimestamp = Instant.now();
         LOG.info("Starting indexing of {}", repository.getDirectory());
 
         LOG.info("Start indexing branches");
@@ -111,18 +117,12 @@ public class GitIndexingService {
             }
             commitCacheEntry.getValue().getBranches().addAll(branchesOfCommit);
         }
-
-        LOG.info("Done indexing {} branches in {}",
-                branches.size(),
-                Duration.between(startTimestamp, Instant.now()));
-        applicationEventPublisher.publishEvent(new CommitIndexingDoneEvent(this));
     }
 
     private void indexCommits(
             Ref remoteBranchRef,
             GitBranch gitBranch,
-            HashMap<String, GitCommit> commitCache)
-            throws IOException {
+            HashMap<String, GitCommit> commitCache) throws IOException {
         var revWalk = new RevWalk(repository);
         revWalk.sort(RevSort.TOPO);
         revWalk.markStart(revWalk.parseCommit(remoteBranchRef.getObjectId()));
