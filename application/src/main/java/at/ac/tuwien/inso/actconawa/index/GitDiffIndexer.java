@@ -13,6 +13,7 @@ import at.ac.tuwien.inso.actconawa.service.GitDiffService;
 import jakarta.annotation.Nullable;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.AbbreviatedObjectId;
 import org.eclipse.jgit.lib.ObjectId;
@@ -152,26 +153,26 @@ public class GitDiffIndexer implements Indexer {
                 }
                 entity.setChangeType(fileHeader.getChangeType());
                 entities.add(entity);
-                // Check for parentCommit != null is not necessary, since root commits must be ADD.
-                // However, to not show warnings in the ide, this check is added.
-                if (fileHeader.getChangeType() != DiffEntry.ChangeType.ADD
-                        && parentCommit != null) {
-                    entity.setGitCommitDiffHunks(new ArrayList<>());
-                    var blame = git.blame()
-                            .setStartCommit(parentCommit.getId())
-                            .setFollowFileRenames(true)
-                            .setFilePath(fileHeader.getOldPath())
-                            .call();
-                    for (HunkHeader hunk : fileHeader.getHunks()) {
-                        LOG.info("Processing {} {}", hunk.toString(), commit.getId().getName());
-                        var hunkEntity = new GitCommitDiffHunk();
-                        hunkEntity.setNewStartLine(hunk.getNewStartLine());
-                        hunkEntity.setNewLineCount(hunk.getNewLineCount());
-                        hunkEntity.setOldStartLine(hunk.getOldImage().getStartLine());
-                        hunkEntity.setOldLineCount(hunk.getOldImage().getLineCount());
-                        hunkEntity.setDependencyCommitShaSet(new HashSet<>());
-                        hunkEntity.setDiffFile(entity);
-                        entity.getGitCommitDiffHunks().add(hunkEntity);
+                entity.setGitCommitDiffHunks(new ArrayList<>());
+                BlameResult blame = null;
+                for (HunkHeader hunk : fileHeader.getHunks()) {
+                    LOG.info("Processing {} {}", hunk.toString(), commit.getId().getName());
+                    var hunkEntity = new GitCommitDiffHunk();
+                    hunkEntity.setNewStartLine(hunk.getNewStartLine());
+                    hunkEntity.setNewLineCount(hunk.getNewLineCount());
+                    hunkEntity.setOldStartLine(hunk.getOldImage().getStartLine());
+                    hunkEntity.setOldLineCount(hunk.getOldImage().getLineCount());
+                    hunkEntity.setDependencyCommitShaSet(new HashSet<>());
+                    hunkEntity.setDiffFile(entity);
+                    entity.getGitCommitDiffHunks().add(hunkEntity);
+                    if (fileHeader.getChangeType() != DiffEntry.ChangeType.ADD && parentCommit != null) {
+                        if (blame == null) {
+                            blame = git.blame()
+                                    .setStartCommit(parentCommit.getId())
+                                    .setFollowFileRenames(true)
+                                    .setFilePath(fileHeader.getOldPath())
+                                    .call();
+                        }
                         blame.computeRange(hunk.getOldImage().getStartLine(),
                                 hunk.getOldImage().getLineCount());
                         var line = hunk.getOldImage().getStartLine() - 1;
@@ -188,6 +189,7 @@ public class GitDiffIndexer implements Indexer {
                                         Collectors.joining(",")));
                     }
                 }
+
             }
             return entities;
         } catch (GitAPIException | IOException e) {
