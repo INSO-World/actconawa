@@ -1,6 +1,6 @@
 package at.ac.tuwien.inso.actconawa.index;
 
-import at.ac.tuwien.inso.actconawa.index.language.LanguageIndexModule;
+import at.ac.tuwien.inso.actconawa.index.language.java.LanguageIndexModule;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffFileRepository;
 import jakarta.transaction.Transactional;
