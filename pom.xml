@@ -24,6 +24,9 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
         <java-parser.version>3.25.6</java-parser.version>
+        <antlr.version>4.10.1</antlr.version>
+        <mojo.version>3.0.0</mojo.version>
+        <commons-lang3.version>3.13.0</commons-lang3.version>
     </properties>
 
     <dependencyManagement>
@@ -39,14 +42,9 @@
                 <version>${mapstruct.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.github.javaparser</groupId>
-                <artifactId>javaparser-symbol-solver-core</artifactId>
-                <version>${java-parser.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.javaparser</groupId>
-                <artifactId>javaparser-core-serialization</artifactId>
-                <version>${java-parser.version}</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>

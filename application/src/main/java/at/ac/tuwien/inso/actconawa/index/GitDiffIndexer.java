@@ -1,6 +1,5 @@
 package at.ac.tuwien.inso.actconawa.index;
 
-import at.ac.tuwien.inso.actconawa.events.CommitIndexingDoneEvent;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
@@ -24,7 +23,6 @@ import org.eclipse.jgit.patch.Patch;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,8 +67,6 @@ public class GitDiffIndexer implements Indexer {
         this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
 
     }
-
-    @EventListener(CommitIndexingDoneEvent.class)
     @Transactional
     public void index() {
         var commitDiffFiles = new ArrayList<GitCommitDiffFile>();

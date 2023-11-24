@@ -1,4 +1,4 @@
-package at.ac.tuwien.inso.actconawa.index.language;
+package at.ac.tuwien.inso.actconawa.index.language.java;
 
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 
