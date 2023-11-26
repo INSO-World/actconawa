@@ -5,7 +5,6 @@ import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser;
 import at.ac.tuwien.inso.actconawa.exception.IndexingIOException;
 import at.ac.tuwien.inso.actconawa.exception.IndexingLanguageParserException;
 import at.ac.tuwien.inso.actconawa.index.language.LanguageIndexModule;
-import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
 import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChange;
 import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChangeRepository;
@@ -77,7 +76,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                         typeEntity.setSourceLineStart(type.sourceRange().getMinimum());
                         typeEntity.setSourceLineEnd(type.sourceRange().getMaximum());
                         javaCodeChangeRepository.save(typeEntity);
-                        for (DeclarationInfo member : members) {
+                        for (JavaMemberDeclarationInfo member : members) {
                             var memberIsInChangeRange = member.sourceRange().isOverlappedBy(changeRange);
                             LOG.debug("member {} is in change range: {}/{}",
                                     member,
@@ -89,13 +88,12 @@ public class JavaIndexModule implements LanguageIndexModule {
                             memberEntity.setIdentifier(member.identifier());
                             memberEntity.setSourceLineStart(member.sourceRange().getMinimum());
                             memberEntity.setSourceLineEnd(member.sourceRange().getMaximum());
-                            if (member instanceof JavaMemberDeclarationInfo memberDeclarationInfo) {
-                                if (memberDeclarationInfo.getParamTypeTypes() != null) {
-                                    memberEntity.setMemberParamTypeTypes(String.join(", ",
-                                            memberDeclarationInfo.getParamTypeTypes()));
-                                }
-                                memberEntity.setMemberTypeType(memberDeclarationInfo.getTypeType());
+                            if (member.getParamTypeTypes() != null) {
+                                memberEntity.setMemberParamTypeTypes(String.join(", ",
+                                        member.getParamTypeTypes()));
                             }
+                            memberEntity.setMemberTypeType(member.getTypeType());
+
                             javaCodeChangeRepository.save(memberEntity);
                         }
 
