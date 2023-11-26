@@ -11,16 +11,18 @@ public class JavaMemberDeclarationInfo extends DeclarationInfo {
     private final List<String> paramTypeTypes;
 
 
-    public JavaMemberDeclarationInfo(DeclarationType declarationType, String identifier, IntegerRange sourceRange, List<DeclarationInfo> contextualExtra, String typeType, List<String> paramTypeTypes) {
-        super(declarationType, identifier, sourceRange, contextualExtra);
-        this.typeType = typeType;
-        this.paramTypeTypes = paramTypeTypes;
-    }
-
     public JavaMemberDeclarationInfo(DeclarationType declarationType, String identifier, IntegerRange sourceRange, String typeType, List<String> paramTypeTypes) {
         super(declarationType, identifier, sourceRange);
         this.typeType = typeType;
         this.paramTypeTypes = paramTypeTypes;
+    }
+
+    public static JavaMemberDeclarationInfo of(DeclarationInfo declarationInfo) {
+        return new JavaMemberDeclarationInfo(declarationInfo.type(),
+                declarationInfo.identifier(),
+                declarationInfo.sourceRange(),
+                null,
+                null);
     }
 
     public String getTypeType() {

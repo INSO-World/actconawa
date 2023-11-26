@@ -1,7 +1,6 @@
 package at.ac.tuwien.inso.actconawa.index.language.java;
 
 import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser;
-import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
 import org.antlr.v4.runtime.RuleContext;
@@ -24,7 +23,7 @@ public class MemberDeclarationProcessUtils {
     private MemberDeclarationProcessUtils() {
     }
 
-    static List<DeclarationInfo> processMembers(JavaParser.TypeDeclarationContext typeDeclaration) {
+    static List<JavaMemberDeclarationInfo> processMembers(JavaParser.TypeDeclarationContext typeDeclaration) {
         var interfaceMembers = Optional.ofNullable(typeDeclaration.interfaceDeclaration())
                 .flatMap(x -> Optional.ofNullable(x.interfaceBody()))
                 .map(x -> x.interfaceBodyDeclaration().stream())
@@ -76,7 +75,7 @@ public class MemberDeclarationProcessUtils {
                         DeclarationProcessUtils.processTypeDeclaration(x.enumDeclaration(), List.of()),
                         DeclarationProcessUtils.processTypeDeclaration(x.annotationTypeDeclaration(), List.of()),
                         DeclarationProcessUtils.processTypeDeclaration(x.recordDeclaration(), List.of())
-                ).filter(Objects::nonNull)
+                ).filter(Objects::nonNull).map(JavaMemberDeclarationInfo::of)
         ).toList();
         var interfaces = interfaceMembers.stream().flatMap(x -> Stream.of(
                         processInterfaceMethodDeclaration(x.interfaceMethodDeclaration()),
@@ -87,7 +86,7 @@ public class MemberDeclarationProcessUtils {
                         DeclarationProcessUtils.processTypeDeclaration(x.enumDeclaration(), List.of()),
                         DeclarationProcessUtils.processTypeDeclaration(x.annotationTypeDeclaration(), List.of()),
                         DeclarationProcessUtils.processTypeDeclaration(x.recordDeclaration(), List.of())
-                ).filter(Objects::nonNull)
+                ).filter(Objects::nonNull).map(JavaMemberDeclarationInfo::of)
         ).toList();
         var annotationTypes = annotationTypeMembers.stream().flatMap(x -> Stream.of(
                         // TODO : x.annotationMethodOrConstantRest()....
@@ -96,9 +95,9 @@ public class MemberDeclarationProcessUtils {
                         DeclarationProcessUtils.processTypeDeclaration(x.enumDeclaration(), List.of()),
                         DeclarationProcessUtils.processTypeDeclaration(x.annotationTypeDeclaration(), List.of()),
                         DeclarationProcessUtils.processTypeDeclaration(x.recordDeclaration(), List.of()))
-                .filter(Objects::nonNull)
+                .filter(Objects::nonNull).map(JavaMemberDeclarationInfo::of)
         ).toList();
-        var result = new ArrayList<DeclarationInfo>();
+        var result = new ArrayList<JavaMemberDeclarationInfo>();
         result.addAll(classes);
         result.addAll(interfaces);
         result.addAll(annotationTypes);
