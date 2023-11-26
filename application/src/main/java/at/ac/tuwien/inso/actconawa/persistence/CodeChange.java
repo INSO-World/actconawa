@@ -1,7 +1,6 @@
 package at.ac.tuwien.inso.actconawa.persistence;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,9 +15,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "code_change")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "language")
-public class CodeChange {
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class CodeChange {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

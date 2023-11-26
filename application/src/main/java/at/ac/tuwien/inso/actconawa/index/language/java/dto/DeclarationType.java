@@ -1,0 +1,7 @@
+package at.ac.tuwien.inso.actconawa.index.language.java.dto;
+
+public enum DeclarationType {
+    CLASS, ENUM, INTERFACE, ANNOTATION_TYPE, RECORD, PACKAGE, MODULE, IMPORT, UNKNOWN_TYPE, ANNOTATION,
+    METHOD, GENERIC_METHOD, FIELD, CONSTRUCTOR, GENERIC_CONSTRUCTOR, CONST
+
+}

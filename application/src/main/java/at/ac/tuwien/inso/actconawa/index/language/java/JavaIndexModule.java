@@ -4,6 +4,11 @@ import at.ac.tuwien.inso.actconawa.antlr.java.JavaLexer;
 import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser;
 import at.ac.tuwien.inso.actconawa.exception.IndexingIOException;
 import at.ac.tuwien.inso.actconawa.exception.IndexingLanguageParserException;
+import at.ac.tuwien.inso.actconawa.index.language.LanguageIndexModule;
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
+import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChange;
+import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChangeRepository;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
 import jakarta.transaction.Transactional;
@@ -28,9 +33,12 @@ public class JavaIndexModule implements LanguageIndexModule {
 
     private final Git git;
 
+    private final JavaCodeChangeRepository javaCodeChangeRepository;
 
-    public JavaIndexModule(Git git) {
+
+    public JavaIndexModule(Git git, JavaCodeChangeRepository javaCodeChangeRepository) {
         this.git = git;
+        this.javaCodeChangeRepository = javaCodeChangeRepository;
     }
 
     @Transactional
@@ -61,17 +69,36 @@ public class JavaIndexModule implements LanguageIndexModule {
                     var typeIsInChangeRange = type.sourceRange().isOverlappedBy(changeRange);
                     LOG.debug("declaration {} is in change range: {}/{}", type, typeIsInChangeRange, changeRange);
                     if (child instanceof JavaParser.TypeDeclarationContext typeDeclaration) {
-                        MemberDeclarationProcessUtils.processMembers(typeDeclaration);
-                        /* TODO: Return list of members. Check if Range fits and persist.
+                        var members = MemberDeclarationProcessUtils.processMembers(typeDeclaration);
+                        var typeEntity = new JavaCodeChange();
+                        typeEntity.setDiffHunk(gitCommitDiffHunk);
+                        typeEntity.setType(type.type().name());
+                        typeEntity.setIdentifier(type.identifier());
+                        typeEntity.setSourceLineStart(type.sourceRange().getMinimum());
+                        typeEntity.setSourceLineEnd(type.sourceRange().getMaximum());
+                        javaCodeChangeRepository.save(typeEntity);
+                        for (DeclarationInfo member : members) {
+                            var memberIsInChangeRange = member.sourceRange().isOverlappedBy(changeRange);
+                            LOG.debug("member {} is in change range: {}/{}",
+                                    member,
+                                    memberIsInChangeRange,
+                                    changeRange);
+                            var memberEntity = new JavaCodeChange();
+                            memberEntity.setDiffHunk(gitCommitDiffHunk);
+                            memberEntity.setType(member.type().name());
+                            memberEntity.setIdentifier(member.identifier());
+                            memberEntity.setSourceLineStart(member.sourceRange().getMinimum());
+                            memberEntity.setSourceLineEnd(member.sourceRange().getMaximum());
+                            if (member instanceof JavaMemberDeclarationInfo memberDeclarationInfo) {
+                                if (memberDeclarationInfo.getParamTypeTypes() != null) {
+                                    memberEntity.setMemberParamTypeTypes(String.join(", ",
+                                            memberDeclarationInfo.getParamTypeTypes()));
+                                }
+                                memberEntity.setMemberTypeType(memberDeclarationInfo.getTypeType());
+                            }
+                            javaCodeChangeRepository.save(memberEntity);
+                        }
 
-                                var isInRange = member()
-                                    .map(range -> range.overlapsWith(checkRange))
-                                    .orElse(false);
-
-                                var memberIsInChangeRange = member.sourceRange().isOverlappedBy(changeRange);
-                         }
-
-                         */
                     }
                 }
             }

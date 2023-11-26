@@ -1,15 +1,20 @@
 package at.ac.tuwien.inso.actconawa.index.language.java;
 
 import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser;
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
 import org.antlr.v4.runtime.RuleContext;
 import org.apache.commons.lang3.IntegerRange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MemberDeclarationProcessUtils {
@@ -19,7 +24,7 @@ public class MemberDeclarationProcessUtils {
     private MemberDeclarationProcessUtils() {
     }
 
-    static void processMembers(JavaParser.TypeDeclarationContext typeDeclaration) {
+    static List<DeclarationInfo> processMembers(JavaParser.TypeDeclarationContext typeDeclaration) {
         var interfaceMembers = Optional.ofNullable(typeDeclaration.interfaceDeclaration())
                 .flatMap(x -> Optional.ofNullable(x.interfaceBody()))
                 .map(x -> x.interfaceBodyDeclaration().stream())
@@ -50,45 +55,54 @@ public class MemberDeclarationProcessUtils {
                 .orElse(Stream.of())
                 .map(JavaParser.AnnotationTypeElementDeclarationContext::annotationTypeElementRest)
                 .toList();
-        Stream.of(classMembers, enumMembers, recordMembers).flatMap(Collection::stream).forEach(x -> {
-            // TODO: support annotations
-            // classBodyDeclaration
-            //    : ';'
-            //    | STATIC? block
-            //    | modifier* memberDeclaration
-            //    ;
-            // where modifier contains variables
-            processMethodDeclaration(x.methodDeclaration());
-            if (x.genericMethodDeclaration() != null) {
-                processMethodDeclaration(x.genericMethodDeclaration().methodDeclaration());
-            }
-            processFieldDeclaration(x.fieldDeclaration());
-            processConstructorDeclaration(x.constructorDeclaration());
-            DeclarationProcessUtils.processTypeDeclaration(x.classDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.interfaceDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.enumDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.annotationTypeDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.recordDeclaration(), List.of());
-        });
-        interfaceMembers.forEach(x -> {
-            processInterfaceMethodDeclaration(x.interfaceMethodDeclaration());
-            processGenericInterfaceMethodDeclaration(x.genericInterfaceMethodDeclaration());
-            processConstDeclaration(x.constDeclaration());
-            DeclarationProcessUtils.processTypeDeclaration(x.classDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.interfaceDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.enumDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.annotationTypeDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.recordDeclaration(), List.of());
-        });
-        annotationTypeMembers.forEach(x -> {
-            // TODO : x.annotationMethodOrConstantRest()....
-            DeclarationProcessUtils.processTypeDeclaration(x.classDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.interfaceDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.enumDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.annotationTypeDeclaration(), List.of());
-            DeclarationProcessUtils.processTypeDeclaration(x.recordDeclaration(), List.of());
-
-        });
+        var classes = Stream.of(classMembers, enumMembers, recordMembers).flatMap(Collection::stream).flatMap(x ->
+                // TODO: support annotations
+                // classBodyDeclaration
+                //    : ';'
+                //    | STATIC? block
+                //    | modifier* memberDeclaration
+                //    ;
+                // where modifier contains variables
+                Stream.of(
+                        Optional.ofNullable(x.genericMethodDeclaration())
+                                .map(JavaParser.GenericMethodDeclarationContext::methodDeclaration)
+                                .map(MemberDeclarationProcessUtils::processMethodDeclaration)
+                                .orElse(null),
+                        processMethodDeclaration(x.methodDeclaration()),
+                        processFieldDeclaration(x.fieldDeclaration()),
+                        processConstructorDeclaration(x.constructorDeclaration()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.classDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.interfaceDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.enumDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.annotationTypeDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.recordDeclaration(), List.of())
+                ).filter(Objects::nonNull)
+        ).toList();
+        var interfaces = interfaceMembers.stream().flatMap(x -> Stream.of(
+                        processInterfaceMethodDeclaration(x.interfaceMethodDeclaration()),
+                        processGenericInterfaceMethodDeclaration(x.genericInterfaceMethodDeclaration()),
+                        processConstDeclaration(x.constDeclaration()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.classDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.interfaceDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.enumDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.annotationTypeDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.recordDeclaration(), List.of())
+                ).filter(Objects::nonNull)
+        ).toList();
+        var annotationTypes = annotationTypeMembers.stream().flatMap(x -> Stream.of(
+                        // TODO : x.annotationMethodOrConstantRest()....
+                        DeclarationProcessUtils.processTypeDeclaration(x.classDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.interfaceDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.enumDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.annotationTypeDeclaration(), List.of()),
+                        DeclarationProcessUtils.processTypeDeclaration(x.recordDeclaration(), List.of()))
+                .filter(Objects::nonNull)
+        ).toList();
+        var result = new ArrayList<DeclarationInfo>();
+        result.addAll(classes);
+        result.addAll(interfaces);
+        result.addAll(annotationTypes);
+        return result;
 
     }
 
@@ -102,51 +116,55 @@ public class MemberDeclarationProcessUtils {
         LOG.debug("annotation {} @ {}", txt, range);
     }
 
-    private static void processMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
+    private static JavaMemberDeclarationInfo processMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
         if (ctx == null) {
-            return;
+            return null;
         }
         var methodName = ctx.identifier().getText();
         var methodReturnType = ctx.typeTypeOrVoid().getText();
         var formalParameters = readFormalParameterContext(ctx.formalParameters());
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        LOG.debug("method {} {} with parameters {} @ {}", methodReturnType, methodName, formalParameters, range);
+        return new JavaMemberDeclarationInfo(DeclarationType.METHOD,
+                methodName,
+                range,
+                methodReturnType,
+                formalParameters);
     }
 
 
-    private static void processInterfaceMethodDeclaration(JavaParser.InterfaceMethodDeclarationContext ctx) {
+    private static JavaMemberDeclarationInfo processInterfaceMethodDeclaration(JavaParser.InterfaceMethodDeclarationContext ctx) {
         if (ctx == null) {
-            return;
+            return null;
         }
         var methodName = ctx.interfaceCommonBodyDeclaration().identifier().getText();
         var methodReturnType = ctx.interfaceCommonBodyDeclaration().typeTypeOrVoid().getText();
         var formalParameters = readFormalParameterContext(ctx.interfaceCommonBodyDeclaration().formalParameters());
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        LOG.debug("interface method {} {} with parameters {} @ {}",
-                methodReturnType,
+        return new JavaMemberDeclarationInfo(DeclarationType.METHOD,
                 methodName,
-                formalParameters,
-                range);
+                range,
+                methodReturnType,
+                formalParameters);
     }
 
-    private static void processGenericInterfaceMethodDeclaration(JavaParser.GenericInterfaceMethodDeclarationContext ctx) {
+    private static JavaMemberDeclarationInfo processGenericInterfaceMethodDeclaration(JavaParser.GenericInterfaceMethodDeclarationContext ctx) {
         if (ctx == null) {
-            return;
+            return null;
         }
         var methodName = ctx.interfaceCommonBodyDeclaration().identifier().getText();
         var methodReturnType = ctx.interfaceCommonBodyDeclaration().typeTypeOrVoid().getText();
         var formalParameters = readFormalParameterContext(ctx.interfaceCommonBodyDeclaration().formalParameters());
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        LOG.debug("generic interface method {} {} with parameters {} @ {}",
-                methodReturnType,
+        return new JavaMemberDeclarationInfo(DeclarationType.METHOD,
                 methodName,
-                formalParameters,
-                range);
+                range,
+                methodReturnType,
+                formalParameters);
     }
 
-    private static void processConstDeclaration(JavaParser.ConstDeclarationContext ctx) {
+    private static JavaMemberDeclarationInfo processConstDeclaration(JavaParser.ConstDeclarationContext ctx) {
         if (ctx == null) {
-            return;
+            return null;
         }
         var type = ctx.typeType().getText();
         var identifiers = ctx.constantDeclarator()
@@ -155,12 +173,12 @@ public class MemberDeclarationProcessUtils {
                 .map(JavaParser.IdentifierContext::getText)
                 .toString();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        LOG.debug("const {} {} @ {}", type, identifiers, range);
+        return new JavaMemberDeclarationInfo(DeclarationType.CONST, identifiers, range, type, null);
     }
 
-    private static void processFieldDeclaration(JavaParser.FieldDeclarationContext ctx) {
+    private static JavaMemberDeclarationInfo processFieldDeclaration(JavaParser.FieldDeclarationContext ctx) {
         if (ctx == null) {
-            return;
+            return null;
         }
         var typeText = ctx.typeType().getText();
         var fieldNames = ctx.variableDeclarators()
@@ -169,32 +187,38 @@ public class MemberDeclarationProcessUtils {
                 .map(JavaParser.VariableDeclaratorContext::variableDeclaratorId)
                 .map(JavaParser.VariableDeclaratorIdContext::identifier)
                 .map(RuleContext::getText)
-                .toList();
+                .collect(Collectors.joining(", "));
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        LOG.debug("field type {} with ids {} @ {}", typeText, fieldNames, range);
+        return new JavaMemberDeclarationInfo(DeclarationType.FIELD, fieldNames, range, typeText, null);
+
     }
 
-    private static void processConstructorDeclaration(JavaParser.ConstructorDeclarationContext ctx) {
+    private static JavaMemberDeclarationInfo processConstructorDeclaration(JavaParser.ConstructorDeclarationContext ctx) {
         if (ctx == null) {
-            return;
+            return null;
         }
         var identifier = ctx.identifier().getText();
         var formalParameters = readFormalParameterContext(ctx.formalParameters());
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-
-        LOG.debug("constructor {} and parameters {} @ {}", identifier, formalParameters, range);
+        return new JavaMemberDeclarationInfo(DeclarationType.CONSTRUCTOR, identifier, range, null, formalParameters);
     }
 
-    private static Pair<Optional<String>, List<String>> readFormalParameterContext(JavaParser.FormalParametersContext ctx) {
-        var receiverParameterType = Optional.ofNullable(ctx.receiverParameter()).map(x -> x.typeType().getText());
-        var formalParameterTypes = Optional.ofNullable(ctx.formalParameterList())
+    /**
+     * Returns the formal parameters of a method or constructor. Receiver parameters as described here
+     * <a href="https://docs.oracle.com/javase/specs/jls/se20/html/jls-8.html#jls-8.4">
+     * Java Language and Virtual Machine Specifications
+     * </a> are ignored, as they do not really provide extra-value for this use case.
+     *
+     * @return a list of the parameter types names.
+     */
+    private static List<String> readFormalParameterContext(JavaParser.FormalParametersContext ctx) {
+        return Optional.ofNullable(ctx.formalParameterList())
                 .map(JavaParser.FormalParameterListContext::formalParameter)
                 .orElse(List.of())
                 .stream()
                 .map(JavaParser.FormalParameterContext::typeType)
                 .map(RuleContext::getText)
                 .toList();
-        return Pair.of(receiverParameterType, formalParameterTypes);
     }
 
 }

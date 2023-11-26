@@ -1,8 +1,9 @@
-package at.ac.tuwien.inso.actconawa.index.language.java;
+package at.ac.tuwien.inso.actconawa.index.language.java.dto;
 
 import org.apache.commons.lang3.IntegerRange;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DeclarationInfo {
@@ -13,25 +14,29 @@ public class DeclarationInfo {
 
     private final IntegerRange sourceRange;
 
-    private final List<DeclarationInfo> contextualExtra;
+    private final List<DeclarationInfo> modifiers;
+
+    private final List<DeclarationInfo> subElements;
 
     public DeclarationInfo(
             DeclarationType declarationType,
             String identifier,
             IntegerRange sourceRange,
-            List<DeclarationInfo> contextualExtra
+            List<DeclarationInfo> modifiers
     ) {
         this.declarationType = declarationType;
         this.identifier = identifier;
         this.sourceRange = sourceRange;
-        this.contextualExtra = contextualExtra;
+        this.modifiers = modifiers;
+        this.subElements = new ArrayList<>();
     }
 
     public DeclarationInfo(DeclarationType declarationType, String identifier, IntegerRange sourceRange) {
         this.declarationType = declarationType;
         this.identifier = identifier;
         this.sourceRange = sourceRange;
-        this.contextualExtra = List.of();
+        this.modifiers = new ArrayList<>();
+        this.subElements = new ArrayList<>();
     }
 
     @Override
@@ -40,7 +45,8 @@ public class DeclarationInfo {
                 "type=" + declarationType +
                 ", identifier='" + identifier + '\'' +
                 ", sourceRange=" + sourceRange +
-                (CollectionUtils.isEmpty(contextualExtra) ? "" : ", contextualExtra=" + contextualExtra) +
+                (CollectionUtils.isEmpty(modifiers) ? "" : ", modifiers=" + modifiers) +
+                (CollectionUtils.isEmpty(subElements) ? "" : ", subElements=" + subElements) +
                 '}';
     }
 
@@ -56,8 +62,8 @@ public class DeclarationInfo {
         return sourceRange;
     }
 
-    public List<DeclarationInfo> getContextualExtra() {
-        return contextualExtra;
+    public List<DeclarationInfo> getModifiers() {
+        return modifiers;
     }
 
 }

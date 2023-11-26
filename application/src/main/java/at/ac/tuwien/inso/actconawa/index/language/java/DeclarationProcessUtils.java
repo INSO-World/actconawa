@@ -1,6 +1,8 @@
 package at.ac.tuwien.inso.actconawa.index.language.java;
 
 import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser;
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.lang3.IntegerRange;
 
