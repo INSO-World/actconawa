@@ -38,6 +38,12 @@ public abstract class CodeChange {
     @Column(name = "src_line_end", nullable = false)
     private int sourceLineEnd;
 
+    @ManyToOne
+    private CodeChange parent;
+
+    @ManyToOne
+    private CodeChange child;
+
     @OneToMany(mappedBy = "child", cascade = CascadeType.PERSIST)
     private List<CodeChange> parents;
 
@@ -87,6 +93,38 @@ public abstract class CodeChange {
 
     public void setSourceLineEnd(int sourceLineEnd) {
         this.sourceLineEnd = sourceLineEnd;
+    }
+
+    public CodeChange getParent() {
+        return parent;
+    }
+
+    public void setParent(CodeChange parent) {
+        this.parent = parent;
+    }
+
+    public CodeChange getChild() {
+        return child;
+    }
+
+    public void setChild(CodeChange child) {
+        this.child = child;
+    }
+
+    public List<CodeChange> getParents() {
+        return parents;
+    }
+
+    public void setParents(List<CodeChange> parents) {
+        this.parents = parents;
+    }
+
+    public List<CodeChange> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<CodeChange> children) {
+        this.children = children;
     }
 
     public GitCommitDiffHunk getDiffHunk() {
