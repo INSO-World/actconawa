@@ -1,6 +1,5 @@
 package at.ac.tuwien.inso.actconawa.persistence;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -38,14 +37,11 @@ public abstract class CodeChange {
     @Column(name = "src_line_end", nullable = false)
     private int sourceLineEnd;
 
+    // Flag this this as pseudo change that just provides context for a real change.
+    private boolean justContext;
+
     @ManyToOne
     private CodeChange parent;
-
-    @ManyToOne
-    private CodeChange child;
-
-    @OneToMany(mappedBy = "child", cascade = CascadeType.PERSIST)
-    private List<CodeChange> parents;
 
     @Lazy
     @OneToMany(mappedBy = "parent")
@@ -95,28 +91,20 @@ public abstract class CodeChange {
         this.sourceLineEnd = sourceLineEnd;
     }
 
+    public boolean isJustContext() {
+        return justContext;
+    }
+
+    public void setJustContext(boolean justContext) {
+        this.justContext = justContext;
+    }
+
     public CodeChange getParent() {
         return parent;
     }
 
     public void setParent(CodeChange parent) {
         this.parent = parent;
-    }
-
-    public CodeChange getChild() {
-        return child;
-    }
-
-    public void setChild(CodeChange child) {
-        this.child = child;
-    }
-
-    public List<CodeChange> getParents() {
-        return parents;
-    }
-
-    public void setParents(List<CodeChange> parents) {
-        this.parents = parents;
     }
 
     public List<CodeChange> getChildren() {

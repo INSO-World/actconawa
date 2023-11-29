@@ -5,6 +5,7 @@ import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser;
 import at.ac.tuwien.inso.actconawa.exception.IndexingIOException;
 import at.ac.tuwien.inso.actconawa.exception.IndexingLanguageParserException;
 import at.ac.tuwien.inso.actconawa.index.language.LanguageIndexModule;
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
 import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChange;
 import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChangeRepository;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,15 +69,43 @@ public class JavaIndexModule implements LanguageIndexModule {
                     var type = DeclarationProcessUtils.processUnspecificDeclaration(child);
                     var typeIsInChangeRange = type.sourceRange().isOverlappedBy(changeRange);
                     LOG.debug("declaration {} is in change range: {}/{}", type, typeIsInChangeRange, changeRange);
+
+                    var typeEntitiesToSave = new HashSet<JavaCodeChange>();
+                    var modifiersToSave = new HashSet<JavaCodeChange>();
+                    var membersToSave = new HashSet<JavaCodeChange>();
+                    var typeEntity = new JavaCodeChange();
+
+                    typeEntity.setDiffHunk(gitCommitDiffHunk);
+                    typeEntity.setType(type.type().name());
+                    typeEntity.setIdentifier(type.identifier());
+                    typeEntity.setSourceLineStart(type.sourceRange().getMinimum());
+                    typeEntity.setSourceLineEnd(type.sourceRange().getMaximum());
+                    typeEntity.setJustContext(!typeIsInChangeRange);
+                    if (typeIsInChangeRange) {
+                        typeEntitiesToSave.add(typeEntity);
+                    }
+                    var changedTypeModifiers = type.getModifiers()
+                            .stream()
+                            .filter(x -> x.sourceRange().isOverlappedBy(changeRange))
+                            .toList();
+                    if (!changedTypeModifiers.isEmpty()) {
+                        if (!typeEntitiesToSave.contains(typeEntity)) {
+                            typeEntitiesToSave.add(typeEntity);
+                            typeEntity.setJustContext(true);
+                        }
+                        for (DeclarationInfo mdi : changedTypeModifiers) {
+                            var modifier = new JavaCodeChange();
+                            modifier.setParent(typeEntity);
+                            modifier.setDiffHunk(gitCommitDiffHunk);
+                            modifier.setType(mdi.type().name());
+                            modifier.setIdentifier(mdi.identifier());
+                            modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
+                            modifier.setSourceLineEnd(mdi.sourceRange().getMaximum());
+                            modifiersToSave.add(modifier);
+                        }
+                    }
                     if (child instanceof JavaParser.TypeDeclarationContext typeDeclaration) {
                         var members = MemberDeclarationProcessUtils.processMembers(typeDeclaration);
-                        var typeEntity = new JavaCodeChange();
-                        typeEntity.setDiffHunk(gitCommitDiffHunk);
-                        typeEntity.setType(type.type().name());
-                        typeEntity.setIdentifier(type.identifier());
-                        typeEntity.setSourceLineStart(type.sourceRange().getMinimum());
-                        typeEntity.setSourceLineEnd(type.sourceRange().getMaximum());
-                        javaCodeChangeRepository.save(typeEntity);
                         for (JavaMemberDeclarationInfo member : members) {
                             var memberIsInChangeRange = member.sourceRange().isOverlappedBy(changeRange);
                             LOG.debug("member {} is in change range: {}/{}",
@@ -93,11 +123,18 @@ public class JavaIndexModule implements LanguageIndexModule {
                                         member.getParamTypeTypes()));
                             }
                             memberEntity.setMemberTypeType(member.getTypeType());
-
-                            javaCodeChangeRepository.save(memberEntity);
+                            memberEntity.setParent(typeEntity);
+                            if (!typeEntitiesToSave.contains(typeEntity)) {
+                                typeEntitiesToSave.add(typeEntity);
+                                typeEntity.setJustContext(true);
+                            }
+                            membersToSave.add(memberEntity);
                         }
 
                     }
+                    javaCodeChangeRepository.saveAll(typeEntitiesToSave);
+                    javaCodeChangeRepository.saveAll(modifiersToSave);
+                    javaCodeChangeRepository.saveAll(membersToSave);
                 }
             }
 
