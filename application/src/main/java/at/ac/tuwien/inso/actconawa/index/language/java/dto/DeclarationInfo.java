@@ -16,7 +16,6 @@ public class DeclarationInfo {
 
     private final List<DeclarationInfo> modifiers;
 
-    private final List<DeclarationInfo> subElements;
 
     public DeclarationInfo(
             DeclarationType declarationType,
@@ -28,7 +27,6 @@ public class DeclarationInfo {
         this.identifier = identifier;
         this.sourceRange = sourceRange;
         this.modifiers = modifiers;
-        this.subElements = new ArrayList<>();
     }
 
     public DeclarationInfo(DeclarationType declarationType, String identifier, IntegerRange sourceRange) {
@@ -36,7 +34,6 @@ public class DeclarationInfo {
         this.identifier = identifier;
         this.sourceRange = sourceRange;
         this.modifiers = new ArrayList<>();
-        this.subElements = new ArrayList<>();
     }
 
     @Override
@@ -46,7 +43,6 @@ public class DeclarationInfo {
                 ", identifier='" + identifier + '\'' +
                 ", sourceRange=" + sourceRange +
                 (CollectionUtils.isEmpty(modifiers) ? "" : ", modifiers=" + modifiers) +
-                (CollectionUtils.isEmpty(subElements) ? "" : ", subElements=" + subElements) +
                 '}';
     }
 
@@ -65,5 +61,4 @@ public class DeclarationInfo {
     public List<DeclarationInfo> getModifiers() {
         return modifiers;
     }
-
 }
