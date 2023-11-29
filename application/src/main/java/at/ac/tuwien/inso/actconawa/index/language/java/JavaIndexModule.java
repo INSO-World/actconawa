@@ -126,7 +126,8 @@ public class JavaIndexModule implements LanguageIndexModule {
                             memberEntity.setParent(typeEntity);
                             if (!typeEntitiesToSave.contains(typeEntity)) {
                                 typeEntitiesToSave.add(typeEntity);
-                                typeEntity.setJustContext(true);
+                                // if a member is changed, so is the parent
+                                typeEntity.setJustContext(false);
                             }
                             membersToSave.add(memberEntity);
                         }
