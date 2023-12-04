@@ -6,6 +6,7 @@ import at.ac.tuwien.inso.actconawa.exception.IndexingIOException;
 import at.ac.tuwien.inso.actconawa.exception.IndexingLanguageParserException;
 import at.ac.tuwien.inso.actconawa.index.language.LanguageIndexModule;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
 import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChange;
 import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChangeRepository;
@@ -60,6 +61,7 @@ public class JavaIndexModule implements LanguageIndexModule {
             var aparser = new at.ac.tuwien.inso.actconawa.antlr.java.JavaParser(tokens);
             JavaParser.CompilationUnitContext cu = aparser.compilationUnit();
 
+            JavaCodeChange affectedPackage = null;
             for (var child : cu.children) {
                 var hunks = Optional.ofNullable(commitDiffFile.getGitCommitDiffHunks()).orElse(List.of());
                 for (GitCommitDiffHunk gitCommitDiffHunk : hunks) {
@@ -83,6 +85,13 @@ public class JavaIndexModule implements LanguageIndexModule {
                     typeEntity.setJustContext(!typeIsInChangeRange);
                     if (typeIsInChangeRange) {
                         typeEntitiesToSave.add(typeEntity);
+                    } else if (type.type() == DeclarationType.PACKAGE) {
+                        // Package is needed for the context
+                        typeEntity.setJustContext(true);
+                        typeEntitiesToSave.add(typeEntity);
+                    }
+                    if (type.type() == DeclarationType.PACKAGE) {
+                        affectedPackage = typeEntity;
                     }
                     var changedTypeModifiers = type.getModifiers()
                             .stream()
@@ -105,6 +114,9 @@ public class JavaIndexModule implements LanguageIndexModule {
                         }
                     }
                     if (child instanceof JavaParser.TypeDeclarationContext typeDeclaration) {
+                        // Since package is always the first declaration in a file (if there is a package set)
+                        // it is safe to just set the package here as parent.
+                        typeEntity.setParent(affectedPackage);
                         var members = MemberDeclarationProcessUtils.processMembers(typeDeclaration);
                         for (JavaMemberDeclarationInfo member : members) {
                             var memberIsInChangeRange = member.sourceRange().isOverlappedBy(changeRange);
@@ -130,6 +142,26 @@ public class JavaIndexModule implements LanguageIndexModule {
                                 typeEntity.setJustContext(false);
                             }
                             membersToSave.add(memberEntity);
+                            var changedMemberModifiers = member.getModifiers()
+                                    .stream()
+                                    .filter(x -> x.sourceRange().isOverlappedBy(changeRange))
+                                    .toList();
+                            if (!changedMemberModifiers.isEmpty()) {
+                                if (!membersToSave.contains(memberEntity)) {
+                                    membersToSave.add(memberEntity);
+                                    memberEntity.setJustContext(true);
+                                }
+                                for (DeclarationInfo mdi : changedMemberModifiers) {
+                                    var modifier = new JavaCodeChange();
+                                    modifier.setParent(typeEntity);
+                                    modifier.setDiffHunk(gitCommitDiffHunk);
+                                    modifier.setType(mdi.type().name());
+                                    modifier.setIdentifier(mdi.identifier());
+                                    modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
+                                    modifier.setSourceLineEnd(mdi.sourceRange().getMaximum());
+                                    modifiersToSave.add(modifier);
+                                }
+                            }
                         }
 
                     }

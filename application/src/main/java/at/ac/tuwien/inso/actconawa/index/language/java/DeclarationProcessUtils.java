@@ -23,7 +23,6 @@ public class DeclarationProcessUtils {
         } else if (tree instanceof JavaParser.ModuleDeclarationContext ctx) {
             return processDeclaration(ctx);
         } else if (tree instanceof JavaParser.TypeDeclarationContext ctx) {
-            var i = 0;
             DeclarationInfo result = null;
             List<DeclarationInfo> annotations = new ArrayList<>();
             for (var ctxChild : ctx.children) {
@@ -58,6 +57,27 @@ public class DeclarationProcessUtils {
             return result;
         }
         throw new IllegalArgumentException("Unexpected tree");
+    }
+
+
+    static DeclarationInfo processTypeDeclaration(JavaParser.ClassDeclarationContext ctx) {
+        return processTypeDeclaration(ctx, List.of());
+    }
+
+    static DeclarationInfo processTypeDeclaration(JavaParser.InterfaceDeclarationContext ctx) {
+        return processTypeDeclaration(ctx, List.of());
+    }
+
+    static DeclarationInfo processTypeDeclaration(JavaParser.EnumDeclarationContext ctx) {
+        return processTypeDeclaration(ctx, List.of());
+    }
+
+    static DeclarationInfo processTypeDeclaration(JavaParser.AnnotationTypeDeclarationContext ctx) {
+        return processTypeDeclaration(ctx, List.of());
+    }
+
+    static DeclarationInfo processTypeDeclaration(JavaParser.RecordDeclarationContext ctx) {
+        return processTypeDeclaration(ctx, List.of());
     }
 
     static DeclarationInfo processTypeDeclaration(JavaParser.ClassDeclarationContext ctx, List<DeclarationInfo> annotations) {
