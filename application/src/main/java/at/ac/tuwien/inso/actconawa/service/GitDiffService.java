@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 @Service
 public class GitDiffService implements DiffService {
 
+    public static final int DIFF_LINE_CONTEXT = 1;
+
     private static final Logger LOG = LoggerFactory.getLogger(GitDiffService.class);
 
     private final Git git;
@@ -52,6 +54,8 @@ public class GitDiffService implements DiffService {
             var parentCommitTree = new CanonicalTreeParser(null, reader, parentCommitTreeId);
 
             formatter.setRepository(git.getRepository());
+            // 3 lines are default contecxt in jgit org.eclipse.jgit.diff.DiffFormatter.context
+            formatter.setContext(DIFF_LINE_CONTEXT);
             formatter.format(parentCommitTree, commitTree);
             return outputStream.toString();
         } catch (IOException e) {
