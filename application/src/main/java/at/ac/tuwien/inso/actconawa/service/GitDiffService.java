@@ -42,7 +42,7 @@ public class GitDiffService implements DiffService {
     }
 
     @Override
-    public String getDiff(RevCommit gitCommit, RevCommit parentCommit) {
+    public String getDiff(RevCommit gitCommit, RevCommit parentCommit, boolean noContext) {
         try (var reader = git.getRepository().newObjectReader();
              var outputStream = new ByteArrayOutputStream();
              var formatter = new DiffFormatter(outputStream)
@@ -55,7 +55,7 @@ public class GitDiffService implements DiffService {
 
             formatter.setRepository(git.getRepository());
             // 3 lines are default contecxt in jgit org.eclipse.jgit.diff.DiffFormatter.context
-            formatter.setContext(DIFF_LINE_CONTEXT);
+            formatter.setContext(noContext ? 0 : DIFF_LINE_CONTEXT);
             formatter.format(parentCommitTree, commitTree);
             return outputStream.toString();
         } catch (IOException e) {

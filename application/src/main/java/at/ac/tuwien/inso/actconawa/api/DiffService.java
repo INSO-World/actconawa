@@ -16,7 +16,19 @@ public interface DiffService {
      * @param parentCommit parent {@link RevCommit}
      * @return the formatted diff.
      */
-    String getDiff(RevCommit commit, RevCommit parentCommit);
+    default String getDiff(RevCommit commit, RevCommit parentCommit) {
+        return getDiff(commit, parentCommit, false);
+    }
+
+    /**
+     * Retrieve a diff between a commit and a parent.
+     *
+     * @param commit       the {@link RevCommit}.
+     * @param parentCommit parent {@link RevCommit}
+     * @param noContext    if the diff should not include any context (= only changed lines)
+     * @return the formatted diff.
+     */
+    String getDiff(RevCommit commit, RevCommit parentCommit, boolean noContext);
 
 
     /**
