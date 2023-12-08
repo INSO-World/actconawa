@@ -28,10 +28,10 @@ public class GitCommitDiffFile implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private GitCommitRelationship commitRelationship;
 
-    @Column(nullable = false)
+    @Column
     private String newFilePath;
 
-    @Column(nullable = false)
+    @Column
     private String newFileObjectId;
 
     @Column
@@ -45,6 +45,9 @@ public class GitCommitDiffFile implements Serializable {
 
     @OneToMany(mappedBy = "diffFile")
     private List<GitCommitDiffHunk> gitCommitDiffHunks;
+
+    @OneToMany(mappedBy = "diffFile")
+    private List<GitCommitDiffLineChanges> gitCommitDiffLineChanges;
 
     public GitCommitDiffFile() {
     }
@@ -111,5 +114,13 @@ public class GitCommitDiffFile implements Serializable {
 
     public void setGitCommitDiffHunks(List<GitCommitDiffHunk> gitCommitDiffHunks) {
         this.gitCommitDiffHunks = gitCommitDiffHunks;
+    }
+
+    public List<GitCommitDiffLineChanges> getGitCommitDiffLineChanges() {
+        return gitCommitDiffLineChanges;
+    }
+
+    public void setGitCommitDiffLineChanges(List<GitCommitDiffLineChanges> gitCommitDiffLineChanges) {
+        this.gitCommitDiffLineChanges = gitCommitDiffLineChanges;
     }
 }

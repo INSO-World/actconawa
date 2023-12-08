@@ -3,9 +3,11 @@ package at.ac.tuwien.inso.actconawa.index;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
+import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffLineChanges;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffFileRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
+import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffLineChangesRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
 import at.ac.tuwien.inso.actconawa.service.GitCommitService;
 import at.ac.tuwien.inso.actconawa.service.GitDiffService;
@@ -24,6 +26,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -54,19 +57,23 @@ public class GitDiffIndexer implements Indexer {
 
     private final GitCommitDiffHunkRepository gitDiffHunkRepository;
 
+    private final GitCommitDiffLineChangesRepository gitCommitDiffLineChangesRepository;
+
     private final GitCommitDiffFileRepository gitCommitDiffFileRepository;
 
     private final GitCommitRelationshipRepository gitCommitRelationshipRepository;
 
-    public GitDiffIndexer(Git git, GitCommitService gitCommitService, GitDiffService gitDiffService, GitCommitDiffHunkRepository gitDiffHunkRepository, GitCommitDiffFileRepository gitCommitDiffFileRepository, GitCommitRelationshipRepository gitCommitRelationshipRepository) {
+    public GitDiffIndexer(Git git, GitCommitService gitCommitService, GitDiffService gitDiffService, GitCommitDiffHunkRepository gitDiffHunkRepository, GitCommitDiffLineChangesRepository gitCommitDiffLineChangesRepository, GitCommitDiffFileRepository gitCommitDiffFileRepository, GitCommitRelationshipRepository gitCommitRelationshipRepository) {
         this.git = git;
         this.gitCommitService = gitCommitService;
         this.gitDiffService = gitDiffService;
         this.gitDiffHunkRepository = gitDiffHunkRepository;
+        this.gitCommitDiffLineChangesRepository = gitCommitDiffLineChangesRepository;
         this.gitCommitDiffFileRepository = gitCommitDiffFileRepository;
         this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
 
     }
+
     @Transactional
     public void index() {
         var commitDiffFiles = new ArrayList<GitCommitDiffFile>();
@@ -81,6 +88,11 @@ public class GitDiffIndexer implements Indexer {
         });
         // TODO: Empty commits?
 
+        gitCommitDiffLineChangesRepository.saveAll(
+                commitDiffFiles.stream()
+                        .map(GitCommitDiffFile::getGitCommitDiffLineChanges)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList()));
         gitDiffHunkRepository.saveAll(
                 commitDiffFiles.stream()
                         .map(GitCommitDiffFile::getGitCommitDiffHunks)
@@ -130,26 +142,62 @@ public class GitDiffIndexer implements Indexer {
                 p.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit)
                         .getBytes()));
             }
+            var pe = new Patch();
+            if (parentCommit != null) {
+                pe.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit, parentCommit, true)
+                        .getBytes()));
+            } else {
+                pe.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit)
+                        .getBytes()));
+            }
+            var exactDiffMap = new HashMap<String, List<GitCommitDiffLineChanges>>();
+            pe.getFiles().stream().flatMap(fileHeader ->
+                            fileHeader.getHunks().stream().map(hunk -> {
+                                var lineChanges = new GitCommitDiffLineChanges();
+                                lineChanges.setNewStartLine(hunk.getNewStartLine());
+                                lineChanges.setNewLineCount(hunk.getNewLineCount());
+                                lineChanges.setOldStartLine(hunk.getOldImage().getStartLine());
+                                lineChanges.setOldLineCount(hunk.getOldImage().getLineCount());
+                                return lineChanges;
+                            }).map(hunkEntity -> Pair.of(fileHeader, hunkEntity))
+                    )
+                    .forEach(x -> {
+                        if (!exactDiffMap.containsKey(x.getFirst().getNewId().name())) {
+                            exactDiffMap.put(x.getFirst().getNewId().name(), new ArrayList<>());
+                        }
+                        exactDiffMap.get(x.getFirst().getNewId().name()).add(x.getSecond());
+                    });
             var entities = new ArrayList<GitCommitDiffFile>();
             for (FileHeader fileHeader : p.getFiles()) {
+                if (CollectionUtils.isEmpty(fileHeader.getHunks())) {
+                    LOG.info("Skipping pure mode change of {} ", fileHeader.getNewPath());
+                    continue;
+                }
                 LOG.info("Collecting hunk information for {} ", fileHeader.getNewPath());
                 var entity = new GitCommitDiffFile();
                 entity.setCommitRelationship(gitCommitRelationship);
-                entity.setNewFilePath(fileHeader.getNewPath());
-                entity.setNewFileObjectId(resolveObjectId(gitObjectReader,
-                        fileHeader.getNewId()).getName());
-                entity.setOldFilePath(
-                        fileHeader.getChangeType() == DiffEntry.ChangeType.ADD
-                                ? null
-                                : fileHeader.getOldPath()
-                );
-                if (fileHeader.getChangeType() != DiffEntry.ChangeType.ADD) {
-                    entity.setOldFileObjectId(resolveObjectId(gitObjectReader,
-                            fileHeader.getOldId()).getName());
+                switch (fileHeader.getChangeType()) {
+                    case ADD -> {
+                        entity.setNewFilePath(fileHeader.getNewPath());
+                        entity.setNewFileObjectId(resolveObjectId(gitObjectReader, fileHeader.getNewId()).getName());
+                    }
+                    case DELETE -> {
+                        entity.setOldFilePath(fileHeader.getOldPath());
+                        entity.setOldFileObjectId(resolveObjectId(gitObjectReader, fileHeader.getOldId()).getName());
+                    }
+                    // TODO: Check if COPY requires special treatment
+                    default -> {
+                        entity.setNewFilePath(fileHeader.getNewPath());
+                        entity.setNewFileObjectId(resolveObjectId(gitObjectReader, fileHeader.getNewId()).getName());
+                        entity.setOldFilePath(fileHeader.getOldPath());
+                        entity.setOldFileObjectId(resolveObjectId(gitObjectReader, fileHeader.getOldId()).getName());
+                    }
                 }
+
                 entity.setChangeType(fileHeader.getChangeType());
                 entities.add(entity);
                 entity.setGitCommitDiffHunks(new ArrayList<>());
+                entity.setGitCommitDiffLineChanges(new ArrayList<>());
                 BlameResult blame = null;
                 for (HunkHeader hunk : fileHeader.getHunks()) {
                     LOG.info("Processing {} {}", hunk.toString(), commit.getId().getName());
@@ -161,6 +209,9 @@ public class GitDiffIndexer implements Indexer {
                     hunkEntity.setDependencyCommitShaSet(new HashSet<>());
                     hunkEntity.setDiffFile(entity);
                     entity.getGitCommitDiffHunks().add(hunkEntity);
+                    var lineChanges = exactDiffMap.get(fileHeader.getNewId().name());
+                    lineChanges.forEach(x -> x.setDiffFile(entity));
+                    entity.getGitCommitDiffLineChanges().addAll(lineChanges);
                     if (fileHeader.getChangeType() != DiffEntry.ChangeType.ADD && parentCommit != null) {
                         if (blame == null) {
                             blame = git.blame()
@@ -203,10 +254,11 @@ public class GitDiffIndexer implements Indexer {
             ObjectReader objectReader,
             AbbreviatedObjectId abbreviatedObjectId
     ) throws IOException {
-        return objectReader.resolve(abbreviatedObjectId)
-                .stream()
-                .findFirst()
-                .orElseThrow(FileNotFoundException::new);
+        var resolved = objectReader.resolve(abbreviatedObjectId);
+        if (resolved.isEmpty()) {
+            throw new FileNotFoundException();
+        }
+        return resolved.stream().findFirst().get();
     }
 
 }
