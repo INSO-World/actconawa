@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.commons.lang3.IntegerRange;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -46,7 +47,7 @@ public class JavaIndexModule implements LanguageIndexModule {
     @Transactional
     @Override
     public boolean parseSemanticalDiff(GitCommitDiffFile commitDiffFile) {
-        if (!commitDiffFile.getNewFilePath().endsWith(".java")) {
+        if (!StringUtils.endsWith(commitDiffFile.getNewFilePath(), ".java")) {
             return false;
         }
         try (var or = git.getRepository().newObjectReader()) {
