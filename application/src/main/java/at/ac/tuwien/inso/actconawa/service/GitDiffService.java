@@ -2,8 +2,10 @@ package at.ac.tuwien.inso.actconawa.service;
 
 import at.ac.tuwien.inso.actconawa.api.DiffService;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
 import at.ac.tuwien.inso.actconawa.mapper.GitMapper;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
+import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffLineChangeRepository;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -21,71 +23,69 @@ import java.util.stream.Collectors;
 
 @Service
 public class GitDiffService implements DiffService {
-
-    public static final int DIFF_LINE_CONTEXT = 1;
-
     private static final Logger LOG = LoggerFactory.getLogger(GitDiffService.class);
 
     private final Git git;
 
     private final GitCommitDiffHunkRepository gitCommitDiffHunkRepository;
 
+    private final GitCommitDiffLineChangeRepository gitCommitDiffLineChangeRepository;
+
+    private final GitCommitService gitCommitService;
+
 
     private final GitMapper gitMapper;
 
-    public GitDiffService(Git git,
+    public GitDiffService(
+            Git git,
             GitCommitDiffHunkRepository gitCommitDiffHunkRepository,
-            GitMapper gitMapper) {
+            GitCommitDiffLineChangeRepository gitCommitDiffLineChangeRepository, GitCommitService gitCommitService,
+            GitMapper gitMapper
+    ) {
         this.git = git;
         this.gitCommitDiffHunkRepository = gitCommitDiffHunkRepository;
+        this.gitCommitDiffLineChangeRepository = gitCommitDiffLineChangeRepository;
+        this.gitCommitService = gitCommitService;
         this.gitMapper = gitMapper;
     }
 
     @Override
-    public String getDiff(RevCommit gitCommit, RevCommit parentCommit, boolean noContext) {
+    public String getDiff(RevCommit gitCommit, RevCommit parentCommit, int contextLines) {
         try (var reader = git.getRepository().newObjectReader();
              var outputStream = new ByteArrayOutputStream();
              var formatter = new DiffFormatter(outputStream)
         ) {
             var commitTreeId = gitCommit.getTree().getId();
-            var parentCommitTreeId = parentCommit.getTree().getId();
-
             var commitTree = new CanonicalTreeParser(null, reader, commitTreeId);
-            var parentCommitTree = new CanonicalTreeParser(null, reader, parentCommitTreeId);
+
+            var parentCommitTree = parentCommit == null ?
+                    new EmptyTreeIterator() :
+                    new CanonicalTreeParser(null, reader, parentCommit.getTree().getId());
 
             formatter.setRepository(git.getRepository());
-            // 3 lines are default contecxt in jgit org.eclipse.jgit.diff.DiffFormatter.context
-            formatter.setContext(noContext ? 0 : DIFF_LINE_CONTEXT);
+            formatter.setContext(Math.min(0, contextLines));
             formatter.format(parentCommitTree, commitTree);
             return outputStream.toString();
         } catch (IOException e) {
-            LOG.error("Creating diff between {} and {} failed.",
+            LOG.error("Creating diff of {} {} {} failed.",
                     gitCommit.getId().getName(),
-                    parentCommit.getId().getName(),
+                    parentCommit == null ? "(root)" : "and",
+                    parentCommit == null ? "" : parentCommit.getId().getName(),
                     e);
             return null;
         }
     }
 
     @Override
-    public String getDiff(RevCommit gitCommit) {
-        try (var reader = git.getRepository().newObjectReader();
-             var outputStream = new ByteArrayOutputStream();
-             var formatter = new DiffFormatter(outputStream)
-        ) {
-            var commitTreeId = gitCommit.getTree().getId();
+    public String getDiff(UUID commitId, UUID parentCommitId, int contextLines) {
+        LOG.info("Creating diff of {} {} {}",
+                commitId,
+                parentCommitId == null ? "(root)" : "and",
+                parentCommitId == null ? "" : parentCommitId);
+        var commit = gitCommitService.getRevCommitByGitCommitId(commitId);
+        var parentCommit = parentCommitId == null ? null : gitCommitService.getRevCommitByGitCommitId(parentCommitId);
+        return getDiff(commit, parentCommit, contextLines);
 
-            var commitTree = new CanonicalTreeParser(null, reader, commitTreeId);
-
-            formatter.setRepository(git.getRepository());
-            formatter.format(new EmptyTreeIterator(), commitTree);
-            return outputStream.toString();
-        } catch (IOException e) {
-            LOG.error("Creating diff of commit {} failed.",
-                    gitCommit.getId().getName(),
-                    e);
-            return null;
-        }
     }
 
     @Override
@@ -95,4 +95,10 @@ public class GitDiffService implements DiffService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<GitCommitDiffLineChangeDto> findGitCommitLineChangesByDiffFileId(UUID commitDiffFileId) {
+        return gitCommitDiffLineChangeRepository.findByCommitDiffFile(commitDiffFileId).stream()
+                .map(gitMapper::mapModelToDto)
+                .collect(Collectors.toList());
+    }
 }

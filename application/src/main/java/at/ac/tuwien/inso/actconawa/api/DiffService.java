@@ -2,6 +2,7 @@ package at.ac.tuwien.inso.actconawa.api;
 
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.util.List;
@@ -12,32 +13,24 @@ public interface DiffService {
     /**
      * Retrieve a diff between a commit and a parent.
      *
-     * @param commit       the {@link RevCommit}.
-     * @param parentCommit parent {@link RevCommit}
+     * @param commit         the {@link RevCommit}.
+     * @param parentCommit   parent {@link RevCommit}. This value might be null for root commits without parent.
+     * @param contextLines   the number of context lines to be added to the changed lines
+     *                       changes (0 == only changed lines themselves)
      * @return the formatted diff.
      */
-    default String getDiff(RevCommit commit, RevCommit parentCommit) {
-        return getDiff(commit, parentCommit, false);
-    }
+    String getDiff(RevCommit commit, RevCommit parentCommit, int contextLines);
 
     /**
      * Retrieve a diff between a commit and a parent.
      *
-     * @param commit       the {@link RevCommit}.
-     * @param parentCommit parent {@link RevCommit}
-     * @param noContext    if the diff should not include any context (= only changed lines)
+     * @param commitId         the id of the commit {@link UUID}.
+     * @param parentCommitId   parent commit id ({@link UUID}). This value might be null for root commits without parent.
+     * @param contextLines   the number of context lines to be added to the changed lines
+     *                       changes (0 == only changed lines themselves)
      * @return the formatted diff.
      */
-    String getDiff(RevCommit commit, RevCommit parentCommit, boolean noContext);
-
-
-    /**
-     * Retrieve a diff of a root commit (without parent).
-     *
-     * @param commit the {@link RevCommit}.
-     * @return the formatted diff.
-     */
-    String getDiff(RevCommit commit);
+    String getDiff(UUID commitId, UUID parentCommitId, int contextLines);
 
     /**
      * Retrieve all the diff hunks of a {@link GitCommitDiffFileDto}. In case no hunks are found for
@@ -47,4 +40,15 @@ public interface DiffService {
      * @return a {@link List} of {@link GitCommitDiffHunkDto}s.
      */
     List<GitCommitDiffHunkDto> findGitCommitDiffHunksByDiffFileId(UUID commitDiffFileId);
+
+    /**
+     * Retrieve all the changed lines of a {@link GitCommitDiffFileDto}. In case no changes are found for a provided
+     * {@link UUID} then an empty list is returned. In opposite of {@link #findGitCommitDiffHunksByDiffFileId(UUID)}
+     * which returns hunks with context as in a patch, this method returns only the actually changed lines, without
+     * context.
+     *
+     * @param commitDiffFileId the id of the {@link GitCommitDiffFileDto}.
+     * @return a {@link List} of {@link GitCommitDiffLineChangeDto}s.
+     */
+    List<GitCommitDiffLineChangeDto> findGitCommitLineChangesByDiffFileId(UUID commitDiffFileId);
 }

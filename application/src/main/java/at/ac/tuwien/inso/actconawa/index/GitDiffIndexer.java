@@ -3,11 +3,11 @@ package at.ac.tuwien.inso.actconawa.index;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
-import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffLineChanges;
+import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffLineChange;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffFileRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
-import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffLineChangesRepository;
+import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffLineChangeRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
 import at.ac.tuwien.inso.actconawa.service.GitCommitService;
 import at.ac.tuwien.inso.actconawa.service.GitDiffService;
@@ -49,6 +49,10 @@ public class GitDiffIndexer implements Indexer {
 
     private static final Logger LOG = LoggerFactory.getLogger(GitDiffIndexer.class);
 
+    public static final int DIFF_LINE_CONTEXT = 3;
+
+    public static final int DIFF_LINE_CONTEXTLESS = 0;
+
     private final Git git;
 
     private final GitCommitService gitCommitService;
@@ -57,18 +61,18 @@ public class GitDiffIndexer implements Indexer {
 
     private final GitCommitDiffHunkRepository gitDiffHunkRepository;
 
-    private final GitCommitDiffLineChangesRepository gitCommitDiffLineChangesRepository;
+    private final GitCommitDiffLineChangeRepository gitCommitDiffLineChangeRepository;
 
     private final GitCommitDiffFileRepository gitCommitDiffFileRepository;
 
     private final GitCommitRelationshipRepository gitCommitRelationshipRepository;
 
-    public GitDiffIndexer(Git git, GitCommitService gitCommitService, GitDiffService gitDiffService, GitCommitDiffHunkRepository gitDiffHunkRepository, GitCommitDiffLineChangesRepository gitCommitDiffLineChangesRepository, GitCommitDiffFileRepository gitCommitDiffFileRepository, GitCommitRelationshipRepository gitCommitRelationshipRepository) {
+    public GitDiffIndexer(Git git, GitCommitService gitCommitService, GitDiffService gitDiffService, GitCommitDiffHunkRepository gitDiffHunkRepository, GitCommitDiffLineChangeRepository gitCommitDiffLineChangeRepository, GitCommitDiffFileRepository gitCommitDiffFileRepository, GitCommitRelationshipRepository gitCommitRelationshipRepository) {
         this.git = git;
         this.gitCommitService = gitCommitService;
         this.gitDiffService = gitDiffService;
         this.gitDiffHunkRepository = gitDiffHunkRepository;
-        this.gitCommitDiffLineChangesRepository = gitCommitDiffLineChangesRepository;
+        this.gitCommitDiffLineChangeRepository = gitCommitDiffLineChangeRepository;
         this.gitCommitDiffFileRepository = gitCommitDiffFileRepository;
         this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
 
@@ -88,7 +92,7 @@ public class GitDiffIndexer implements Indexer {
         });
         // TODO: Empty commits?
 
-        gitCommitDiffLineChangesRepository.saveAll(
+        gitCommitDiffLineChangeRepository.saveAll(
                 commitDiffFiles.stream()
                         .map(GitCommitDiffFile::getGitCommitDiffLineChanges)
                         .flatMap(Collection::stream)
@@ -134,26 +138,17 @@ public class GitDiffIndexer implements Indexer {
             @Nullable GitCommitRelationship gitCommitRelationship
     ) {
         try (var gitObjectReader = git.getRepository().newObjectReader()) {
-            var p = new Patch();
-            if (parentCommit != null) {
-                p.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit, parentCommit)
-                        .getBytes()));
-            } else {
-                p.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit)
-                        .getBytes()));
-            }
-            var pe = new Patch();
-            if (parentCommit != null) {
-                pe.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit, parentCommit, true)
-                        .getBytes()));
-            } else {
-                pe.parse(new ByteArrayInputStream(gitDiffService.getDiff(commit)
-                        .getBytes()));
-            }
-            var exactDiffMap = new HashMap<String, List<GitCommitDiffLineChanges>>();
-            pe.getFiles().stream().flatMap(fileHeader ->
+            var patch = new Patch();
+            patch.parse(new ByteArrayInputStream(
+                    gitDiffService.getDiff(commit, parentCommit, DIFF_LINE_CONTEXT).getBytes()));
+            var contextLessPatch = new Patch();
+            contextLessPatch.parse(new ByteArrayInputStream(
+                    gitDiffService.getDiff(commit, parentCommit, DIFF_LINE_CONTEXTLESS).getBytes()));
+
+            var exactDiffMap = new HashMap<String, List<GitCommitDiffLineChange>>();
+            contextLessPatch.getFiles().stream().flatMap(fileHeader ->
                             fileHeader.getHunks().stream().map(hunk -> {
-                                var lineChanges = new GitCommitDiffLineChanges();
+                                var lineChanges = new GitCommitDiffLineChange();
                                 lineChanges.setNewStartLine(hunk.getNewStartLine());
                                 lineChanges.setNewLineCount(hunk.getNewLineCount());
                                 lineChanges.setOldStartLine(hunk.getOldImage().getStartLine());
@@ -168,7 +163,7 @@ public class GitDiffIndexer implements Indexer {
                         exactDiffMap.get(x.getFirst().getNewId().name()).add(x.getSecond());
                     });
             var entities = new ArrayList<GitCommitDiffFile>();
-            for (FileHeader fileHeader : p.getFiles()) {
+            for (FileHeader fileHeader : patch.getFiles()) {
                 if (CollectionUtils.isEmpty(fileHeader.getHunks())) {
                     LOG.info("Skipping pure mode change of {} ", fileHeader.getNewPath());
                     continue;

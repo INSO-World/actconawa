@@ -4,6 +4,7 @@ import at.ac.tuwien.inso.actconawa.api.CommitService;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,6 +24,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @RequestMapping(path = "/commits", produces = APPLICATION_JSON_VALUE)
 public class GitCommitController {
 
+    private final String DEFAULT_COMMIT_ANCESTOR_MAX_DEPTH = "10";
     private final CommitService commitService;
 
     public GitCommitController(CommitService commitService) {
@@ -41,7 +43,9 @@ public class GitCommitController {
 
     @GetMapping("/{commitId}/diff/{parentCommitId}")
     public List<GitCommitDiffFileDto> findAllModifiedFiles(
+            @NotNull
             @PathVariable UUID commitId,
+            @NotNull
             @PathVariable UUID parentCommitId
     ) {
         return commitService.findModifiedFiles(commitId, parentCommitId);
@@ -49,8 +53,9 @@ public class GitCommitController {
 
     @GetMapping("/{commitId}/ancestors")
     public List<GitCommitDto> findAncestors(
+            @NotNull
             @PathVariable UUID commitId,
-            @RequestParam(defaultValue = "10") int maxDepth) {
+            @RequestParam(defaultValue = DEFAULT_COMMIT_ANCESTOR_MAX_DEPTH) int maxDepth) {
         return commitService.findAncestors(commitId, maxDepth);
     }
 

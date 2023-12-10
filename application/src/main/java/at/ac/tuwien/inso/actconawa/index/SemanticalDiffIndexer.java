@@ -4,7 +4,6 @@ import at.ac.tuwien.inso.actconawa.index.language.LanguageIndexModule;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffFileRepository;
 import jakarta.transaction.Transactional;
-import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -18,14 +17,11 @@ public class SemanticalDiffIndexer implements Indexer {
 
     private static final Logger LOG = LoggerFactory.getLogger(SemanticalDiffIndexer.class);
 
-    private final Git git;
-
     private final GitCommitDiffFileRepository gitCommitDiffFileRepository;
 
     private final List<LanguageIndexModule> languageIndexModules;
 
-    public SemanticalDiffIndexer(Git git, GitCommitDiffFileRepository gitCommitDiffFileRepository, List<LanguageIndexModule> languageIndexModules) {
-        this.git = git;
+    public SemanticalDiffIndexer(GitCommitDiffFileRepository gitCommitDiffFileRepository, List<LanguageIndexModule> languageIndexModules) {
         this.gitCommitDiffFileRepository = gitCommitDiffFileRepository;
         this.languageIndexModules = languageIndexModules;
     }

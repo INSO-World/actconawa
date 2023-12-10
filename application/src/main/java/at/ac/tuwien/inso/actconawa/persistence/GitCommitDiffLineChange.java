@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "commit_diff_line_changes")
-public class GitCommitDiffLineChanges implements Serializable {
+public class GitCommitDiffLineChange implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
