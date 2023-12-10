@@ -68,6 +68,9 @@ public class GitCommitService implements CommitService {
 
     @Override
     public RevCommit getRevCommitByGitCommitId(UUID commitId) {
+        if (commitId == null) {
+            throw new IllegalArgumentException("Commit Id must not be null");
+        }
         var repo = git.getRepository();
         try {
             return repo.parseCommit(repo.resolve(gitCommitRepository.findById(commitId)

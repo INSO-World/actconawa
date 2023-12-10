@@ -47,7 +47,7 @@ public class GitCommitDiffFile implements Serializable {
     private List<GitCommitDiffHunk> gitCommitDiffHunks;
 
     @OneToMany(mappedBy = "diffFile")
-    private List<GitCommitDiffLineChanges> gitCommitDiffLineChanges;
+    private List<GitCommitDiffLineChange> gitCommitDiffLineChanges;
 
     public GitCommitDiffFile() {
     }
@@ -116,11 +116,11 @@ public class GitCommitDiffFile implements Serializable {
         this.gitCommitDiffHunks = gitCommitDiffHunks;
     }
 
-    public List<GitCommitDiffLineChanges> getGitCommitDiffLineChanges() {
+    public List<GitCommitDiffLineChange> getGitCommitDiffLineChanges() {
         return gitCommitDiffLineChanges;
     }
 
-    public void setGitCommitDiffLineChanges(List<GitCommitDiffLineChanges> gitCommitDiffLineChanges) {
+    public void setGitCommitDiffLineChanges(List<GitCommitDiffLineChange> gitCommitDiffLineChanges) {
         this.gitCommitDiffLineChanges = gitCommitDiffLineChanges;
     }
 }
