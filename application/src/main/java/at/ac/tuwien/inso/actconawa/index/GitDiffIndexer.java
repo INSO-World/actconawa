@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -102,13 +103,12 @@ public class GitDiffIndexer implements Indexer {
                         .map(GitCommitDiffFile::getGitCommitDiffHunks)
                         .filter(Objects::nonNull)
                         .flatMap(Collection::stream)
-                        .map(h -> {
+                        .peek(h -> {
                             if (!CollectionUtils.isEmpty(h.getDependencyCommitShaSet())) {
                                 h.setDependencies(new ArrayList<>());
                                 h.getDependencyCommitShaSet()
                                         .forEach(x -> h.getDependencies().add(commitCache.get(x)));
                             }
-                            return h;
                         })
                         .collect(Collectors.toList()));
 
@@ -141,97 +141,44 @@ public class GitDiffIndexer implements Indexer {
             var patch = new Patch();
             patch.parse(new ByteArrayInputStream(
                     gitDiffService.getDiff(commit, parentCommit, DIFF_LINE_CONTEXT).getBytes()));
-            var contextLessPatch = new Patch();
-            contextLessPatch.parse(new ByteArrayInputStream(
-                    gitDiffService.getDiff(commit, parentCommit, DIFF_LINE_CONTEXTLESS).getBytes()));
-
-            var exactDiffMap = new HashMap<String, List<GitCommitDiffLineChange>>();
-            contextLessPatch.getFiles().stream().flatMap(fileHeader ->
-                            fileHeader.getHunks().stream().map(hunk -> {
-                                var lineChanges = new GitCommitDiffLineChange();
-                                lineChanges.setNewStartLine(hunk.getNewStartLine());
-                                lineChanges.setNewLineCount(hunk.getNewLineCount());
-                                lineChanges.setOldStartLine(hunk.getOldImage().getStartLine());
-                                lineChanges.setOldLineCount(hunk.getOldImage().getLineCount());
-                                return lineChanges;
-                            }).map(hunkEntity -> Pair.of(fileHeader, hunkEntity))
-                    )
-                    .forEach(x -> {
-                        if (!exactDiffMap.containsKey(x.getFirst().getNewId().name())) {
-                            exactDiffMap.put(x.getFirst().getNewId().name(), new ArrayList<>());
-                        }
-                        exactDiffMap.get(x.getFirst().getNewId().name()).add(x.getSecond());
-                    });
+            var exactDiffMap = processLineChanges(commit, parentCommit);
             var entities = new ArrayList<GitCommitDiffFile>();
             for (FileHeader fileHeader : patch.getFiles()) {
                 if (CollectionUtils.isEmpty(fileHeader.getHunks())) {
                     LOG.info("Skipping pure mode change of {} ", fileHeader.getNewPath());
                     continue;
                 }
-                LOG.info("Collecting hunk information for {} ", fileHeader.getNewPath());
                 var entity = new GitCommitDiffFile();
-                entity.setCommitRelationship(gitCommitRelationship);
                 switch (fileHeader.getChangeType()) {
                     case ADD -> {
+                        LOG.info("FileHeader hunk information collected for {} (Added)", fileHeader.getNewPath());
                         entity.setNewFilePath(fileHeader.getNewPath());
                         entity.setNewFileObjectId(resolveObjectId(gitObjectReader, fileHeader.getNewId()).getName());
                     }
                     case DELETE -> {
+                        LOG.info("FileHeader hunk information collected for {} (Deleted)", fileHeader.getOldPath());
                         entity.setOldFilePath(fileHeader.getOldPath());
                         entity.setOldFileObjectId(resolveObjectId(gitObjectReader, fileHeader.getOldId()).getName());
                     }
                     // TODO: Check if COPY requires special treatment
                     default -> {
+                        LOG.info("FileHeader hunk information collected for {} (former {})",
+                                fileHeader.getNewPath(), fileHeader.getOldPath());
                         entity.setNewFilePath(fileHeader.getNewPath());
                         entity.setNewFileObjectId(resolveObjectId(gitObjectReader, fileHeader.getNewId()).getName());
                         entity.setOldFilePath(fileHeader.getOldPath());
                         entity.setOldFileObjectId(resolveObjectId(gitObjectReader, fileHeader.getOldId()).getName());
                     }
                 }
-
+                entity.setCommitRelationship(gitCommitRelationship);
                 entity.setChangeType(fileHeader.getChangeType());
-                entities.add(entity);
                 entity.setGitCommitDiffHunks(new ArrayList<>());
                 entity.setGitCommitDiffLineChanges(new ArrayList<>());
-                BlameResult blame = null;
-                for (HunkHeader hunk : fileHeader.getHunks()) {
-                    LOG.info("Processing {} {}", hunk.toString(), commit.getId().getName());
-                    var hunkEntity = new GitCommitDiffHunk();
-                    hunkEntity.setNewStartLine(hunk.getNewStartLine());
-                    hunkEntity.setNewLineCount(hunk.getNewLineCount());
-                    hunkEntity.setOldStartLine(hunk.getOldImage().getStartLine());
-                    hunkEntity.setOldLineCount(hunk.getOldImage().getLineCount());
-                    hunkEntity.setDependencyCommitShaSet(new HashSet<>());
-                    hunkEntity.setDiffFile(entity);
-                    entity.getGitCommitDiffHunks().add(hunkEntity);
-                    var lineChanges = exactDiffMap.get(fileHeader.getNewId().name());
-                    lineChanges.forEach(x -> x.setDiffFile(entity));
-                    entity.getGitCommitDiffLineChanges().addAll(lineChanges);
-                    if (fileHeader.getChangeType() != DiffEntry.ChangeType.ADD && parentCommit != null) {
-                        if (blame == null) {
-                            blame = git.blame()
-                                    .setStartCommit(parentCommit.getId())
-                                    .setFollowFileRenames(true)
-                                    .setFilePath(fileHeader.getOldPath())
-                                    .call();
-                        }
-                        blame.computeRange(hunk.getOldImage().getStartLine(),
-                                hunk.getOldImage().getLineCount());
-                        var line = hunk.getOldImage().getStartLine() - 1;
-                        var relatedAncestorCommits = new HashSet<RevCommit>();
-                        for (var i = 0; i < hunk.getOldImage().getLineCount(); ) {
-                            var srcCommit = blame.getSourceCommit(line + i++);
-                            relatedAncestorCommits.add(srcCommit);
-                            hunkEntity.getDependencyCommitShaSet().add(srcCommit.getName());
-                        }
-                        LOG.info("{} {} depends on {}",
-                                hunk,
-                                commit.getId().getName(),
-                                relatedAncestorCommits.stream().map(RevCommit::getName).collect(
-                                        Collectors.joining(",")));
-                    }
-                }
 
+                linkLineChanges(fileHeader, exactDiffMap, entity);
+                processHunks(commit, parentCommit, fileHeader, entity);
+
+                entities.add(entity);
             }
             return entities;
         } catch (GitAPIException | IOException e) {
@@ -243,6 +190,84 @@ public class GitDiffIndexer implements Indexer {
             );
             return new ArrayList<>();
         }
+    }
+
+    private HashMap<String, List<GitCommitDiffLineChange>> processLineChanges(RevCommit commit, RevCommit parentCommit)
+            throws IOException {
+        var exactDiffMap = new HashMap<String, List<GitCommitDiffLineChange>>();
+        var contextLessPatch = new Patch();
+        contextLessPatch.parse(new ByteArrayInputStream(
+                gitDiffService.getDiff(commit, parentCommit, DIFF_LINE_CONTEXTLESS).getBytes()));
+
+        contextLessPatch.getFiles().stream()
+                .flatMap(fileHeader -> fileHeader.getHunks().stream().map(hunk -> {
+                    var lineChanges = new GitCommitDiffLineChange();
+                    lineChanges.setNewStartLine(hunk.getNewStartLine());
+                    lineChanges.setNewLineCount(hunk.getNewLineCount());
+                    lineChanges.setOldStartLine(hunk.getOldImage().getStartLine());
+                    lineChanges.setOldLineCount(hunk.getOldImage().getLineCount());
+                    return lineChanges;
+                }).map(hunkEntity -> Pair.of(fileHeader, hunkEntity)))
+                .forEach(x -> {
+                    if (!exactDiffMap.containsKey(x.getFirst().getNewId().name())) {
+                        exactDiffMap.put(x.getFirst().getNewId().name(), new ArrayList<>());
+                    }
+                    exactDiffMap.get(x.getFirst().getNewId().name()).add(x.getSecond());
+                });
+        return exactDiffMap;
+    }
+
+    private static void linkLineChanges(FileHeader fileHeader, HashMap<String, List<GitCommitDiffLineChange>> exactDiffMap, GitCommitDiffFile entity) {
+        exactDiffMap.get(fileHeader.getNewId().name()).forEach(gitCommitDiffLineChange -> {
+            gitCommitDiffLineChange.setDiffFile(entity);
+            entity.getGitCommitDiffLineChanges().add(gitCommitDiffLineChange);
+        });
+    }
+
+    private void processHunks(RevCommit commit, RevCommit parentCommit, FileHeader fileHeader, GitCommitDiffFile entity)
+            throws GitAPIException, IOException {
+        Optional<BlameResult> blame = parentCommit == null ? Optional.empty() : Optional.ofNullable(git.blame()
+                .setStartCommit(parentCommit.getId())
+                .setFollowFileRenames(true)
+                .setFilePath(fileHeader.getOldPath())
+                .call());
+        for (HunkHeader hunk : fileHeader.getHunks()) {
+            LOG.info("Processing {} {}", hunk.toString(), commit.getId().getName());
+            var hunkEntity = new GitCommitDiffHunk();
+            hunkEntity.setNewStartLine(hunk.getNewStartLine());
+            hunkEntity.setNewLineCount(hunk.getNewLineCount());
+            hunkEntity.setOldStartLine(hunk.getOldImage().getStartLine());
+            hunkEntity.setOldLineCount(hunk.getOldImage().getLineCount());
+            hunkEntity.setDependencyCommitShaSet(new HashSet<>());
+            hunkEntity.setDiffFile(entity);
+            entity.getGitCommitDiffHunks().add(hunkEntity);
+
+            // blame being null means the parent commit is null, which means there are no textual dependencies.
+            if (blame.isPresent()) {
+                if (fileHeader.getChangeType() == DiffEntry.ChangeType.ADD) {
+                    throw new IllegalStateException("Parent commit seems to be null but changetype is not ADD");
+                }
+
+                hunkEntity.getDependencyCommitShaSet().addAll(
+                        findContextualDependencies(hunk, blame.get())
+                );
+            }
+        }
+    }
+
+    private HashSet<String> findContextualDependencies(HunkHeader hunk, BlameResult blame)
+            throws IOException {
+
+        blame.computeRange(hunk.getOldImage().getStartLine(), hunk.getOldImage().getLineCount());
+
+        var line = hunk.getOldImage().getStartLine() - 1;
+        var relatedAncestorCommits = new HashSet<String>();
+        for (var i = 0; i < hunk.getOldImage().getLineCount(); ) {
+            var srcCommit = blame.getSourceCommit(line + i++);
+            relatedAncestorCommits.add(srcCommit.getName());
+        }
+        LOG.info("Dependency on on commit(s) {} found", String.join(",", relatedAncestorCommits));
+        return relatedAncestorCommits;
     }
 
     private ObjectId resolveObjectId(
