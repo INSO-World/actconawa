@@ -55,6 +55,7 @@ public class MemberDeclarationProcessUtils {
                     .flatMap(x -> Optional.ofNullable(x.interfaceBody()))
                     .map(x -> x.interfaceBodyDeclaration().stream())
                     .orElse(Stream.of())
+                    .filter(x -> x.interfaceMemberDeclaration() != null)
                     .map(MemberDeclarationProcessUtils::retrieveMemberAndAnnotations)
                     .toList();
             return processInterfaceBodyMembers(interfaceMembers);
@@ -64,6 +65,7 @@ public class MemberDeclarationProcessUtils {
                     .flatMap(x -> Optional.ofNullable(x.classBody()))
                     .map(x -> x.classBodyDeclaration().stream())
                     .orElse(Stream.of())
+                    .filter(x -> x.memberDeclaration() != null)
                     .map(MemberDeclarationProcessUtils::retrieveMemberAndAnnotations)
                     .toList();
             return processClassBodyMembers(classMembers);
@@ -73,6 +75,7 @@ public class MemberDeclarationProcessUtils {
                     .flatMap(x -> Optional.ofNullable(x.enumBodyDeclarations()))
                     .map(x -> x.classBodyDeclaration().stream())
                     .orElse(Stream.of())
+                    .filter(x -> x.memberDeclaration() != null)
                     .map(MemberDeclarationProcessUtils::retrieveMemberAndAnnotations)
                     .toList();
             return processClassBodyMembers(enumMembers);
@@ -82,6 +85,7 @@ public class MemberDeclarationProcessUtils {
                     .flatMap(x -> Optional.ofNullable(x.recordBody()))
                     .map(x -> x.classBodyDeclaration().stream())
                     .orElse(Stream.of())
+                    .filter(x -> x.memberDeclaration() != null)
                     .map(MemberDeclarationProcessUtils::retrieveMemberAndAnnotations)
                     .toList();
             return processClassBodyMembers(recordMembers);
@@ -92,6 +96,7 @@ public class MemberDeclarationProcessUtils {
                     .flatMap(x -> Optional.ofNullable(x.annotationTypeBody()))
                     .map(x -> x.annotationTypeElementDeclaration().stream())
                     .orElse(Stream.of())
+                    .filter(x -> x.annotationTypeElementRest() != null)
                     .map(AnnotationTypeElementDeclarationContext::annotationTypeElementRest)
                     .toList();
             return annotationTypeMembers.stream().flatMap(x -> Stream.of(
@@ -276,6 +281,7 @@ public class MemberDeclarationProcessUtils {
         return Pair.of(
                 Optional.ofNullable(classBodyDeclarationContext.modifier()).orElse(List.of()).stream()
                         .map(ModifierContext::classOrInterfaceModifier)
+                        .filter(Objects::nonNull)
                         .map(ClassOrInterfaceModifierContext::annotation)
                         .filter(Objects::nonNull)
                         .map(MemberDeclarationProcessUtils::processAnnotation)
@@ -289,6 +295,7 @@ public class MemberDeclarationProcessUtils {
         return Pair.of(
                 interfaceBodyDeclarationContext.modifier().stream()
                         .map(ModifierContext::classOrInterfaceModifier)
+                        .filter(Objects::nonNull)
                         .map(ClassOrInterfaceModifierContext::annotation)
                         .filter(Objects::nonNull)
                         .map(MemberDeclarationProcessUtils::processAnnotation)
