@@ -18,11 +18,17 @@ public class JavaMemberDeclarationInfo extends DeclarationInfo {
     }
 
     public static JavaMemberDeclarationInfo of(DeclarationInfo declarationInfo) {
+        String typeType = null;
+        List<String> paramTypeTypes = null;
+        if (declarationInfo instanceof JavaMemberDeclarationInfo javaMemberDeclarationInfo) {
+            typeType = javaMemberDeclarationInfo.typeType;
+            paramTypeTypes = javaMemberDeclarationInfo.paramTypeTypes;
+        }
         return new JavaMemberDeclarationInfo(declarationInfo.type(),
                 declarationInfo.identifier(),
                 declarationInfo.sourceRange(),
-                null,
-                null);
+                typeType,
+                paramTypeTypes);
     }
 
     public String getTypeType() {

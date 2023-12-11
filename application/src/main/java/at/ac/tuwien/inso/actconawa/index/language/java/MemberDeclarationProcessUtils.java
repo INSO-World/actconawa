@@ -96,8 +96,8 @@ public class MemberDeclarationProcessUtils {
                     .flatMap(x -> Optional.ofNullable(x.annotationTypeBody()))
                     .map(x -> x.annotationTypeElementDeclaration().stream())
                     .orElse(Stream.of())
-                    .filter(x -> x.annotationTypeElementRest() != null)
                     .map(AnnotationTypeElementDeclarationContext::annotationTypeElementRest)
+                    .filter(Objects::nonNull)
                     .toList();
             return annotationTypeMembers.stream().flatMap(x -> Stream.of(
                             // TODO : x.annotationMethodOrConstantRest()....
@@ -150,10 +150,7 @@ public class MemberDeclarationProcessUtils {
                         DeclarationProcessUtils.processTypeDeclaration(x.getSecond().recordDeclaration()))
                 .filter(Objects::nonNull)
                 .map(JavaMemberDeclarationInfo::of)
-                .map(member -> {
-                    member.getModifiers().addAll(x.getFirst());
-                    return member;
-                })
+                .peek(member -> member.getModifiers().addAll(x.getFirst()))
         ).toList();
     }
 
