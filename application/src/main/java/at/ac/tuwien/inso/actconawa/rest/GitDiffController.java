@@ -1,5 +1,6 @@
 package at.ac.tuwien.inso.actconawa.rest;
 
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffCodeChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
 import at.ac.tuwien.inso.actconawa.service.GitDiffService;
@@ -43,6 +44,14 @@ public class GitDiffController {
             @RequestParam(name = "commit-diff-file-id") UUID commitDiffFileId
     ) {
         return gitDiffService.findGitCommitLineChangesByDiffFileId(commitDiffFileId);
+    }
+
+    @GetMapping("/code-changes")
+    public List<GitCommitDiffCodeChangeDto> findDiffCodeChanges(
+            @NotNull
+            @RequestParam(name = "commit-diff-file-id") UUID commitDiffFileId
+    ) {
+        return gitDiffService.findGitCommitCodeChangesByDiffFileId(commitDiffFileId);
     }
 
     @GetMapping("/patch")

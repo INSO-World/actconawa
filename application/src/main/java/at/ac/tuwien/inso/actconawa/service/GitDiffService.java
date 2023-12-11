@@ -1,9 +1,11 @@
 package at.ac.tuwien.inso.actconawa.service;
 
 import at.ac.tuwien.inso.actconawa.api.DiffService;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffCodeChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
 import at.ac.tuwien.inso.actconawa.mapper.GitMapper;
+import at.ac.tuwien.inso.actconawa.repository.CodeChangeRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffLineChangeRepository;
 import org.eclipse.jgit.api.Git;
@@ -31,6 +33,8 @@ public class GitDiffService implements DiffService {
 
     private final GitCommitDiffLineChangeRepository gitCommitDiffLineChangeRepository;
 
+    private final CodeChangeRepository codeChangeRepository;
+
     private final GitCommitService gitCommitService;
 
 
@@ -39,12 +43,13 @@ public class GitDiffService implements DiffService {
     public GitDiffService(
             Git git,
             GitCommitDiffHunkRepository gitCommitDiffHunkRepository,
-            GitCommitDiffLineChangeRepository gitCommitDiffLineChangeRepository, GitCommitService gitCommitService,
+            GitCommitDiffLineChangeRepository gitCommitDiffLineChangeRepository, CodeChangeRepository codeChangeRepository, GitCommitService gitCommitService,
             GitMapper gitMapper
     ) {
         this.git = git;
         this.gitCommitDiffHunkRepository = gitCommitDiffHunkRepository;
         this.gitCommitDiffLineChangeRepository = gitCommitDiffLineChangeRepository;
+        this.codeChangeRepository = codeChangeRepository;
         this.gitCommitService = gitCommitService;
         this.gitMapper = gitMapper;
     }
@@ -94,11 +99,18 @@ public class GitDiffService implements DiffService {
                 .map(gitMapper::mapModelToDto)
                 .collect(Collectors.toList());
     }
-
     @Override
     public List<GitCommitDiffLineChangeDto> findGitCommitLineChangesByDiffFileId(UUID commitDiffFileId) {
         return gitCommitDiffLineChangeRepository.findByCommitDiffFile(commitDiffFileId).stream()
                 .map(gitMapper::mapModelToDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<GitCommitDiffCodeChangeDto> findGitCommitCodeChangesByDiffFileId(UUID commitDiffFileId) {
+        return codeChangeRepository.findByCommitDiffFile(commitDiffFileId).stream()
+                .map(gitMapper::mapModelToDto)
+                .collect(Collectors.toList());
+    }
+
 }

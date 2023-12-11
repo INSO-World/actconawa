@@ -19,7 +19,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "code_change")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class CodeChange {
+public class CodeChange {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

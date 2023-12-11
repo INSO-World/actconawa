@@ -1,5 +1,6 @@
 package at.ac.tuwien.inso.actconawa.api;
 
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffCodeChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
@@ -51,4 +52,15 @@ public interface DiffService {
      * @return a {@link List} of {@link GitCommitDiffLineChangeDto}s.
      */
     List<GitCommitDiffLineChangeDto> findGitCommitLineChangesByDiffFileId(UUID commitDiffFileId);
+
+    /**
+     * Retrieve all the indexed code changes of a {@link GitCommitDiffFileDto}. In case no changes are found for a
+     * provided {@link UUID} then an empty list is returned. There is no guarantee for completeness. Results depends on
+     * the specific code indexer. Further, renames of language specific structures or moving  structures to other files
+     * is hard to impossible to capture correctly. Thus this information is nowhere indexed.
+     *
+     * @param commitDiffFileId the id of the {@link GitCommitDiffFileDto}.
+     * @return a {@link List} of {@link GitCommitDiffLineChangeDto}s.
+     */
+    List<GitCommitDiffCodeChangeDto> findGitCommitCodeChangesByDiffFileId(UUID commitDiffFileId);
 }

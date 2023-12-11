@@ -1,11 +1,13 @@
 package at.ac.tuwien.inso.actconawa.mapper;
 
 import at.ac.tuwien.inso.actconawa.dto.GitBranchDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffCodeChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
+import at.ac.tuwien.inso.actconawa.persistence.CodeChange;
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
@@ -57,6 +59,9 @@ public interface GitMapper {
 
     @Mapping(source = "diffFile", target = "diffFileId")
     GitCommitDiffLineChangeDto mapModelToDto(GitCommitDiffLineChange gitCommitDiffLineChange);
+
+    @Mapping(source = "commitDiffLineChange.diffFile", target = "diffFileId")
+    GitCommitDiffCodeChangeDto mapModelToDto(CodeChange codeChange);
 
     default List<UUID> getParentCommitIds(List<GitCommitRelationship> gitCommitRelationships) {
         return gitCommitRelationships.stream()
