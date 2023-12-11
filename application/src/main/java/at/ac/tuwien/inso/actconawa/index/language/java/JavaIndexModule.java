@@ -11,7 +11,7 @@ import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclaration
 import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChange;
 import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChangeRepository;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
-import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
+import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffLineChange;
 import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -64,10 +64,10 @@ public class JavaIndexModule implements LanguageIndexModule {
 
             JavaCodeChange affectedPackage = null;
             for (var child : cu.children) {
-                var hunks = Optional.ofNullable(commitDiffFile.getGitCommitDiffHunks()).orElse(List.of());
-                for (GitCommitDiffHunk gitCommitDiffHunk : hunks) {
-                    var start = gitCommitDiffHunk.getNewStartLine();
-                    var end = gitCommitDiffHunk.getNewStartLine() + gitCommitDiffHunk.getNewLineCount();
+                var lineChanges = Optional.ofNullable(commitDiffFile.getGitCommitDiffLineChanges()).orElse(List.of());
+                for (GitCommitDiffLineChange gitCommitDiffLineChange : lineChanges) {
+                    var start = gitCommitDiffLineChange.getNewStartLine();
+                    var end = gitCommitDiffLineChange.getNewStartLine() + gitCommitDiffLineChange.getNewLineCount();
                     var changeRange = IntegerRange.of(start.intValue(), end);
                     var type = DeclarationProcessUtils.processUnspecificDeclaration(child);
                     var typeIsInChangeRange = type.sourceRange().isOverlappedBy(changeRange);
@@ -78,7 +78,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                     var membersToSave = new HashSet<JavaCodeChange>();
                     var typeEntity = new JavaCodeChange();
 
-                    typeEntity.setDiffHunk(gitCommitDiffHunk);
+                    typeEntity.setCommitDiffLineChange(gitCommitDiffLineChange);
                     typeEntity.setType(type.type().name());
                     typeEntity.setIdentifier(type.identifier());
                     typeEntity.setSourceLineStart(type.sourceRange().getMinimum());
@@ -106,7 +106,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                         for (DeclarationInfo mdi : changedTypeModifiers) {
                             var modifier = new JavaCodeChange();
                             modifier.setParent(typeEntity);
-                            modifier.setDiffHunk(gitCommitDiffHunk);
+                            modifier.setCommitDiffLineChange(gitCommitDiffLineChange);
                             modifier.setType(mdi.type().name());
                             modifier.setIdentifier(mdi.identifier());
                             modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
@@ -126,7 +126,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                                     memberIsInChangeRange,
                                     changeRange);
                             var memberEntity = new JavaCodeChange();
-                            memberEntity.setDiffHunk(gitCommitDiffHunk);
+                            memberEntity.setCommitDiffLineChange(gitCommitDiffLineChange);
                             memberEntity.setType(member.type().name());
                             memberEntity.setIdentifier(member.identifier());
                             memberEntity.setSourceLineStart(member.sourceRange().getMinimum());
@@ -155,7 +155,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                                 for (DeclarationInfo mdi : changedMemberModifiers) {
                                     var modifier = new JavaCodeChange();
                                     modifier.setParent(typeEntity);
-                                    modifier.setDiffHunk(gitCommitDiffHunk);
+                                    modifier.setCommitDiffLineChange(gitCommitDiffLineChange);
                                     modifier.setType(mdi.type().name());
                                     modifier.setIdentifier(mdi.identifier());
                                     modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
