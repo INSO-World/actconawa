@@ -60,7 +60,7 @@ public interface GitMapper {
     @Mapping(source = "diffFile", target = "diffFileId")
     GitCommitDiffLineChangeDto mapModelToDto(GitCommitDiffLineChange gitCommitDiffLineChange);
 
-    @Mapping(source = "commitDiffLineChange.diffFile", target = "diffFileId")
+    @Mapping(source = "diffFile", target = "diffFileId")
     GitCommitDiffCodeChangeDto mapModelToDto(CodeChange codeChange);
 
     default List<UUID> getParentCommitIds(List<GitCommitRelationship> gitCommitRelationships) {
