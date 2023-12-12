@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface CodeChangeRepository extends JpaRepository<CodeChange, UUID> {
 
-    @Query("select c from CodeChange c where c.commitDiffLineChange.diffFile = :commitDiffId")
+    @Query("select c from CodeChange c where c.diffFile = :commitDiffId")
     List<CodeChange> findByCommitDiffFile(UUID commitDiffId);
 
 }

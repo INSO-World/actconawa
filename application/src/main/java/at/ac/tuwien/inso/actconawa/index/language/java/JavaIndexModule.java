@@ -80,7 +80,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                     var membersToSave = new HashSet<CodeChange>();
                     var typeEntity = new CodeChange();
 
-                    typeEntity.setCommitDiffLineChange(gitCommitDiffLineChange);
+                    typeEntity.setDiffFile(gitCommitDiffLineChange.getDiffFile());
                     typeEntity.setType(type.type().name());
                     typeEntity.setIdentifier(type.identifier());
                     typeEntity.setSourceLineStart(type.sourceRange().getMinimum());
@@ -109,7 +109,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                         for (DeclarationInfo mdi : changedTypeModifiers) {
                             var modifier = new CodeChange();
                             modifier.setParent(typeEntity);
-                            modifier.setCommitDiffLineChange(gitCommitDiffLineChange);
+                            modifier.setDiffFile(gitCommitDiffLineChange.getDiffFile());
                             modifier.setType(mdi.type().name());
                             modifier.setIdentifier(mdi.identifier());
                             modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
@@ -130,7 +130,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                                     memberIsInChangeRange,
                                     changeRange);
                             var memberEntity = new CodeChange();
-                            memberEntity.setCommitDiffLineChange(gitCommitDiffLineChange);
+                            memberEntity.setDiffFile(gitCommitDiffLineChange.getDiffFile());
                             memberEntity.setType(member.type().name());
                             memberEntity.setIdentifier("%s %s%s".formatted(
                                     member.getTypeType(),
@@ -158,8 +158,8 @@ public class JavaIndexModule implements LanguageIndexModule {
                                 }
                                 for (DeclarationInfo mdi : changedMemberModifiers) {
                                     var modifier = new CodeChange();
-                                    modifier.setParent(typeEntity);
-                                    modifier.setCommitDiffLineChange(gitCommitDiffLineChange);
+                                    modifier.setParent(memberEntity);
+                                    modifier.setDiffFile(gitCommitDiffLineChange.getDiffFile());
                                     modifier.setType(mdi.type().name());
                                     modifier.setIdentifier(mdi.identifier());
                                     modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
@@ -174,6 +174,9 @@ public class JavaIndexModule implements LanguageIndexModule {
                     codeChangeRepository.saveAll(typeEntitiesToSave);
                     codeChangeRepository.saveAll(modifiersToSave);
                     codeChangeRepository.saveAll(membersToSave);
+                    if (!typeEntitiesToSave.isEmpty() || !modifiersToSave.isEmpty() || !membersToSave.isEmpty()) {
+                        break;
+                    }
                 }
             }
 

@@ -49,8 +49,8 @@ public class CodeChange {
     private List<CodeChange> children;
 
     @ManyToOne
-    @JoinColumn(name = "diff_line_change_id")
-    private GitCommitDiffLineChange commitDiffLineChange;
+    @JoinColumn(name = "diff_file_id")
+    private GitCommitDiffFile diffFile;
 
     public UUID getId() {
         return id;
@@ -125,11 +125,11 @@ public class CodeChange {
         this.children = children;
     }
 
-    public GitCommitDiffLineChange getCommitDiffLineChange() {
-        return commitDiffLineChange;
+    public GitCommitDiffFile getDiffFile() {
+        return diffFile;
     }
 
-    public void setCommitDiffLineChange(GitCommitDiffLineChange commitDiffLineChange) {
-        this.commitDiffLineChange = commitDiffLineChange;
+    public void setDiffFile(GitCommitDiffFile diffFile) {
+        this.diffFile = diffFile;
     }
 }
