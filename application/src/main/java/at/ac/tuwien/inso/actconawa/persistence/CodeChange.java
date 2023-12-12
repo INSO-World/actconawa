@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -18,7 +16,6 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "code_change")
-@Inheritance(strategy = InheritanceType.JOINED)
 public class CodeChange {
 
     @Id
@@ -38,7 +35,11 @@ public class CodeChange {
     private int sourceLineEnd;
 
     // Flag this this as pseudo change that just provides context for a real change.
+    @Column(name = "just_context", nullable = false)
     private boolean justContext;
+
+    @Column(name = "programming_language", nullable = false)
+    private String programmingLanguage;
 
     @ManyToOne
     private CodeChange parent;
@@ -98,6 +99,15 @@ public class CodeChange {
     public void setJustContext(boolean justContext) {
         this.justContext = justContext;
     }
+
+    public String getProgrammingLanguage() {
+        return programmingLanguage;
+    }
+
+    public void setProgrammingLanguage(String programmingLanguage) {
+        this.programmingLanguage = programmingLanguage;
+    }
+
 
     public CodeChange getParent() {
         return parent;

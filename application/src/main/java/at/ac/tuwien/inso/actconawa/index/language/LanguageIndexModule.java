@@ -6,4 +6,6 @@ public interface LanguageIndexModule {
 
     boolean parseSemanticalDiff(GitCommitDiffFile commitDiffFile);
 
+    String programmingLanguage();
+
 }

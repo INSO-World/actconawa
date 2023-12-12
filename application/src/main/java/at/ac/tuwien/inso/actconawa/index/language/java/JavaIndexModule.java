@@ -8,10 +8,10 @@ import at.ac.tuwien.inso.actconawa.index.language.LanguageIndexModule;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
-import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChange;
-import at.ac.tuwien.inso.actconawa.index.language.java.persistence.JavaCodeChangeRepository;
+import at.ac.tuwien.inso.actconawa.persistence.CodeChange;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffLineChange;
+import at.ac.tuwien.inso.actconawa.repository.CodeChangeRepository;
 import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -34,14 +34,16 @@ public class JavaIndexModule implements LanguageIndexModule {
 
     private static final Logger LOG = LoggerFactory.getLogger(JavaIndexModule.class);
 
+    private static final String PROGRAMMING_LANGUAGE = "Java";
+
     private final Git git;
 
-    private final JavaCodeChangeRepository javaCodeChangeRepository;
+    private final CodeChangeRepository codeChangeRepository;
 
 
-    public JavaIndexModule(Git git, JavaCodeChangeRepository javaCodeChangeRepository) {
+    public JavaIndexModule(Git git, CodeChangeRepository javaCodeChangeRepository) {
         this.git = git;
-        this.javaCodeChangeRepository = javaCodeChangeRepository;
+        this.codeChangeRepository = javaCodeChangeRepository;
     }
 
     @Transactional
@@ -62,7 +64,7 @@ public class JavaIndexModule implements LanguageIndexModule {
             var aparser = new at.ac.tuwien.inso.actconawa.antlr.java.JavaParser(tokens);
             JavaParser.CompilationUnitContext cu = aparser.compilationUnit();
 
-            JavaCodeChange affectedPackage = null;
+            CodeChange affectedPackage = null;
             for (var child : cu.children) {
                 var lineChanges = Optional.ofNullable(commitDiffFile.getGitCommitDiffLineChanges()).orElse(List.of());
                 for (GitCommitDiffLineChange gitCommitDiffLineChange : lineChanges) {
@@ -73,10 +75,10 @@ public class JavaIndexModule implements LanguageIndexModule {
                     var typeIsInChangeRange = type.sourceRange().isOverlappedBy(changeRange);
                     LOG.debug("declaration {} is in change range: {}/{}", type, typeIsInChangeRange, changeRange);
 
-                    var typeEntitiesToSave = new HashSet<JavaCodeChange>();
-                    var modifiersToSave = new HashSet<JavaCodeChange>();
-                    var membersToSave = new HashSet<JavaCodeChange>();
-                    var typeEntity = new JavaCodeChange();
+                    var typeEntitiesToSave = new HashSet<CodeChange>();
+                    var modifiersToSave = new HashSet<CodeChange>();
+                    var membersToSave = new HashSet<CodeChange>();
+                    var typeEntity = new CodeChange();
 
                     typeEntity.setCommitDiffLineChange(gitCommitDiffLineChange);
                     typeEntity.setType(type.type().name());
@@ -84,6 +86,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                     typeEntity.setSourceLineStart(type.sourceRange().getMinimum());
                     typeEntity.setSourceLineEnd(type.sourceRange().getMaximum());
                     typeEntity.setJustContext(!typeIsInChangeRange);
+                    typeEntity.setProgrammingLanguage(programmingLanguage());
                     if (typeIsInChangeRange) {
                         typeEntitiesToSave.add(typeEntity);
                     } else if (type.type() == DeclarationType.PACKAGE) {
@@ -104,13 +107,14 @@ public class JavaIndexModule implements LanguageIndexModule {
                             typeEntity.setJustContext(true);
                         }
                         for (DeclarationInfo mdi : changedTypeModifiers) {
-                            var modifier = new JavaCodeChange();
+                            var modifier = new CodeChange();
                             modifier.setParent(typeEntity);
                             modifier.setCommitDiffLineChange(gitCommitDiffLineChange);
                             modifier.setType(mdi.type().name());
                             modifier.setIdentifier(mdi.identifier());
                             modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
                             modifier.setSourceLineEnd(mdi.sourceRange().getMaximum());
+                            modifier.setProgrammingLanguage(programmingLanguage());
                             modifiersToSave.add(modifier);
                         }
                     }
@@ -125,18 +129,18 @@ public class JavaIndexModule implements LanguageIndexModule {
                                     member,
                                     memberIsInChangeRange,
                                     changeRange);
-                            var memberEntity = new JavaCodeChange();
+                            var memberEntity = new CodeChange();
                             memberEntity.setCommitDiffLineChange(gitCommitDiffLineChange);
                             memberEntity.setType(member.type().name());
-                            memberEntity.setIdentifier(member.identifier());
+                            memberEntity.setIdentifier("%s %s%s".formatted(
+                                    member.getTypeType(),
+                                    member.identifier(),
+                                    member.getParamTypeTypes() == null ? "" :
+                                            "(" + String.join(", ", member.getParamTypeTypes()) + ")"));
                             memberEntity.setSourceLineStart(member.sourceRange().getMinimum());
                             memberEntity.setSourceLineEnd(member.sourceRange().getMaximum());
-                            if (member.getParamTypeTypes() != null) {
-                                memberEntity.setMemberParamTypeTypes(String.join(", ",
-                                        member.getParamTypeTypes()));
-                            }
-                            memberEntity.setMemberTypeType(member.getTypeType());
                             memberEntity.setParent(typeEntity);
+                            memberEntity.setProgrammingLanguage(programmingLanguage());
                             if (!typeEntitiesToSave.contains(typeEntity)) {
                                 typeEntitiesToSave.add(typeEntity);
                                 // if a member is changed, so is the parent
@@ -153,22 +157,23 @@ public class JavaIndexModule implements LanguageIndexModule {
                                     memberEntity.setJustContext(true);
                                 }
                                 for (DeclarationInfo mdi : changedMemberModifiers) {
-                                    var modifier = new JavaCodeChange();
+                                    var modifier = new CodeChange();
                                     modifier.setParent(typeEntity);
                                     modifier.setCommitDiffLineChange(gitCommitDiffLineChange);
                                     modifier.setType(mdi.type().name());
                                     modifier.setIdentifier(mdi.identifier());
                                     modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
                                     modifier.setSourceLineEnd(mdi.sourceRange().getMaximum());
+                                    modifier.setProgrammingLanguage(programmingLanguage());
                                     modifiersToSave.add(modifier);
                                 }
                             }
                         }
 
                     }
-                    javaCodeChangeRepository.saveAll(typeEntitiesToSave);
-                    javaCodeChangeRepository.saveAll(modifiersToSave);
-                    javaCodeChangeRepository.saveAll(membersToSave);
+                    codeChangeRepository.saveAll(typeEntitiesToSave);
+                    codeChangeRepository.saveAll(modifiersToSave);
+                    codeChangeRepository.saveAll(membersToSave);
                 }
             }
 
@@ -178,5 +183,10 @@ public class JavaIndexModule implements LanguageIndexModule {
             throw new IndexingIOException(e);
         }
         return true;
+    }
+
+    @Override
+    public String programmingLanguage() {
+        return PROGRAMMING_LANGUAGE;
     }
 }
