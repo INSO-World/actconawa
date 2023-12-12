@@ -104,13 +104,12 @@ public class GitCommitIndexer implements Indexer {
             indexCommits(remoteBranch, gitBranch, commitCache);
         }
         gitBranchRepository.saveAll(branches);
-        // TODO: find a better/working way to achieve this or remove
         for (var commitCacheEntry : commitCache.entrySet()) {
             var branchesOfCommit = git.branchList()
                     .setListMode(ListBranchCommand.ListMode.REMOTE)
                     .setContains(commitCacheEntry.getKey()).call()
                     .stream()
-                    .map(x -> x.getObjectId().getName())
+                    .map(Ref::getName)
                     .map(branchMap::get)
                     .toList();
             if (commitCacheEntry.getValue().getBranches() == null) {
