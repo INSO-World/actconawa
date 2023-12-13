@@ -7,9 +7,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import org.springframework.context.annotation.Lazy;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,13 +26,17 @@ public class GitBranch implements Serializable {
     @Column(unique = true, nullable = false)
     private String name;
 
+    private boolean remoteHead;
+
+    private boolean containingExclusiveCommits;
+
     @ManyToOne
     @JoinColumn(name = "head_commit_id")
     private GitCommit headCommit;
 
-    private boolean remoteHead;
-
-    private boolean containingExclusiveCommits;
+    @Lazy
+    @OneToMany(mappedBy = "branch")
+    private List<GitCommitBranch> commitBranchRelations;
 
     public GitBranch() {
     }
@@ -72,5 +79,13 @@ public class GitBranch implements Serializable {
 
     public void setContainingExclusiveCommits(boolean containingExclusiveCommits) {
         this.containingExclusiveCommits = containingExclusiveCommits;
+    }
+
+    public List<GitCommitBranch> getCommitBranchRelations() {
+        return commitBranchRelations;
+    }
+
+    public void setCommitBranchRelations(List<GitCommitBranch> commitBranchRelations) {
+        this.commitBranchRelations = commitBranchRelations;
     }
 }

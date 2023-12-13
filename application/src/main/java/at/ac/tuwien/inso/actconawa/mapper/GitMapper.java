@@ -10,6 +10,7 @@ import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import at.ac.tuwien.inso.actconawa.persistence.CodeChange;
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
+import at.ac.tuwien.inso.actconawa.persistence.GitCommitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffLineChange;
@@ -47,7 +48,7 @@ public interface GitMapper {
     GitCommitRelationshipDto mapModelToDto(GitCommitRelationship relationship);
 
 
-    @Mapping(source = "branches", target = "branchIds")
+    @Mapping(target = "branchIds", expression = "java(getCommitBranchIds(commit.getCommitBranchRelations()))")
     @Mapping(target = "parentIds", expression = "java(getParentCommitIds(commit.getParents()))")
     GitCommitDto mapModelToDto(GitCommit commit);
 
@@ -71,5 +72,12 @@ public interface GitMapper {
                 .collect(Collectors.toList());
     }
 
+    default List<UUID> getCommitBranchIds(List<GitCommitBranch> gitCommitBranches) {
+        return gitCommitBranches.stream()
+                .map(GitCommitBranch::getBranch)
+                .filter(Objects::nonNull)
+                .map(GitBranch::getId)
+                .collect(Collectors.toList());
+    }
 
 }
