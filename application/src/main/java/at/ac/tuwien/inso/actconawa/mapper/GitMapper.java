@@ -15,6 +15,7 @@ import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffLineChange;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
+import at.ac.tuwien.inso.actconawa.persistence.GitDiffHunkCommitDependency;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -55,8 +56,8 @@ public interface GitMapper {
     GitCommitDiffFileDto mapModelToDto(GitCommitDiffFile gitCommitDiffFile);
 
     @Mapping(source = "diffFile", target = "diffFileId")
-    @Mapping(source = "dependencies", target = "commitDependencyIds")
-    GitCommitDiffHunkDto mapModelToDto(GitCommitDiffHunk gitCommitDiffFile);
+    @Mapping(target = "commitDependencyIds", expression = "java(getCommitIds(gitCommitDiffHunk.getCommitDependencyRelations()))")
+    GitCommitDiffHunkDto mapModelToDto(GitCommitDiffHunk gitCommitDiffHunk);
 
     @Mapping(source = "diffFile", target = "diffFileId")
     GitCommitDiffLineChangeDto mapModelToDto(GitCommitDiffLineChange gitCommitDiffLineChange);
@@ -77,6 +78,14 @@ public interface GitMapper {
                 .map(GitCommitBranch::getBranch)
                 .filter(Objects::nonNull)
                 .map(GitBranch::getId)
+                .collect(Collectors.toList());
+    }
+
+    default List<UUID> getCommitIds(List<GitDiffHunkCommitDependency> gitDiffHunkCommitDependencies) {
+        return gitDiffHunkCommitDependencies.stream()
+                .map(GitDiffHunkCommitDependency::getCommit)
+                .filter(Objects::nonNull)
+                .map(GitCommit::getId)
                 .collect(Collectors.toList());
     }
 
