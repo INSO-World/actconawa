@@ -18,12 +18,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -91,29 +88,6 @@ public class GitCommitService implements CommitService {
         LOG.debug("Returning ancestors for Commit with ID {} and max depth {}",
                 gitCommitId,
                 maxDepth);
-        var result = new ArrayList<GitCommitDto>();
-        var commit = gitCommitRepository.findById(gitCommitId)
-                .orElseThrow(CommitNotFoundException::new);
-
-        for (int depth = 0; depth <= maxDepth && commit != null; depth++) {
-            if (Optional.ofNullable(commit.getParents()).map(List::size).orElse(0) > 0) {
-                result.add(gitMapper.mapModelToDto(commit));
-                if (commit.getParents().size() > 1) {
-                    // return as the commit has multiple parents
-                    return result;
-                }
-            }
-            // No more parents means that there are no more commits to fetch
-            if (CollectionUtils.isEmpty(commit.getParents())) {
-                result.add(gitMapper.mapModelToDto(commit));
-                return result;
-            }
-            // proceed with the next commit
-            commit = commit.getParents().get(0).getParent();
-        }
-        return result;
-
+        return gitCommitRepository.findAncestors(gitCommitId, maxDepth).stream().map(gitMapper::mapModelToDto).toList();
     }
-
-
 }

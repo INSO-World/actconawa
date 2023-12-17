@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@Order(3)
+@Order(4)
 public class SemanticalDiffIndexer implements Indexer {
 
     private static final Logger LOG = LoggerFactory.getLogger(SemanticalDiffIndexer.class);
