@@ -4,10 +4,8 @@ import at.ac.tuwien.inso.actconawa.exception.IndexingGitApiException;
 import at.ac.tuwien.inso.actconawa.exception.IndexingIOException;
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
-import at.ac.tuwien.inso.actconawa.persistence.GitCommitBranch;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import at.ac.tuwien.inso.actconawa.repository.GitBranchRepository;
-import at.ac.tuwien.inso.actconawa.repository.GitCommitBranchRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRepository;
 import jakarta.transaction.Transactional;
@@ -46,8 +44,6 @@ public class GitCommitIndexer implements Indexer {
 
     private final GitCommitRelationshipRepository gitCommitRelationshipRepository;
 
-    private final GitCommitBranchRepository gitCommitBranchRepository;
-
     private final Git git;
 
     private final Repository repository;
@@ -55,12 +51,11 @@ public class GitCommitIndexer implements Indexer {
     public GitCommitIndexer(
             GitBranchRepository gitBranchRepository,
             GitCommitRepository gitCommitRepository,
-            GitCommitRelationshipRepository gitCommitRelationshipRepository, GitCommitBranchRepository gitCommitBranchRepository,
+            GitCommitRelationshipRepository gitCommitRelationshipRepository,
             Git git) {
         this.gitBranchRepository = gitBranchRepository;
         this.gitCommitRepository = gitCommitRepository;
         this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
-        this.gitCommitBranchRepository = gitCommitBranchRepository;
         this.git = git;
         this.repository = git.getRepository();
     }
@@ -116,9 +111,11 @@ public class GitCommitIndexer implements Indexer {
                     .stream()
                     .map(Ref::getName)
                     .map(branchMap::get)
-                    .map(gitBranch -> new GitCommitBranch(commitCacheEntry.getValue(), gitBranch))
                     .toList();
-            gitCommitBranchRepository.saveAll(branchesOfCommit);
+            if (commitCacheEntry.getValue().getBranches() == null) {
+                commitCacheEntry.getValue().setBranches(new ArrayList<>());
+            }
+            commitCacheEntry.getValue().getBranches().addAll(branchesOfCommit);
         }
     }
 

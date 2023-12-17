@@ -5,12 +5,10 @@ import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffLineChange;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
-import at.ac.tuwien.inso.actconawa.persistence.GitDiffHunkCommitDependency;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffFileRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffLineChangeRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
-import at.ac.tuwien.inso.actconawa.repository.GitDiffHunkCommitDependencyRepository;
 import at.ac.tuwien.inso.actconawa.service.GitCommitService;
 import at.ac.tuwien.inso.actconawa.service.GitDiffService;
 import jakarta.annotation.Nullable;
@@ -68,25 +66,15 @@ public class GitDiffIndexer implements Indexer {
 
     private final GitCommitDiffFileRepository gitCommitDiffFileRepository;
 
-    private final GitDiffHunkCommitDependencyRepository gitDiffHunkCommitDependencyRepository;
-
     private final GitCommitRelationshipRepository gitCommitRelationshipRepository;
 
-    public GitDiffIndexer(Git git,
-            GitCommitService gitCommitService,
-            GitDiffService gitDiffService,
-            GitCommitDiffHunkRepository gitDiffHunkRepository,
-            GitCommitDiffLineChangeRepository gitCommitDiffLineChangeRepository,
-            GitCommitDiffFileRepository gitCommitDiffFileRepository,
-            GitDiffHunkCommitDependencyRepository gitDiffHunkCommitDependencyRepository,
-            GitCommitRelationshipRepository gitCommitRelationshipRepository) {
+    public GitDiffIndexer(Git git, GitCommitService gitCommitService, GitDiffService gitDiffService, GitCommitDiffHunkRepository gitDiffHunkRepository, GitCommitDiffLineChangeRepository gitCommitDiffLineChangeRepository, GitCommitDiffFileRepository gitCommitDiffFileRepository, GitCommitRelationshipRepository gitCommitRelationshipRepository) {
         this.git = git;
         this.gitCommitService = gitCommitService;
         this.gitDiffService = gitDiffService;
         this.gitDiffHunkRepository = gitDiffHunkRepository;
         this.gitCommitDiffLineChangeRepository = gitCommitDiffLineChangeRepository;
         this.gitCommitDiffFileRepository = gitCommitDiffFileRepository;
-        this.gitDiffHunkCommitDependencyRepository = gitDiffHunkCommitDependencyRepository;
         this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
 
     }
@@ -110,16 +98,20 @@ public class GitDiffIndexer implements Indexer {
                         .map(GitCommitDiffFile::getGitCommitDiffLineChanges)
                         .flatMap(Collection::stream)
                         .collect(Collectors.toList()));
-        final HashSet<GitDiffHunkCommitDependency> gitDiffHunkCommitDependencies = new HashSet<>();
         gitDiffHunkRepository.saveAll(
                 commitDiffFiles.stream()
                         .map(GitCommitDiffFile::getGitCommitDiffHunks)
                         .filter(Objects::nonNull)
                         .flatMap(Collection::stream)
-                        .peek(h -> h.getDependencyCommitShaSet().forEach(s -> gitDiffHunkCommitDependencies
-                                .add(new GitDiffHunkCommitDependency(h, commitCache.get(s)))))
+                        .peek(h -> {
+                            if (!CollectionUtils.isEmpty(h.getDependencyCommitShaSet())) {
+                                h.setDependencies(new ArrayList<>());
+                                h.getDependencyCommitShaSet()
+                                        .forEach(x -> h.getDependencies().add(commitCache.get(x)));
+                            }
+                        })
                         .collect(Collectors.toList()));
-        gitDiffHunkCommitDependencyRepository.saveAll(gitDiffHunkCommitDependencies);
+
         gitCommitDiffFileRepository.saveAll(commitDiffFiles);
     }
 

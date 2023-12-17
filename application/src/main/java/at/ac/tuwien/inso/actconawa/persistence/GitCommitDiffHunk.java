@@ -1,13 +1,15 @@
 package at.ac.tuwien.inso.actconawa.persistence;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import org.springframework.context.annotation.Lazy;
@@ -42,8 +44,12 @@ public class GitCommitDiffHunk implements Serializable {
     private GitCommitDiffFile diffFile;
 
     @Lazy
-    @OneToMany(mappedBy = "hunk")
-    private List<GitDiffHunkCommitDependency> commitDependencyRelations;
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(
+            name = "hunk_dependency_commit",
+            joinColumns = @JoinColumn(name = "hunk_id"),
+            inverseJoinColumns = @JoinColumn(name = "commit_id"))
+    private List<GitCommit> dependencies;
 
     @Transient
     private Set<String> dependencyCommitShaSet;
@@ -96,12 +102,12 @@ public class GitCommitDiffHunk implements Serializable {
         this.diffFile = diffFile;
     }
 
-    public List<GitDiffHunkCommitDependency> getCommitDependencyRelations() {
-        return commitDependencyRelations;
+    public List<GitCommit> getDependencies() {
+        return dependencies;
     }
 
-    public void setCommitDependencyRelations(List<GitDiffHunkCommitDependency> commitDependencyRelations) {
-        this.commitDependencyRelations = commitDependencyRelations;
+    public void setDependencies(List<GitCommit> dependencies) {
+        this.dependencies = dependencies;
     }
 
     public Set<String> getDependencyCommitShaSet() {
