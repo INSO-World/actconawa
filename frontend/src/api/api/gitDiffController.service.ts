@@ -25,17 +25,11 @@ import { CustomHttpParameterCodec } from '../encoder';
 import { Observable } from 'rxjs';
 
 // @ts-ignore
-import { GitCommitBranchRelationshipDto } from '../model/gitCommitBranchRelationshipDto';
+import { GitCommitDiffCodeChangeDto } from '../model/gitCommitDiffCodeChangeDto';
 // @ts-ignore
-import { GitCommitDiffFileDto } from '../model/gitCommitDiffFileDto';
+import { GitCommitDiffHunkDto } from '../model/gitCommitDiffHunkDto';
 // @ts-ignore
-import { GitCommitDto } from '../model/gitCommitDto';
-// @ts-ignore
-import { PageGitCommitDto } from '../model/pageGitCommitDto';
-// @ts-ignore
-import { PageGitCommitRelationshipDto } from '../model/pageGitCommitRelationshipDto';
-// @ts-ignore
-import { Pageable } from '../model/pageable';
+import { GitCommitDiffLineChangeDto } from '../model/gitCommitDiffLineChangeDto';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS } from '../variables';
@@ -44,7 +38,7 @@ import { Configuration } from '../configuration';
 @Injectable({
   providedIn: 'root'
 })
-export class GitCommitControllerService {
+export class GitDiffControllerService {
 
   protected basePath = 'http://localhost:8080';
 
@@ -108,35 +102,35 @@ export class GitCommitControllerService {
   }
 
   /**
-   * @param pageable
+   * @param commitDiffFileId
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
    *         returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public findAllCommitRelations(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {
+  public findDiffCodeChanges(commitDiffFileId: string, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
-  }): Observable<PageGitCommitRelationshipDto>;
-  public findAllCommitRelations(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {
+  }): Observable<Array<GitCommitDiffCodeChangeDto>>;
+  public findDiffCodeChanges(commitDiffFileId: string, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
-  }): Observable<HttpResponse<PageGitCommitRelationshipDto>>;
-  public findAllCommitRelations(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {
+  }): Observable<HttpResponse<Array<GitCommitDiffCodeChangeDto>>>;
+  public findDiffCodeChanges(commitDiffFileId: string, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
-  }): Observable<HttpEvent<PageGitCommitRelationshipDto>>;
-  public findAllCommitRelations(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
+  }): Observable<HttpEvent<Array<GitCommitDiffCodeChangeDto>>>;
+  public findDiffCodeChanges(commitDiffFileId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<any> {
-    if (pageable === null || pageable === undefined) {
-      throw new Error('Required parameter pageable was null or undefined when calling findAllCommitRelations.');
+    if (commitDiffFileId === null || commitDiffFileId === undefined) {
+      throw new Error('Required parameter commitDiffFileId was null or undefined when calling findDiffCodeChanges.');
     }
 
     let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-    if (pageable !== undefined && pageable !== null) {
+    if (commitDiffFileId !== undefined && commitDiffFileId !== null) {
       localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-              <any>pageable, 'pageable');
+              <any>commitDiffFileId, 'commit-diff-file-id');
     }
 
     let localVarHeaders = this.defaultHeaders;
@@ -169,8 +163,9 @@ export class GitCommitControllerService {
       }
     }
 
-    let localVarPath = `/commits/relations`;
-    return this.httpClient.request<PageGitCommitRelationshipDto>('get', `${this.configuration.basePath}${localVarPath}`,
+    let localVarPath = `/diffs/code-changes`;
+    return this.httpClient.request<Array<GitCommitDiffCodeChangeDto>>('get',
+            `${this.configuration.basePath}${localVarPath}`,
             {
               context: localVarHttpContext,
               params: localVarQueryParameters,
@@ -184,35 +179,35 @@ export class GitCommitControllerService {
   }
 
   /**
-   * @param pageable
+   * @param commitDiffFileId
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
    *         returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public findAllCommits(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {
+  public findDiffHunks(commitDiffFileId: string, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
-  }): Observable<PageGitCommitDto>;
-  public findAllCommits(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {
+  }): Observable<Array<GitCommitDiffHunkDto>>;
+  public findDiffHunks(commitDiffFileId: string, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
-  }): Observable<HttpResponse<PageGitCommitDto>>;
-  public findAllCommits(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {
+  }): Observable<HttpResponse<Array<GitCommitDiffHunkDto>>>;
+  public findDiffHunks(commitDiffFileId: string, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
-  }): Observable<HttpEvent<PageGitCommitDto>>;
-  public findAllCommits(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
+  }): Observable<HttpEvent<Array<GitCommitDiffHunkDto>>>;
+  public findDiffHunks(commitDiffFileId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<any> {
-    if (pageable === null || pageable === undefined) {
-      throw new Error('Required parameter pageable was null or undefined when calling findAllCommits.');
+    if (commitDiffFileId === null || commitDiffFileId === undefined) {
+      throw new Error('Required parameter commitDiffFileId was null or undefined when calling findDiffHunks.');
     }
 
     let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-    if (pageable !== undefined && pageable !== null) {
+    if (commitDiffFileId !== undefined && commitDiffFileId !== null) {
       localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-              <any>pageable, 'pageable');
+              <any>commitDiffFileId, 'commit-diff-file-id');
     }
 
     let localVarHeaders = this.defaultHeaders;
@@ -245,8 +240,85 @@ export class GitCommitControllerService {
       }
     }
 
-    let localVarPath = `/commits`;
-    return this.httpClient.request<PageGitCommitDto>('get', `${this.configuration.basePath}${localVarPath}`,
+    let localVarPath = `/diffs/hunks`;
+    return this.httpClient.request<Array<GitCommitDiffHunkDto>>('get', `${this.configuration.basePath}${localVarPath}`,
+            {
+              context: localVarHttpContext,
+              params: localVarQueryParameters,
+              responseType: <any>responseType_,
+              withCredentials: this.configuration.withCredentials,
+              headers: localVarHeaders,
+              observe: observe,
+              reportProgress: reportProgress
+            }
+    );
+  }
+
+  /**
+   * @param commitDiffFileId
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
+   *         returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public findDiffLineChanges(commitDiffFileId: string, observe?: 'body', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<Array<GitCommitDiffLineChangeDto>>;
+  public findDiffLineChanges(commitDiffFileId: string, observe?: 'response', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpResponse<Array<GitCommitDiffLineChangeDto>>>;
+  public findDiffLineChanges(commitDiffFileId: string, observe?: 'events', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpEvent<Array<GitCommitDiffLineChangeDto>>>;
+  public findDiffLineChanges(commitDiffFileId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<any> {
+    if (commitDiffFileId === null || commitDiffFileId === undefined) {
+      throw new Error('Required parameter commitDiffFileId was null or undefined when calling findDiffLineChanges.');
+    }
+
+    let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+    if (commitDiffFileId !== undefined && commitDiffFileId !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>commitDiffFileId, 'commit-diff-file-id');
+    }
+
+    let localVarHeaders = this.defaultHeaders;
+
+    let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+    if (localVarHttpHeaderAcceptSelected === undefined) {
+      // to determine the Accept header
+      const httpHeaderAccepts: string[] = [
+        'application/json'
+      ];
+      localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+    }
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    let localVarHttpContext: HttpContext | undefined = options && options.context;
+    if (localVarHttpContext === undefined) {
+      localVarHttpContext = new HttpContext();
+    }
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/diffs/line-changes`;
+    return this.httpClient.request<Array<GitCommitDiffLineChangeDto>>('get',
+            `${this.configuration.basePath}${localVarPath}`,
             {
               context: localVarHttpContext,
               params: localVarQueryParameters,
@@ -262,123 +334,46 @@ export class GitCommitControllerService {
   /**
    * @param commitId
    * @param parentCommitId
+   * @param contextLines
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
    *         returning the body.
    * @param reportProgress flag to report request and response progress.
    */
-  public findAllModifiedFiles(commitId: string, parentCommitId: string, observe?: 'body', reportProgress?: boolean, options?: {
+  public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
-  }): Observable<Array<GitCommitDiffFileDto>>;
-  public findAllModifiedFiles(commitId: string, parentCommitId: string, observe?: 'response', reportProgress?: boolean, options?: {
+  }): Observable<string>;
+  public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
-  }): Observable<HttpResponse<Array<GitCommitDiffFileDto>>>;
-  public findAllModifiedFiles(commitId: string, parentCommitId: string, observe?: 'events', reportProgress?: boolean, options?: {
+  }): Observable<HttpResponse<string>>;
+  public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
-  }): Observable<HttpEvent<Array<GitCommitDiffFileDto>>>;
-  public findAllModifiedFiles(commitId: string, parentCommitId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
+  }): Observable<HttpEvent<string>>;
+  public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext
   }): Observable<any> {
     if (commitId === null || commitId === undefined) {
-      throw new Error('Required parameter commitId was null or undefined when calling findAllModifiedFiles.');
+      throw new Error('Required parameter commitId was null or undefined when calling getPatch.');
     }
     if (parentCommitId === null || parentCommitId === undefined) {
-      throw new Error('Required parameter parentCommitId was null or undefined when calling findAllModifiedFiles.');
-    }
-
-    let localVarHeaders = this.defaultHeaders;
-
-    let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
-    if (localVarHttpHeaderAcceptSelected === undefined) {
-      // to determine the Accept header
-      const httpHeaderAccepts: string[] = [
-        'application/json'
-      ];
-      localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    }
-    if (localVarHttpHeaderAcceptSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-    }
-
-    let localVarHttpContext: HttpContext | undefined = options && options.context;
-    if (localVarHttpContext === undefined) {
-      localVarHttpContext = new HttpContext();
-    }
-
-    let responseType_: 'text' | 'json' | 'blob' = 'json';
-    if (localVarHttpHeaderAcceptSelected) {
-      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-        responseType_ = 'text';
-      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-        responseType_ = 'json';
-      } else {
-        responseType_ = 'blob';
-      }
-    }
-
-    let localVarPath = `/commits/${this.configuration.encodeParam({
-      name: "commitId",
-      value: commitId,
-      in: "path",
-      style: "simple",
-      explode: false,
-      dataType: "string",
-      dataFormat: "uuid"
-    })}/diff/${this.configuration.encodeParam({
-      name: "parentCommitId",
-      value: parentCommitId,
-      in: "path",
-      style: "simple",
-      explode: false,
-      dataType: "string",
-      dataFormat: "uuid"
-    })}`;
-    return this.httpClient.request<Array<GitCommitDiffFileDto>>('get', `${this.configuration.basePath}${localVarPath}`,
-            {
-              context: localVarHttpContext,
-              responseType: <any>responseType_,
-              withCredentials: this.configuration.withCredentials,
-              headers: localVarHeaders,
-              observe: observe,
-              reportProgress: reportProgress
-            }
-    );
-  }
-
-  /**
-   * @param commitId
-   * @param maxDepth
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
-   *         returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public findAncestors(commitId: string, maxDepth?: number, observe?: 'body', reportProgress?: boolean, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<Array<GitCommitDto>>;
-  public findAncestors(commitId: string, maxDepth?: number, observe?: 'response', reportProgress?: boolean, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<HttpResponse<Array<GitCommitDto>>>;
-  public findAncestors(commitId: string, maxDepth?: number, observe?: 'events', reportProgress?: boolean, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<HttpEvent<Array<GitCommitDto>>>;
-  public findAncestors(commitId: string, maxDepth?: number, observe: any = 'body', reportProgress: boolean = false, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<any> {
-    if (commitId === null || commitId === undefined) {
-      throw new Error('Required parameter commitId was null or undefined when calling findAncestors.');
+      throw new Error('Required parameter parentCommitId was null or undefined when calling getPatch.');
     }
 
     let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-    if (maxDepth !== undefined && maxDepth !== null) {
+    if (commitId !== undefined && commitId !== null) {
       localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-              <any>maxDepth, 'maxDepth');
+              <any>commitId, 'commit-id');
+    }
+    if (parentCommitId !== undefined && parentCommitId !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>parentCommitId, 'parent-commit-id');
+    }
+    if (contextLines !== undefined && contextLines !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>contextLines, 'context-lines');
     }
 
     let localVarHeaders = this.defaultHeaders;
@@ -411,97 +406,11 @@ export class GitCommitControllerService {
       }
     }
 
-    let localVarPath = `/commits/${this.configuration.encodeParam({
-      name: "commitId",
-      value: commitId,
-      in: "path",
-      style: "simple",
-      explode: false,
-      dataType: "string",
-      dataFormat: "uuid"
-    })}/ancestors`;
-    return this.httpClient.request<Array<GitCommitDto>>('get', `${this.configuration.basePath}${localVarPath}`,
+    let localVarPath = `/diffs/patch`;
+    return this.httpClient.request<string>('get', `${this.configuration.basePath}${localVarPath}`,
             {
               context: localVarHttpContext,
               params: localVarQueryParameters,
-              responseType: <any>responseType_,
-              withCredentials: this.configuration.withCredentials,
-              headers: localVarHeaders,
-              observe: observe,
-              reportProgress: reportProgress
-            }
-    );
-  }
-
-  /**
-   * @param commitId
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
-   *         returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public findBranches(commitId: string, observe?: 'body', reportProgress?: boolean, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<GitCommitBranchRelationshipDto>;
-  public findBranches(commitId: string, observe?: 'response', reportProgress?: boolean, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<HttpResponse<GitCommitBranchRelationshipDto>>;
-  public findBranches(commitId: string, observe?: 'events', reportProgress?: boolean, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<HttpEvent<GitCommitBranchRelationshipDto>>;
-  public findBranches(commitId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<any> {
-    if (commitId === null || commitId === undefined) {
-      throw new Error('Required parameter commitId was null or undefined when calling findBranches.');
-    }
-
-    let localVarHeaders = this.defaultHeaders;
-
-    let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
-    if (localVarHttpHeaderAcceptSelected === undefined) {
-      // to determine the Accept header
-      const httpHeaderAccepts: string[] = [
-        'application/json'
-      ];
-      localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    }
-    if (localVarHttpHeaderAcceptSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-    }
-
-    let localVarHttpContext: HttpContext | undefined = options && options.context;
-    if (localVarHttpContext === undefined) {
-      localVarHttpContext = new HttpContext();
-    }
-
-    let responseType_: 'text' | 'json' | 'blob' = 'json';
-    if (localVarHttpHeaderAcceptSelected) {
-      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-        responseType_ = 'text';
-      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-        responseType_ = 'json';
-      } else {
-        responseType_ = 'blob';
-      }
-    }
-
-    let localVarPath = `/commits/${this.configuration.encodeParam({
-      name: "commitId",
-      value: commitId,
-      in: "path",
-      style: "simple",
-      explode: false,
-      dataType: "string",
-      dataFormat: "uuid"
-    })}/branches`;
-    return this.httpClient.request<GitCommitBranchRelationshipDto>('get',
-            `${this.configuration.basePath}${localVarPath}`,
-            {
-              context: localVarHttpContext,
               responseType: <any>responseType_,
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,

@@ -12,6 +12,6 @@ export class ActiveConflictAwarenessCommitComponent {
   commit?: GitCommitDto;
 
   @Input()
-  branchById = new Map<string, GitBranchDto>;
+  branches: GitBranchDto[] | undefined;
 
 }

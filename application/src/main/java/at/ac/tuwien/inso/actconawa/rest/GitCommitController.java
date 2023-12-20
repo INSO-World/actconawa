@@ -1,6 +1,7 @@
 package at.ac.tuwien.inso.actconawa.rest;
 
 import at.ac.tuwien.inso.actconawa.api.CommitService;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
@@ -57,6 +58,13 @@ public class GitCommitController {
             @PathVariable UUID commitId,
             @RequestParam(defaultValue = DEFAULT_COMMIT_ANCESTOR_MAX_DEPTH) int maxDepth) {
         return commitService.findAncestors(commitId, maxDepth);
+    }
+
+    @GetMapping("/{commitId}/branches")
+    public GitCommitBranchRelationshipDto findBranches(
+            @NotNull
+            @PathVariable UUID commitId) {
+        return commitService.findBranches(commitId);
     }
 
 }

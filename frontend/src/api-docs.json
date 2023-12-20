@@ -11,6 +11,159 @@
         }
     ],
     "paths": {
+        "/diffs/patch": {
+            "get": {
+                "tags": [
+                    "git-diff-controller"
+                ],
+                "operationId": "getPatch",
+                "parameters": [
+                    {
+                        "name": "commit-id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "parent-commit-id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "context-lines",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 3
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/diffs/line-changes": {
+            "get": {
+                "tags": [
+                    "git-diff-controller"
+                ],
+                "operationId": "findDiffLineChanges",
+                "parameters": [
+                    {
+                        "name": "commit-diff-file-id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GitCommitDiffLineChangeDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/diffs/hunks": {
+            "get": {
+                "tags": [
+                    "git-diff-controller"
+                ],
+                "operationId": "findDiffHunks",
+                "parameters": [
+                    {
+                        "name": "commit-diff-file-id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GitCommitDiffHunkDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/diffs/code-changes": {
+            "get": {
+                "tags": [
+                    "git-diff-controller"
+                ],
+                "operationId": "findDiffCodeChanges",
+                "parameters": [
+                    {
+                        "name": "commit-diff-file-id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GitCommitDiffCodeChangeDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/commits": {
             "get": {
                 "tags": [
@@ -77,6 +230,37 @@
                                     "items": {
                                         "$ref": "#/components/schemas/GitCommitDiffFileDto"
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/commits/{commitId}/branches": {
+            "get": {
+                "tags": [
+                    "git-commit-controller"
+                ],
+                "operationId": "findBranches",
+                "parameters": [
+                    {
+                        "name": "commitId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitCommitBranchRelationshipDto"
                                 }
                             }
                         }
@@ -191,6 +375,112 @@
     },
     "components": {
         "schemas": {
+            "GitCommitDiffLineChangeDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "newStartLine": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "newLineCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "oldStartLine": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "oldLineCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "diffFileId": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                }
+            },
+            "GitCommitDiffHunkDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "newStartLine": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "newLineCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "oldStartLine": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "oldLineCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "diffFileId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "commitDependencyIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                }
+            },
+            "GitCommitDiffCodeChangeDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "sourceLineStart": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sourceLineEnd": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "justContext": {
+                        "type": "boolean"
+                    },
+                    "parentId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "childrenIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "diffFileId": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                }
+            },
             "Pageable": {
                 "type": "object",
                 "properties": {
@@ -235,13 +525,6 @@
                         "type": "string",
                         "format": "date-time"
                     },
-                    "branchIds": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
-                    },
                     "parentIds": {
                         "type": "array",
                         "items": {
@@ -285,12 +568,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
-                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
                     },
                     "empty": {
                         "type": "boolean"
@@ -307,6 +590,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
+                    "paged": {
+                        "type": "boolean"
+                    },
+                    "unpaged": {
+                        "type": "boolean"
+                    },
                     "pageNumber": {
                         "type": "integer",
                         "format": "int32"
@@ -314,12 +603,6 @@
                     "pageSize": {
                         "type": "integer",
                         "format": "int32"
-                    },
-                    "paged": {
-                        "type": "boolean"
-                    },
-                    "unpaged": {
-                        "type": "boolean"
                     }
                 }
             },
@@ -329,10 +612,10 @@
                     "empty": {
                         "type": "boolean"
                     },
-                    "sorted": {
+                    "unsorted": {
                         "type": "boolean"
                     },
-                    "unsorted": {
+                    "sorted": {
                         "type": "boolean"
                     }
                 }
@@ -352,6 +635,22 @@
                     },
                     "changeType": {
                         "type": "string"
+                    }
+                }
+            },
+            "GitCommitBranchRelationshipDto": {
+                "type": "object",
+                "properties": {
+                    "commitId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "branchIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
                     }
                 }
             },
@@ -402,12 +701,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
-                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
                     },
                     "empty": {
                         "type": "boolean"
@@ -470,12 +769,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
-                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
                     },
                     "empty": {
                         "type": "boolean"

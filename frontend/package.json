@@ -21,8 +21,7 @@
       "@angular/platform-browser": "^16.2.0",
       "@angular/platform-browser-dynamic": "^16.2.0",
       "@angular/router": "^16.2.0",
-      "d3": "^7.8.5",
-      "dagre-d3-es": "^7.0.10",
+      "cytoscape-dagre": "^2.5.0",
       "rxjs": "~7.8.1",
       "tslib": "^2.6.2",
       "zone.js": "~0.13.3"
@@ -36,7 +35,7 @@
       "@angular-eslint/template-parser": "16.2.0",
       "@angular/cli": "~16.2.3",
       "@angular/compiler-cli": "^16.2.0",
-      "@types/d3": "^7.4.1",
+      "@types/cytoscape-dagre": "^2.3.3",
       "@types/jasmine": "~4.3.6",
       "@typescript-eslint/eslint-plugin": "6.7.2",
       "@typescript-eslint/parser": "6.7.2",

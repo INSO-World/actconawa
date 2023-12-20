@@ -46,9 +46,9 @@
       <mat-grid-tile colspan="1">
         <div><strong>Branches:</strong></div>
       </mat-grid-tile>
-      <mat-grid-tile class="branch-tag-container" colspan="10">
-        <span class="branch-tag" *ngFor="let branchId of commit.branchIds">
-          {{branchById.get(branchId)?.name}}
+      <mat-grid-tile *ngIf="branches" class="branch-tag-container" colspan="10">
+        <span class="branch-tag" *ngFor="let branch of branches">
+          {{branch?.name}}
         </span>
       </mat-grid-tile>
     </mat-grid-list>

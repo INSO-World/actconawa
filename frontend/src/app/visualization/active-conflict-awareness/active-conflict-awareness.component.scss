@@ -1,7 +1,8 @@
 .git-graph-card {
   margin: 2em;
   padding: 1em;
-  overflow: hidden;
+  overflow: scroll;
+  height: 1000px;
 }
 
 .loading-spinner {

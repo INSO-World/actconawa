@@ -9,14 +9,16 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { SortObject } from './sortObject';
 
-export interface PageableObject {
-  offset?: number;
-  sort?: SortObject;
-  paged?: boolean;
-  unpaged?: boolean;
-  pageNumber?: number;
-  pageSize?: number;
+export interface GitCommitDiffCodeChangeDto {
+  id?: string;
+  type?: string;
+  identifier?: string;
+  sourceLineStart?: number;
+  sourceLineEnd?: number;
+  justContext?: boolean;
+  parentId?: string;
+  childrenIds?: Array<string>;
+  diffFileId?: string;
 }
 

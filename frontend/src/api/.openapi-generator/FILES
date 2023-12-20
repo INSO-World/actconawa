@@ -2,11 +2,16 @@ api.module.ts
 api/api.ts
 api/gitBranchController.service.ts
 api/gitCommitController.service.ts
+api/gitDiffController.service.ts
 configuration.ts
 encoder.ts
 index.ts
 model/gitBranchDto.ts
+model/gitCommitBranchRelationshipDto.ts
+model/gitCommitDiffCodeChangeDto.ts
 model/gitCommitDiffFileDto.ts
+model/gitCommitDiffHunkDto.ts
+model/gitCommitDiffLineChangeDto.ts
 model/gitCommitDto.ts
 model/gitCommitRelationshipDto.ts
 model/models.ts

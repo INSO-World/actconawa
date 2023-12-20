@@ -1,6 +1,7 @@
 package at.ac.tuwien.inso.actconawa.mapper;
 
 import at.ac.tuwien.inso.actconawa.dto.GitBranchDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffCodeChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
@@ -46,10 +47,12 @@ public interface GitMapper {
     @Mapping(source = "child", target = "childId")
     GitCommitRelationshipDto mapModelToDto(GitCommitRelationship relationship);
 
-
-    @Mapping(source = "branches", target = "branchIds")
     @Mapping(target = "parentIds", expression = "java(getParentCommitIds(commit.getParents()))")
     GitCommitDto mapModelToDto(GitCommit commit);
+
+    @Mapping(source = "branches", target = "branchIds")
+    @Mapping(source = "id", target = "commitId")
+    GitCommitBranchRelationshipDto mapModelToBranchRelationshipDto(GitCommit commit);
 
     GitCommitDiffFileDto mapModelToDto(GitCommitDiffFile gitCommitDiffFile);
 

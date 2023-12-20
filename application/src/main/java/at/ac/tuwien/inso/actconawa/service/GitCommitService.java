@@ -1,6 +1,7 @@
 package at.ac.tuwien.inso.actconawa.service;
 
 import at.ac.tuwien.inso.actconawa.api.CommitService;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
@@ -81,6 +82,12 @@ public class GitCommitService implements CommitService {
     @Override
     public Page<GitCommitRelationshipDto> findAllRelations(Pageable pageable) {
         return gitCommitRelationshipRepository.findAll(pageable).map(gitMapper::mapModelToDto);
+    }
+
+    @Override
+    public GitCommitBranchRelationshipDto findBranches(UUID gitCommitId) {
+        var commit = gitCommitRepository.findById(gitCommitId).orElseThrow(CommitNotFoundException::new);
+        return gitMapper.mapModelToBranchRelationshipDto(commit);
     }
 
     @Override
