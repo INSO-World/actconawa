@@ -1,5 +1,11 @@
 import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
-import { GitBranchControllerService, GitBranchDto, GitCommitControllerService, GitCommitDto } from '../../../api';
+import {
+  GitBranchControllerService,
+  GitBranchDto,
+  GitCommitControllerService,
+  GitCommitDto,
+  GitDiffControllerService
+} from '../../../api';
 import { EMPTY, expand, filter, lastValueFrom, mergeMap, Observable, of, tap } from "rxjs";
 import * as cytoscape from 'cytoscape';
 import { EdgeDefinition, NodeDefinition } from 'cytoscape';
@@ -34,7 +40,10 @@ export class ActiveConflictAwarenessComponent implements OnInit, OnDestroy {
 
   protected cytoscapeCommitRelationships: EdgeDefinition[] = []
 
-  constructor(private gitCommitService: GitCommitControllerService, private gitBranchService: GitBranchControllerService, private el: ElementRef) {
+  constructor(private gitCommitService: GitCommitControllerService,
+          private gitBranchService: GitBranchControllerService,
+          private gitDiffControllerService: GitDiffControllerService,
+          private el: ElementRef) {
   }
 
   async ngOnInit() {
@@ -76,6 +85,7 @@ export class ActiveConflictAwarenessComponent implements OnInit, OnDestroy {
                 .filter(b => b != undefined)
                 .map(b => b as GitBranchDto)
       });
+      this.loadChangesOfCommit(commit);
     })
   }
 
@@ -120,6 +130,39 @@ export class ActiveConflictAwarenessComponent implements OnInit, OnDestroy {
               .pipe(tap(b =>
                       this.branchIdsByCommitId.set(b.commitId || "", b.branchIds || []))), {defaultValue: EMPTY}
       );
+    }
+  }
+
+  async loadChangesOfCommit(commit: GitCommitDto) {
+    if (commit.id && commit.parentIds?.length == 1) {
+      lastValueFrom(this.gitCommitService.findAllModifiedFiles(commit.id, commit.parentIds[ 0 ]).pipe(
+              tap(x => console.log(x)),
+              mergeMap(x => x),
+              tap(x =>
+                      this.gitDiffControllerService.findDiffCodeChanges(x.id || "")
+                              .subscribe({
+                                next(v) {
+                                  console.log(v);
+                                }
+                              })
+              ),
+              tap(x =>
+                      this.gitDiffControllerService.findDiffHunks(x.id || "")
+                              .subscribe({
+                                next(v) {
+                                  console.log(v);
+                                }
+                              })
+              ),
+              tap(x =>
+                      this.gitDiffControllerService.findDiffLineChanges(x.id || "")
+                              .subscribe({
+                                next(v) {
+                                  console.log(v);
+                                }
+                              })
+              ),
+      ), {defaultValue: EMPTY})
     }
   }
 

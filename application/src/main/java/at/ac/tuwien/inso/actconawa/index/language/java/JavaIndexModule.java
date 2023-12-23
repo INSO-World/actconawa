@@ -146,7 +146,9 @@ public class JavaIndexModule implements LanguageIndexModule {
                                 // if a member is changed, so is the parent
                                 typeEntity.setJustContext(false);
                             }
-                            membersToSave.add(memberEntity);
+                            if (memberIsInChangeRange) {
+                                membersToSave.add(memberEntity);
+                            }
                             var changedMemberModifiers = member.getModifiers()
                                     .stream()
                                     .filter(x -> x.sourceRange().isOverlappedBy(changeRange))
