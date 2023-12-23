@@ -8,6 +8,7 @@ import at.ac.tuwien.inso.actconawa.mapper.GitMapper;
 import at.ac.tuwien.inso.actconawa.repository.CodeChangeRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffLineChangeRepository;
+import jakarta.transaction.Transactional;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -94,12 +95,15 @@ public class GitDiffService implements DiffService {
     }
 
     @Override
+    @Transactional
     public List<GitCommitDiffHunkDto> findGitCommitDiffHunksByDiffFileId(UUID commitDiffFileId) {
         return gitCommitDiffHunkRepository.findByCommitDiffFile(commitDiffFileId).stream()
                 .map(gitMapper::mapModelToDto)
                 .collect(Collectors.toList());
     }
+
     @Override
+    @Transactional
     public List<GitCommitDiffLineChangeDto> findGitCommitLineChangesByDiffFileId(UUID commitDiffFileId) {
         return gitCommitDiffLineChangeRepository.findByCommitDiffFile(commitDiffFileId).stream()
                 .map(gitMapper::mapModelToDto)
@@ -107,6 +111,7 @@ public class GitDiffService implements DiffService {
     }
 
     @Override
+    @Transactional
     public List<GitCommitDiffCodeChangeDto> findGitCommitCodeChangesByDiffFileId(UUID commitDiffFileId) {
         return codeChangeRepository.findByCommitDiffFile(commitDiffFileId).stream()
                 .map(gitMapper::mapModelToDto)
