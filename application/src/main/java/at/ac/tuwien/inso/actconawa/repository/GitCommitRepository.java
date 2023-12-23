@@ -18,7 +18,7 @@ public interface GitCommitRepository extends JpaRepository<GitCommit, UUID> {
             + "  SELECT ou.id, ou.parent_id, ou.child_id, (select count(c.child_id) from commit_relationship c where c.child_id = ou.child_id) > 1, depth + 1\n"
             + "  FROM linked_entries\n"
             + "  INNER JOIN commit_relationship AS ou ON linked_entries.parent_id = ou.child_id\n"
-            + "  WHERE stop = false and depth < :maxDepth"
+            + "  WHERE stop is false and depth < :maxDepth"
             + ")\n"
             + "SELECT distinct comm.* FROM linked_entries le join commit comm on comm.id = child_id order by comm.max_distance_from_root desc ;", nativeQuery = true)
     List<GitCommit> findAncestors(@Param("childId") UUID childId, @Param("maxDepth") int maxDepth);

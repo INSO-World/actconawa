@@ -1,9 +1,7 @@
 spring:
   datasource:
-    name: postgres
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: password
+    name: h2
+    url: jdbc:h2:~/actconawa;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
   jmx:
     enabled: false
   jpa:
