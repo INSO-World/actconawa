@@ -1,7 +1,10 @@
 package at.ac.tuwien.inso.actconawa.persistence;
 
+import at.ac.tuwien.inso.actconawa.index.language.dto.Resolution;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -40,6 +43,10 @@ public class CodeChange {
 
     @Column(name = "programming_language", nullable = false)
     private String programmingLanguage;
+
+    @Column(name = "resolution")
+    @Enumerated(EnumType.STRING)
+    private Resolution resolution;
 
     @ManyToOne
     private CodeChange parent;
@@ -108,6 +115,13 @@ public class CodeChange {
         this.programmingLanguage = programmingLanguage;
     }
 
+    public Resolution getResolution() {
+        return resolution;
+    }
+
+    public void setResolution(Resolution resolution) {
+        this.resolution = resolution;
+    }
 
     public CodeChange getParent() {
         return parent;

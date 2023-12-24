@@ -4,6 +4,7 @@ import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser.AnnotationContext;
 import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser.ClassBodyDeclarationContext;
 import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser.InterfaceMemberDeclarationContext;
 import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser.MemberDeclarationContext;
+import at.ac.tuwien.inso.actconawa.index.language.dto.Resolution;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
 import org.antlr.v4.runtime.RuleContext;
@@ -163,6 +164,7 @@ public class MemberDeclarationProcessUtils {
         return new JavaMemberDeclarationInfo(DeclarationType.ANNOTATION,
                 identifier,
                 range,
+                Resolution.DETAILED,
                 null,
                 null);
     }
@@ -178,6 +180,7 @@ public class MemberDeclarationProcessUtils {
         return new JavaMemberDeclarationInfo(DeclarationType.METHOD,
                 methodName,
                 range,
+                Resolution.NORMAL,
                 methodReturnType,
                 formalParameters);
     }
@@ -194,6 +197,7 @@ public class MemberDeclarationProcessUtils {
         return new JavaMemberDeclarationInfo(DeclarationType.METHOD,
                 methodName,
                 range,
+                Resolution.NORMAL,
                 methodReturnType,
                 formalParameters);
     }
@@ -209,6 +213,7 @@ public class MemberDeclarationProcessUtils {
         return new JavaMemberDeclarationInfo(DeclarationType.METHOD,
                 methodName,
                 range,
+                Resolution.NORMAL,
                 methodReturnType,
                 formalParameters);
     }
@@ -224,7 +229,12 @@ public class MemberDeclarationProcessUtils {
                 .map(IdentifierContext::getText)
                 .toString();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new JavaMemberDeclarationInfo(DeclarationType.CONST, identifiers, range, type, null);
+        return new JavaMemberDeclarationInfo(DeclarationType.CONST,
+                identifiers,
+                range,
+                Resolution.DETAILED,
+                type,
+                null);
     }
 
     private static JavaMemberDeclarationInfo processFieldDeclaration(FieldDeclarationContext ctx) {
@@ -240,7 +250,12 @@ public class MemberDeclarationProcessUtils {
                 .map(RuleContext::getText)
                 .collect(Collectors.joining(", "));
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new JavaMemberDeclarationInfo(DeclarationType.FIELD, fieldNames, range, typeText, null);
+        return new JavaMemberDeclarationInfo(DeclarationType.FIELD,
+                fieldNames,
+                range,
+                Resolution.DETAILED,
+                typeText,
+                null);
 
     }
 
@@ -251,7 +266,10 @@ public class MemberDeclarationProcessUtils {
         var identifier = ctx.identifier().getText();
         var formalParameters = readFormalParameterContext(ctx.formalParameters());
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new JavaMemberDeclarationInfo(DeclarationType.CONSTRUCTOR, identifier, range, null, formalParameters);
+        return new JavaMemberDeclarationInfo(DeclarationType.CONSTRUCTOR, identifier, range,
+                Resolution.NORMAL,
+                null,
+                formalParameters);
     }
 
     /**

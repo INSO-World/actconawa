@@ -1,5 +1,6 @@
-package at.ac.tuwien.inso.actconawa.index.language.java.dto;
+package at.ac.tuwien.inso.actconawa.index.language.dto;
 
+import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import org.apache.commons.lang3.IntegerRange;
 import org.springframework.util.CollectionUtils;
 
@@ -16,24 +17,33 @@ public class DeclarationInfo {
 
     private final List<DeclarationInfo> modifiers;
 
+    private final Resolution resolution;
+
 
     public DeclarationInfo(
             DeclarationType declarationType,
             String identifier,
             IntegerRange sourceRange,
-            List<DeclarationInfo> modifiers
+            List<DeclarationInfo> modifiers,
+            Resolution resolution
     ) {
         this.declarationType = declarationType;
         this.identifier = identifier;
         this.sourceRange = sourceRange;
         this.modifiers = modifiers;
+        this.resolution = resolution;
     }
 
-    public DeclarationInfo(DeclarationType declarationType, String identifier, IntegerRange sourceRange) {
+    public DeclarationInfo(DeclarationType declarationType,
+            String identifier,
+            IntegerRange sourceRange,
+            Resolution resolution
+    ) {
         this.declarationType = declarationType;
         this.identifier = identifier;
         this.sourceRange = sourceRange;
         this.modifiers = new ArrayList<>();
+        this.resolution = resolution;
     }
 
     @Override
@@ -60,5 +70,9 @@ public class DeclarationInfo {
 
     public List<DeclarationInfo> getModifiers() {
         return modifiers;
+    }
+
+    public Resolution getResolution() {
+        return resolution;
     }
 }

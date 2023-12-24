@@ -1,7 +1,8 @@
 package at.ac.tuwien.inso.actconawa.index.language.java;
 
 import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser;
-import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
+import at.ac.tuwien.inso.actconawa.index.language.dto.DeclarationInfo;
+import at.ac.tuwien.inso.actconawa.index.language.dto.Resolution;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.lang3.IntegerRange;
@@ -52,7 +53,7 @@ public class DeclarationProcessUtils {
             if (result == null) {
                 return new DeclarationInfo(DeclarationType.UNKNOWN_TYPE,
                         ctx.getText(),
-                        IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine()));
+                        IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine()), Resolution.NORMAL);
             }
             return result;
         }
@@ -86,7 +87,7 @@ public class DeclarationProcessUtils {
         }
         var identifier = ctx.identifier().getText();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new DeclarationInfo(DeclarationType.CLASS, identifier, range, annotations);
+        return new DeclarationInfo(DeclarationType.CLASS, identifier, range, annotations, Resolution.COARSE);
     }
 
     static DeclarationInfo processTypeDeclaration(JavaParser.InterfaceDeclarationContext ctx, List<DeclarationInfo> annotations) {
@@ -95,7 +96,7 @@ public class DeclarationProcessUtils {
         }
         var identifier = ctx.identifier().getText();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new DeclarationInfo(DeclarationType.INTERFACE, identifier, range, annotations);
+        return new DeclarationInfo(DeclarationType.INTERFACE, identifier, range, annotations, Resolution.COARSE);
     }
 
     static DeclarationInfo processTypeDeclaration(JavaParser.EnumDeclarationContext ctx, List<DeclarationInfo> annotations) {
@@ -104,7 +105,7 @@ public class DeclarationProcessUtils {
         }
         var identifier = ctx.identifier().getText();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new DeclarationInfo(DeclarationType.ENUM, identifier, range, annotations);
+        return new DeclarationInfo(DeclarationType.ENUM, identifier, range, annotations, Resolution.COARSE);
     }
 
     static DeclarationInfo processTypeDeclaration(JavaParser.AnnotationTypeDeclarationContext ctx, List<DeclarationInfo> annotations) {
@@ -113,7 +114,7 @@ public class DeclarationProcessUtils {
         }
         var identifier = ctx.identifier().getText();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new DeclarationInfo(DeclarationType.ANNOTATION_TYPE, identifier, range, annotations);
+        return new DeclarationInfo(DeclarationType.ANNOTATION_TYPE, identifier, range, annotations, Resolution.COARSE);
     }
 
     static DeclarationInfo processTypeDeclaration(JavaParser.RecordDeclarationContext ctx, List<DeclarationInfo> annotations) {
@@ -122,19 +123,21 @@ public class DeclarationProcessUtils {
         }
         var identifier = ctx.identifier().getText();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new DeclarationInfo(DeclarationType.RECORD, identifier, range, annotations);
+        return new DeclarationInfo(DeclarationType.RECORD, identifier, range, annotations, Resolution.COARSE);
     }
 
     private static DeclarationInfo processDeclaration(JavaParser.ImportDeclarationContext ctx) {
         var identifier = ctx.qualifiedName().getText();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new DeclarationInfo(DeclarationType.IMPORT, identifier, range, getAnnotations(ctx.children));
+        return new DeclarationInfo(DeclarationType.IMPORT, identifier, range, getAnnotations(ctx.children),
+                Resolution.DETAILED);
     }
 
     private static DeclarationInfo processDeclaration(JavaParser.PackageDeclarationContext ctx) {
         var identifier = ctx.qualifiedName().getText();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
-        return new DeclarationInfo(DeclarationType.PACKAGE, identifier, range, getAnnotations(ctx.children));
+        return new DeclarationInfo(DeclarationType.PACKAGE, identifier, range, getAnnotations(ctx.children),
+                Resolution.DETAILED);
 
     }
 
@@ -142,7 +145,8 @@ public class DeclarationProcessUtils {
         var identifier = ctx.qualifiedName().getText();
         var range = IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine());
 
-        return new DeclarationInfo(DeclarationType.MODULE, identifier, range, getAnnotations(ctx.children));
+        return new DeclarationInfo(DeclarationType.MODULE, identifier, range, getAnnotations(ctx.children),
+                Resolution.DETAILED);
 
     }
 
@@ -154,7 +158,7 @@ public class DeclarationProcessUtils {
                 .map(x -> new DeclarationInfo(
                         DeclarationType.ANNOTATION,
                         x.qualifiedName().getText(),
-                        IntegerRange.of(x.start.getLine(), x.stop.getLine())))
+                        IntegerRange.of(x.start.getLine(), x.stop.getLine()), Resolution.DETAILED))
                 .toList();
     }
 }

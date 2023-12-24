@@ -5,7 +5,7 @@ import at.ac.tuwien.inso.actconawa.antlr.java.JavaParser;
 import at.ac.tuwien.inso.actconawa.exception.IndexingIOException;
 import at.ac.tuwien.inso.actconawa.exception.IndexingLanguageParserException;
 import at.ac.tuwien.inso.actconawa.index.language.LanguageIndexModule;
-import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationInfo;
+import at.ac.tuwien.inso.actconawa.index.language.dto.DeclarationInfo;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
 import at.ac.tuwien.inso.actconawa.persistence.CodeChange;
@@ -87,6 +87,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                     typeEntity.setSourceLineEnd(type.sourceRange().getMaximum());
                     typeEntity.setJustContext(!typeIsInChangeRange);
                     typeEntity.setProgrammingLanguage(programmingLanguage());
+                    typeEntity.setResolution(type.getResolution());
                     if (typeIsInChangeRange) {
                         typeEntitiesToSave.add(typeEntity);
                     } else if (type.type() == DeclarationType.PACKAGE) {
@@ -115,6 +116,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                             modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
                             modifier.setSourceLineEnd(mdi.sourceRange().getMaximum());
                             modifier.setProgrammingLanguage(programmingLanguage());
+                            modifier.setResolution(mdi.getResolution());
                             modifiersToSave.add(modifier);
                         }
                     }
@@ -141,6 +143,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                             memberEntity.setSourceLineEnd(member.sourceRange().getMaximum());
                             memberEntity.setParent(typeEntity);
                             memberEntity.setProgrammingLanguage(programmingLanguage());
+                            memberEntity.setResolution(member.getResolution());
                             if (!typeEntitiesToSave.contains(typeEntity)) {
                                 typeEntitiesToSave.add(typeEntity);
                                 // if a member is changed, so is the parent
@@ -167,6 +170,7 @@ public class JavaIndexModule implements LanguageIndexModule {
                                     modifier.setSourceLineStart(mdi.sourceRange().getMinimum());
                                     modifier.setSourceLineEnd(mdi.sourceRange().getMaximum());
                                     modifier.setProgrammingLanguage(programmingLanguage());
+                                    modifier.setResolution(mdi.getResolution());
                                     modifiersToSave.add(modifier);
                                 }
                             }

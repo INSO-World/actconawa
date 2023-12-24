@@ -1,7 +1,8 @@
 spring:
   datasource:
     name: h2
-    url: jdbc:h2:~/actconawa;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    url: jdbc:h2:mem:actconawa;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
   jmx:
     enabled: false
   jpa:
