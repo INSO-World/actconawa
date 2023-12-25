@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface GitCommitRepository extends JpaRepository<GitCommit, UUID> {
@@ -37,4 +38,7 @@ public interface GitCommitRepository extends JpaRepository<GitCommit, UUID> {
 
     @Query("select r.child from GitCommitRelationship r where r.parent is null ")
     List<GitCommit> findCommitsWithoutParents();
+
+    @Query("select c from GitCommit c inner join GitBranch b on c.id = b.headCommit.id")
+    Set<GitCommit> findBranchHeadCommits();
 }
