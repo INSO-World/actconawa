@@ -52,6 +52,10 @@ public class GitCommit implements Serializable {
     private List<GitCommitRelationship> children;
 
     @Lazy
+    @OneToMany(mappedBy = "headCommit")
+    private List<GitBranch> headOfBranches;
+
+    @Lazy
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "branch_commit",
@@ -132,6 +136,14 @@ public class GitCommit implements Serializable {
 
     public void setChildren(List<GitCommitRelationship> children) {
         this.children = children;
+    }
+
+    public List<GitBranch> getHeadOfBranches() {
+        return headOfBranches;
+    }
+
+    public void setHeadOfBranches(List<GitBranch> headOfBranches) {
+        this.headOfBranches = headOfBranches;
     }
 
     public List<GitBranch> getBranches() {

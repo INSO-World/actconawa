@@ -20,6 +20,8 @@ public class GitCommitDto implements Serializable {
 
     private LocalDateTime commitDate;
 
+    private List<UUID> headOfBranchesIds;
+
     private List<UUID> parentIds;
 
     public UUID getId() {
@@ -68,6 +70,14 @@ public class GitCommitDto implements Serializable {
 
     public void setCommitDate(LocalDateTime commitDate) {
         this.commitDate = commitDate;
+    }
+
+    public List<UUID> getHeadOfBranchesIds() {
+        return headOfBranchesIds;
+    }
+
+    public void setHeadOfBranchesIds(List<UUID> headOfBranchesIds) {
+        this.headOfBranchesIds = headOfBranchesIds;
     }
 
     public List<UUID> getParentIds() {
