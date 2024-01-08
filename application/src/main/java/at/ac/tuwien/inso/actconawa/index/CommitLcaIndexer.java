@@ -11,10 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,26 +48,55 @@ public class CommitLcaIndexer implements Indexer {
         }
 
         // Set in the value instead of list ensures no duplicate commits
-        Map<GitCommit, Set<GitCommit>> headsMultiChildParents = gitCommitRepository
-                .findBranchHeadCommits().stream()
+        var branchHeads = gitCommitRepository.findBranchHeadCommits();
+        Map<GitCommit, Set<GitCommit>> headsMultiChildParents = branchHeads.stream()
                 .collect(Collectors.toMap(x -> x, x -> new HashSet<>()));
-        writeCommitRootDistance(0, rootCommits.get(0), headsMultiChildParents, new ArrayList<>());
+        Map<GitCommit, Set<GitCommit>> headsAncestorHeads = branchHeads.stream()
+                .collect(Collectors.toMap(x -> x, x -> new HashSet<>()));
+
+        traverseTreeWriteDistanceAndCollectPotentialLCACandidates(
+                0,
+                rootCommits.get(0),
+                headsMultiChildParents,
+                new HashSet<>(),
+                new HashSet<>(),
+                headsAncestorHeads);
 
         Set<GitCommitLowestCommonAncestor> lowestCommonAncestors = new HashSet<>();
-        for (Map.Entry<GitCommit, Set<GitCommit>> commitA : headsMultiChildParents.entrySet()) {
-            for (Map.Entry<GitCommit, Set<GitCommit>> commitB : headsMultiChildParents.entrySet()) {
+        for (GitCommit commitA : branchHeads) {
+            for (GitCommit commitB : branchHeads) {
+                // the two commits are the same
                 if (commitA == commitB) {
                     continue;
                 }
-                var potentialLcaA = commitA.getValue();
-                var potentialLcaB = commitB.getValue();
+                // commit b is ancestor of commit a == lca
+                if (headsAncestorHeads.get(commitA).contains(commitB)) {
+                    var entity = new GitCommitLowestCommonAncestor();
+                    entity.setCommitA(commitA);
+                    entity.setCommitB(commitB);
+                    entity.setLowestCommonAncestorCommit(commitB);
+                    lowestCommonAncestors.add(entity);
+                    continue;
+                }
+                // commit a is ancestor of commit b == lca
+                if (headsAncestorHeads.get(commitB).contains(commitA)) {
+                    var entity = new GitCommitLowestCommonAncestor();
+                    entity.setCommitA(commitA);
+                    entity.setCommitB(commitB);
+                    entity.setLowestCommonAncestorCommit(commitA);
+                    lowestCommonAncestors.add(entity);
+                    continue;
+                }
+                // lca is a multi child commit
+                var potentialLcaA = headsMultiChildParents.get(commitA);
+                var potentialLcaB = headsMultiChildParents.get(commitB);
                 potentialLcaA.stream()
                         .filter(potentialLcaB::contains)
                         .max(Comparator.comparingInt(GitCommit::getMaxDistanceFromRoot))
                         .map(lca -> {
                             var entity = new GitCommitLowestCommonAncestor();
-                            entity.setCommitA(commitA.getKey());
-                            entity.setCommitB(commitB.getKey());
+                            entity.setCommitA(commitA);
+                            entity.setCommitB(commitB);
                             entity.setLowestCommonAncestorCommit(lca);
                             return entity;
                         })
@@ -84,31 +111,63 @@ public class CommitLcaIndexer implements Indexer {
         return "lowest common ancestors of branch heads and distance to root commit";
     }
 
-    private void writeCommitRootDistance(
+    /**
+     * Traverse the git tree of a certain commit recursively and write the max. distance to the root into each commit.
+     *
+     * Further fills the {@link Map} containing branch heads as keys with all corresponding multi child ancestors.
+     *
+     * @param distance               the current distance to the root commit
+     * @param commit                 the commit that is currently processed (to be called initially usually with root
+     *                               commit)
+     * @param headsMultiChildParents the {@link Map} containing the the head commits that are under investigation as
+     *                               keys and all multi child ancestor commits as values.
+     * @param multiChildCommits      all the multi-child commits that were processed so far on the path to a commit
+     * @param branchHeads            all the branch head commits that were processed so far on the path to a commit
+     * @param headsAncestorHeads     the {@link Map} containing the the head commits that are under investigation as
+     *                               keys and all ancestor head commits as values.
+     */
+    private void traverseTreeWriteDistanceAndCollectPotentialLCACandidates(
             int distance, GitCommit commit,
             Map<GitCommit, Set<GitCommit>> headsMultiChildParents,
-            List<GitCommit> multiChildCommits
+            Set<GitCommit> multiChildCommits,
+            Set<GitCommit> branchHeads,
+            Map<GitCommit, Set<GitCommit>> headsAncestorHeads
     ) {
-        if (commit.getMaxDistanceFromRoot() != null && commit.getMaxDistanceFromRoot() > distance) {
-            // Already done, break recursion
-            return;
+        // Update distance is commit distance from root is still null or smaller than current distance value
+        if (commit.getMaxDistanceFromRoot() == null || commit.getMaxDistanceFromRoot() < distance) {
+            commit.setMaxDistanceFromRoot(distance);
         }
 
+        // If it is a commit of interest (branch head). Add all potential LCA candidates.
         if (headsMultiChildParents.containsKey(commit)) {
             // set ensures no duplicates that would occur here
             headsMultiChildParents.get(commit).addAll(multiChildCommits);
         }
-        commit.setMaxDistanceFromRoot(distance);
-        var next = new ArrayList<>(multiChildCommits);
-        if (commit.getChildren() != null && commit.getChildren().size() > 1) {
-            next.add(commit);
+        if (headsAncestorHeads.containsKey(commit)) {
+            // set ensures no duplicates that would occur here
+            headsAncestorHeads.get(commit).addAll(branchHeads);
         }
+        // Create shallow copy to not influence recursion
+        var multiChildCommitsCopy = new HashSet<>(multiChildCommits);
+        var branchHeadsCopy = new HashSet<>(branchHeads);
+        // add commit to the freshly copied list of multi child commits if this commit has multiple children
+        if (commit.getChildren() != null && commit.getChildren().size() > 1) {
+            multiChildCommitsCopy.add(commit);
+        }
+        // add commit to the branchheads copy if the commit is a branch head
+        if (headsAncestorHeads.containsKey(commit)) {
+            branchHeadsCopy.add(commit);
+        }
+        var nextDistance = ++distance;
+        // for all the children in the commit, repeat this.
         for (GitCommitRelationship x : commit.getChildren()) {
-            writeCommitRootDistance(
-                    ++distance,
+            traverseTreeWriteDistanceAndCollectPotentialLCACandidates(
+                    nextDistance,
                     x.getChild(),
                     headsMultiChildParents,
-                    next
+                    multiChildCommitsCopy,
+                    branchHeadsCopy,
+                    headsAncestorHeads
             );
         }
 
