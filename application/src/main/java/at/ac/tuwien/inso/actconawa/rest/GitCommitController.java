@@ -52,6 +52,16 @@ public class GitCommitController {
         return commitService.findModifiedFiles(commitId, parentCommitId);
     }
 
+    @GetMapping("/{commitAId}/lca/{commitBId}")
+    public GitCommitDto findLowestCommonAncestor(
+            @NotNull
+            @PathVariable UUID commitAId,
+            @NotNull
+            @PathVariable UUID commitBId
+    ) {
+        return commitService.findLowestCommonAncestor(commitAId, commitBId);
+    }
+
     @GetMapping("/{commitId}/ancestors")
     public List<GitCommitDto> findAncestors(
             @NotNull

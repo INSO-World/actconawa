@@ -22,8 +22,8 @@ export interface PageGitCommitDto {
   content?: Array<GitCommitDto>;
   number?: number;
   sort?: SortObject;
-  numberOfElements?: number;
   pageable?: PageableObject;
+  numberOfElements?: number;
   empty?: boolean;
 }
 

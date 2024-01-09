@@ -312,6 +312,46 @@
                 }
             }
         },
+        "/commits/{commitAId}/lca/{commitBId}": {
+            "get": {
+                "tags": [
+                    "git-commit-controller"
+                ],
+                "operationId": "findLowestCommonAncestor",
+                "parameters": [
+                    {
+                        "name": "commitAId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "commitBId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitCommitDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/commits/relations": {
             "get": {
                 "tags": [
@@ -525,6 +565,13 @@
                         "type": "string",
                         "format": "date-time"
                     },
+                    "headOfBranchesIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
                     "parentIds": {
                         "type": "array",
                         "items": {
@@ -568,12 +615,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
-                    },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
                     },
                     "empty": {
                         "type": "boolean"
@@ -590,12 +637,6 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
-                    "paged": {
-                        "type": "boolean"
-                    },
-                    "unpaged": {
-                        "type": "boolean"
-                    },
                     "pageNumber": {
                         "type": "integer",
                         "format": "int32"
@@ -603,6 +644,12 @@
                     "pageSize": {
                         "type": "integer",
                         "format": "int32"
+                    },
+                    "paged": {
+                        "type": "boolean"
+                    },
+                    "unpaged": {
+                        "type": "boolean"
                     }
                 }
             },
@@ -701,12 +748,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
-                    },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
                     },
                     "empty": {
                         "type": "boolean"
@@ -769,12 +816,12 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
-                    },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
                     },
                     "empty": {
                         "type": "boolean"
