@@ -42,24 +42,14 @@ public class GitCommitController {
         return commitService.findAllRelations(pageable);
     }
 
-    @GetMapping("/{commitId}/diff/{parentCommitId}")
+    @GetMapping("/modified-files")
     public List<GitCommitDiffFileDto> findAllModifiedFiles(
             @NotNull
-            @PathVariable UUID commitId,
+            @RequestParam UUID commitId,
             @NotNull
-            @PathVariable UUID parentCommitId
+            @RequestParam UUID parentCommitId
     ) {
         return commitService.findModifiedFiles(commitId, parentCommitId);
-    }
-
-    @GetMapping("/{commitAId}/lca/{commitBId}")
-    public GitCommitDto findLowestCommonAncestor(
-            @NotNull
-            @PathVariable UUID commitAId,
-            @NotNull
-            @PathVariable UUID commitBId
-    ) {
-        return commitService.findLowestCommonAncestor(commitAId, commitBId);
     }
 
     @GetMapping("/{commitId}/ancestors")

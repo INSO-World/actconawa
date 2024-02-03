@@ -4,7 +4,6 @@ import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
-import at.ac.tuwien.inso.actconawa.exception.CommitNotFoundException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,20 +56,6 @@ public interface CommitService {
      * @return A List of ancestor commits.
      */
     List<GitCommitDto> findAncestors(UUID gitCommitId, int maxDepth);
-
-    /**
-     * Takes two commits and returns the lowest common ancestor commit.
-     *
-     * Only branch head commits are supported.
-     *
-     * @param gitCommitAId Id of the first commit
-     * @param gitCommitBId Id of the secondCommit
-     * @throws IllegalArgumentException in case one of the commit IDs is not a branch head.
-     * @throws IllegalStateException    in case the LCA commit is not found even that the provided commits were branch
-     *                                  heads.
-     * @throws CommitNotFoundException  in case one of the commits was not found.
-     */
-    GitCommitDto findLowestCommonAncestor(UUID gitCommitAId, UUID gitCommitBId);
 
     // TODO: Move this into a internal service.
     RevCommit getRevCommitByGitCommitId(UUID commitId);

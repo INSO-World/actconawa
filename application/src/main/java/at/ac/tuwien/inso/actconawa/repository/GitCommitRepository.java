@@ -43,16 +43,7 @@ public interface GitCommitRepository extends JpaRepository<GitCommit, UUID> {
     @Query("select c from GitCommit c inner join GitBranch b on c.id = b.headCommit.id")
     Set<GitCommit> findBranchHeadCommits();
 
+    Optional<GitCommit> findByShaStartsWith(String sha);
 
-    @Query("select lca.lowestCommonAncestorCommit from GitCommitLowestCommonAncestor lca"
-            + " where (lca.commitA.id = :commitAId and lca.commitB.id = :commitBId)"
-            + "   or (lca.commitB.id = :commitAId and lca.commitA.id = :commitBId)"
-    )
-    List<GitCommit> findLcaList(@Param("commitAId") UUID commitAId, @Param("commitBId") UUID commitBId);
-
-    // jpql does not support limit/pagination directly and currently commitA/commitB and commitB/commitA might occur.
-    default Optional<GitCommit> findLca(UUID commitAId, UUID commitBId) {
-        return findLcaList(commitAId, commitBId).stream().findAny();
-    }
 
 }

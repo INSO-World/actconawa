@@ -1,6 +1,7 @@
 package at.ac.tuwien.inso.actconawa.mapper;
 
 import at.ac.tuwien.inso.actconawa.dto.GitBranchDto;
+import at.ac.tuwien.inso.actconawa.dto.GitBranchTrackingStatusDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffCodeChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
@@ -10,6 +11,7 @@ import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import at.ac.tuwien.inso.actconawa.persistence.CodeChange;
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
+import at.ac.tuwien.inso.actconawa.persistence.GitBranchTrackingStatus;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
@@ -42,6 +44,11 @@ public interface GitMapper {
     @Mapping(source = "remoteHead", target = "remoteHead")
     @Mapping(source = "containingExclusiveCommits", target = "containingExclusiveCommits")
     GitBranchDto mapModelToDto(GitBranch branch);
+
+    @Mapping(source = "branchA", target = "branchAId")
+    @Mapping(source = "branchB", target = "branchBId")
+    @Mapping(source = "mergeBase", target = "mergeBaseCommitId")
+    GitBranchTrackingStatusDto mapModelToDto(GitBranchTrackingStatus branchTrackingStatus);
 
     @Mapping(source = "parent", target = "parentId")
     @Mapping(source = "child", target = "childId")

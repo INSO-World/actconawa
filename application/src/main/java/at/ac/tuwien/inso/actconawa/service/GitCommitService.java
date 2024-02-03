@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -97,20 +96,5 @@ public class GitCommitService implements CommitService {
                 gitCommitId,
                 maxDepth);
         return gitCommitRepository.findAncestors(gitCommitId, maxDepth).stream().map(gitMapper::mapModelToDto).toList();
-    }
-
-    @Override
-    public GitCommitDto findLowestCommonAncestor(UUID gitCommitAId, UUID gitCommitBId) {
-
-        var headOfBranchesA = gitCommitRepository
-                .findById(gitCommitAId).orElseThrow(CommitNotFoundException::new).getHeadOfBranches();
-        var headOfBranchesB = gitCommitRepository
-                .findById(gitCommitBId).orElseThrow(CommitNotFoundException::new).getHeadOfBranches();
-        if (CollectionUtils.isEmpty(headOfBranchesA) || CollectionUtils.isEmpty(headOfBranchesB)) {
-            throw new IllegalArgumentException("At least one of the provided commits is not a head of a branch");
-        }
-        var lca = gitCommitRepository.findLca(gitCommitAId, gitCommitBId).orElseThrow(IllegalStateException::new);
-        LOG.debug("Returning LCA {} of {} and {}", lca.getId(), gitCommitAId, gitCommitBId);
-        return gitMapper.mapModelToDto(lca);
     }
 }
