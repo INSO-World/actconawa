@@ -25,14 +25,16 @@ public class IndexerService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void indexAll() {
+        var overallIndexStart = Instant.now();
         for (Indexer indexer : indexers) {
-            var start = Instant.now();
+            var indexerStart = Instant.now();
             LOG.info("Starting indexing of {}", indexer.getIndexedContentDescription());
             indexer.index();
             var finished = Instant.now();
             LOG.info("Finished indexing of {} in {}ms",
                     indexer.getIndexedContentDescription(),
-                    Duration.between(start, finished).toMillis());
+                    Duration.between(indexerStart, finished).toMillis());
         }
+        LOG.info("Completed indexing in {}ms", Duration.between(overallIndexStart, Instant.now()).toMillis());
     }
 }

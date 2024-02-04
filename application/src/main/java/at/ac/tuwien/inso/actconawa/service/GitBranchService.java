@@ -36,6 +36,7 @@ public class GitBranchService implements BranchService {
         return gitBranchRepository.findAll(pageable).map(gitMapper::mapModelToDto);
     }
 
+    @Override
     public GitBranchTrackingStatusDto getBranchTrackingStatus(UUID gitBranchAId, UUID gitBranchBId) {
         if (gitBranchAId == null || gitBranchBId == null) {
             throw new IllegalArgumentException("Both branch ids must be provided and null values are not allowed");
@@ -49,4 +50,8 @@ public class GitBranchService implements BranchService {
         return gitMapper.mapModelToDto(result);
     }
 
+    @Override
+    public Page<GitBranchTrackingStatusDto> getAllBranchTrackingStatus(Pageable pageable) {
+        return gitBranchTrackingStatusRepository.findAll(pageable).map(gitMapper::mapModelToDto);
+    }
 }

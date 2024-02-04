@@ -25,4 +25,13 @@ public interface BranchService {
      * @return The requested {@link GitBranchTrackingStatusDto}.
      */
     public GitBranchTrackingStatusDto getBranchTrackingStatus(UUID gitBranchAId, UUID gitBranchBId);
+
+    /**
+     * Returns all (paginated) tracking status between branches. {@link GitBranchTrackingStatusDto} contains the merge
+     * base commit id and the ahead/behind count. The order matters for the ahead/behind count, gitBranchAId is used as
+     * reference.
+     *
+     * @return The requested {@link Page} with the {@link GitBranchTrackingStatusDto}s.
+     */
+    public Page<GitBranchTrackingStatusDto> getAllBranchTrackingStatus(Pageable pageable);
 }

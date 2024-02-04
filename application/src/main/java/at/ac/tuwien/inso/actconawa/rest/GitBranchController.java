@@ -31,14 +31,19 @@ public class GitBranchController {
         return branchService.findAll(pageable);
     }
 
-    @GetMapping("/tracking-stats")
-    public GitBranchTrackingStatusDto getBranchTrackingStatus(
+    @GetMapping("/compare")
+    public GitBranchTrackingStatusDto getTrackingStatus(
             @NotNull
             @RequestParam("branch-a") UUID branchAId,
             @NotNull
             @RequestParam("branch-b") UUID branchBId
     ) {
         return branchService.getBranchTrackingStatus(branchAId, branchBId);
+    }
+
+    @GetMapping("/tracking-status")
+    public Page<GitBranchTrackingStatusDto> getAllTrackingStatus(Pageable pageable) {
+        return branchService.getAllBranchTrackingStatus(pageable);
     }
 
 }
