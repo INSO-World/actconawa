@@ -33,7 +33,9 @@ springdoc:
     enabled: true
     path: /swagger-ui.html
 actconawa:
-  repo: <path-to-.git>
+  repo:
+    git-dir: <path-to-.git>
+    default-branch: main
 logging:
   level:
     at.ac.tuwien.inso.actconawa: DEBUG

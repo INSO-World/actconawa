@@ -22,6 +22,7 @@
 
         <jgit.version>6.5.0.202303070854</jgit.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <spring-boot-config-processor.version>3.2.0</spring-boot-config-processor.version>
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
         <java-parser.version>3.25.6</java-parser.version>
         <antlr.version>4.10.1</antlr.version>
