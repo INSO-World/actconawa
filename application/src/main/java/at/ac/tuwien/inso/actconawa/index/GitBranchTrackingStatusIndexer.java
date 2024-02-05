@@ -9,6 +9,7 @@ import at.ac.tuwien.inso.actconawa.repository.GitBranchTrackingStatusRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRepository;
 import at.ac.tuwien.inso.actconawa.service.GitCommitService;
 import jakarta.transaction.Transactional;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -66,11 +67,11 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                 if (branchA == branchB) {
                     continue;
                 }
-                var refA = gitCommitService.getRevCommitByGitCommitId(branchA.getHeadCommit().getId());
-                var refB = gitCommitService.getRevCommitByGitCommitId(branchB.getHeadCommit().getId());
                 try (RevWalk walk = new RevWalk(repository)) {
                     // find merge base
                     walk.setRevFilter(RevFilter.MERGE_BASE);
+                    var refA = walk.parseCommit(ObjectId.fromString(branchA.getHeadCommit().getSha()));
+                    var refB = walk.parseCommit(ObjectId.fromString(branchB.getHeadCommit().getSha()));
                     walk.markStart(refA);
                     walk.markStart(refB);
                     RevCommit mergeBase = walk.next();
@@ -86,10 +87,13 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                     int behindCount = RevWalkUtils.count(walk, refB, mergeBase);
                     LOG.debug("Branch {} and {} is {} ahead and {} behind",
                             branchA.getName(), branchB.getName(), aheadCount, behindCount);
+                    // check if a branch b was merged into a already
+                    var isMergedInto = walk.isMergedInto(refB, refA);
                     // persist
                     var branchTrackingStatus = new GitBranchTrackingStatus();
                     branchTrackingStatus.setBranchA(branchA);
                     branchTrackingStatus.setBranchB(branchB);
+                    branchTrackingStatus.setMergedInto(isMergedInto);
                     branchTrackingStatus.setAheadCount(aheadCount);
                     branchTrackingStatus.setBehindCount(behindCount);
                     branchTrackingStatus.setMergeBase(gitCommitMergeBase);

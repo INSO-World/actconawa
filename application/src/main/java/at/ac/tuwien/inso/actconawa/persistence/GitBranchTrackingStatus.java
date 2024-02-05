@@ -32,6 +32,9 @@ public class GitBranchTrackingStatus implements Serializable {
     @JoinColumn(name = "merge_base")
     private GitCommit mergeBase;
 
+    @Column(name = "is_merged_into", nullable = false)
+    private boolean isMergedInto;
+
     @Column(name = "ahead_count", nullable = false)
     private int aheadCount;
 
@@ -68,6 +71,14 @@ public class GitBranchTrackingStatus implements Serializable {
 
     public void setMergeBase(GitCommit mergeBase) {
         this.mergeBase = mergeBase;
+    }
+
+    public boolean isMergedInto() {
+        return isMergedInto;
+    }
+
+    public void setMergedInto(boolean mergedInto) {
+        isMergedInto = mergedInto;
     }
 
     public int getAheadCount() {

@@ -12,6 +12,8 @@ public class GitBranchTrackingStatusDto {
 
     private UUID mergeBaseCommitId;
 
+    private boolean isMergedInto;
+
     private int aheadCount;
 
     private int behindCount;
@@ -46,6 +48,14 @@ public class GitBranchTrackingStatusDto {
 
     public void setMergeBaseCommitId(UUID mergeBaseCommitId) {
         this.mergeBaseCommitId = mergeBaseCommitId;
+    }
+
+    public boolean isMergedInto() {
+        return isMergedInto;
+    }
+
+    public void setMergedInto(boolean mergedInto) {
+        isMergedInto = mergedInto;
     }
 
     public int getAheadCount() {
