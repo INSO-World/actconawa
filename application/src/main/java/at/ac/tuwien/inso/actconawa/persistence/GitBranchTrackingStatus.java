@@ -1,7 +1,10 @@
 package at.ac.tuwien.inso.actconawa.persistence;
 
+import at.ac.tuwien.inso.actconawa.enums.MergeStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,8 +35,10 @@ public class GitBranchTrackingStatus implements Serializable {
     @JoinColumn(name = "merge_base")
     private GitCommit mergeBase;
 
-    @Column(name = "is_merged_into", nullable = false)
-    private boolean isMergedInto;
+    @Column(name = "merge_status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private MergeStatus mergeStatus;
+
 
     @Column(name = "ahead_count", nullable = false)
     private int aheadCount;
@@ -73,12 +78,12 @@ public class GitBranchTrackingStatus implements Serializable {
         this.mergeBase = mergeBase;
     }
 
-    public boolean isMergedInto() {
-        return isMergedInto;
+    public MergeStatus getMergeStatus() {
+        return mergeStatus;
     }
 
-    public void setMergedInto(boolean mergedInto) {
-        isMergedInto = mergedInto;
+    public void setMergeStatus(MergeStatus mergeStatus) {
+        this.mergeStatus = mergeStatus;
     }
 
     public int getAheadCount() {

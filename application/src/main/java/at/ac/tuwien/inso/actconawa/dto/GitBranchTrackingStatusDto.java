@@ -1,5 +1,7 @@
 package at.ac.tuwien.inso.actconawa.dto;
 
+import at.ac.tuwien.inso.actconawa.enums.MergeStatus;
+
 import java.util.UUID;
 
 public class GitBranchTrackingStatusDto {
@@ -12,7 +14,7 @@ public class GitBranchTrackingStatusDto {
 
     private UUID mergeBaseCommitId;
 
-    private boolean isMergedInto;
+    private MergeStatus mergeStatus;
 
     private int aheadCount;
 
@@ -50,12 +52,12 @@ public class GitBranchTrackingStatusDto {
         this.mergeBaseCommitId = mergeBaseCommitId;
     }
 
-    public boolean isMergedInto() {
-        return isMergedInto;
+    public MergeStatus getMergeStatus() {
+        return mergeStatus;
     }
 
-    public void setMergedInto(boolean mergedInto) {
-        isMergedInto = mergedInto;
+    public void setMergeStatus(MergeStatus mergeStatus) {
+        this.mergeStatus = mergeStatus;
     }
 
     public int getAheadCount() {
