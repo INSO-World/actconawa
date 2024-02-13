@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.eclipse.jgit.errors.NoMergeBaseException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.merge.RecursiveMerger;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.RevWalkUtils;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+import static org.eclipse.jgit.merge.MergeStrategy.RECURSIVE;
 import static org.eclipse.jgit.merge.MergeStrategy.SIMPLE_TWO_WAY_IN_CORE;
 
 @Component
@@ -96,15 +98,26 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                     var mergeStatus = MergeStatus.CONFLICTS;
                     if (!isMergedInto) {
                         try {
-                            var mergeable = SIMPLE_TWO_WAY_IN_CORE.newMerger(repository, true).merge(refA, refB);
-                            mergeStatus = isMergedInto ? MergeStatus.MERGED :
-                                    mergeable ? MergeStatus.MERGEABLE : MergeStatus.CONFLICTS;
-
+                            var twoWayMergeable = SIMPLE_TWO_WAY_IN_CORE.newMerger(repository, true).merge(refA, refB);
+                            var threeWayMerger = (RecursiveMerger) RECURSIVE.newMerger(repository, true);
+                            var threeWayMergeable = threeWayMerger.merge(refA, refB);
+                            if (twoWayMergeable) {
+                                // no same files were changed
+                                mergeStatus = MergeStatus.TWO_WAY_MERGEABLE;
+                            } else if (threeWayMergeable) {
+                                // same files were changed, no conflict
+                                mergeStatus = MergeStatus.THREE_WAY_MERGEABLE;
+                            }
                         } catch (NoMergeBaseException e) {
                             mergeStatus = MergeStatus.UNKNOWN_MERGE_BASE;
-                            LOG.error("Branch {} and {} has no merge-base or multiple", e);
+                            LOG.error("Branch {} and {} has einther no or multiple merge-base(s)",
+                                    branchA.getName(), branchB.getName());
                         }
+                    } else {
+                        mergeStatus = MergeStatus.MERGED;
                     }
+                    LOG.debug("Branch {} and {} have merge-status {}",
+                            branchA.getName(), branchB.getName(), mergeStatus);
                     // persist
                     var branchTrackingStatus = new GitBranchTrackingStatus();
                     branchTrackingStatus.setBranchA(branchA);
