@@ -1,10 +1,13 @@
 package at.ac.tuwien.inso.actconawa.persistence;
 
 import at.ac.tuwien.inso.actconawa.enums.MergeStatus;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -45,6 +49,11 @@ public class GitBranchTrackingStatus implements Serializable {
 
     @Column(name = "behind_count", nullable = false)
     private int behindCount;
+
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "merge_conflict_file_path", joinColumns = @JoinColumn(name = "branch_tracking_status_id"))
+    @Column(name = "merge_conflict_file_path", nullable = false)
+    private List<String> conflictingFilePaths;
 
     public UUID getId() {
         return id;
@@ -100,5 +109,13 @@ public class GitBranchTrackingStatus implements Serializable {
 
     public void setBehindCount(int behindCount) {
         this.behindCount = behindCount;
+    }
+
+    public List<String> getConflictingFilePaths() {
+        return conflictingFilePaths;
+    }
+
+    public void setConflictingFilePaths(List<String> conflictingFilePaths) {
+        this.conflictingFilePaths = conflictingFilePaths;
     }
 }

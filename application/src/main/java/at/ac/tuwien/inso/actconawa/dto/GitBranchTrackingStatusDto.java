@@ -2,6 +2,7 @@ package at.ac.tuwien.inso.actconawa.dto;
 
 import at.ac.tuwien.inso.actconawa.enums.MergeStatus;
 
+import java.util.List;
 import java.util.UUID;
 
 public class GitBranchTrackingStatusDto {
@@ -19,6 +20,8 @@ public class GitBranchTrackingStatusDto {
     private int aheadCount;
 
     private int behindCount;
+
+    private List<String> conflictingFilePaths;
 
     public UUID getId() {
         return id;
@@ -74,5 +77,13 @@ public class GitBranchTrackingStatusDto {
 
     public void setBehindCount(int behindCount) {
         this.behindCount = behindCount;
+    }
+
+    public List<String> getConflictingFilePaths() {
+        return conflictingFilePaths;
+    }
+
+    public void setConflictingFilePaths(List<String> conflictingFilePaths) {
+        this.conflictingFilePaths = conflictingFilePaths;
     }
 }

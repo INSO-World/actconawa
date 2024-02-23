@@ -24,6 +24,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static org.eclipse.jgit.merge.MergeStrategy.RECURSIVE;
 import static org.eclipse.jgit.merge.MergeStrategy.SIMPLE_TWO_WAY_IN_CORE;
@@ -96,6 +97,7 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                     // check if a branch b was merged into a already
                     var isMergedInto = walk.isMergedInto(refB, refA);
                     var mergeStatus = MergeStatus.CONFLICTS;
+                    var conflictingFilePaths = new ArrayList<String>();
                     if (!isMergedInto) {
                         try {
                             var twoWayMergeable = SIMPLE_TWO_WAY_IN_CORE.newMerger(repository, true).merge(refA, refB);
@@ -107,6 +109,13 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                             } else if (threeWayMergeable) {
                                 // same files were changed, no conflict
                                 mergeStatus = MergeStatus.THREE_WAY_MERGEABLE;
+                            } else {
+                                conflictingFilePaths.addAll(threeWayMerger.getUnmergedPaths());
+                                LOG.error("Branch {} and {} conflicts on {} files",
+                                        branchA.getName(),
+                                        branchB.getName(),
+                                        conflictingFilePaths.size());
+
                             }
                         } catch (NoMergeBaseException e) {
                             mergeStatus = MergeStatus.UNKNOWN_MERGE_BASE;
@@ -126,6 +135,7 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                     branchTrackingStatus.setAheadCount(aheadCount);
                     branchTrackingStatus.setBehindCount(behindCount);
                     branchTrackingStatus.setMergeBase(gitCommitMergeBase);
+                    branchTrackingStatus.setConflictingFilePaths(conflictingFilePaths);
                     gitBranchTrackingStatusRepository.save(branchTrackingStatus);
                 } catch (IOException e) {
                     throw new IndexingIOException(e);
