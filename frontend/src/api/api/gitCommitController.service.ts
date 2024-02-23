@@ -289,6 +289,16 @@ export class GitCommitControllerService {
       throw new Error('Required parameter parentCommitId was null or undefined when calling findAllModifiedFiles.');
     }
 
+    let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+    if (commitId !== undefined && commitId !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>commitId, 'commitId');
+    }
+    if (parentCommitId !== undefined && parentCommitId !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>parentCommitId, 'parentCommitId');
+    }
+
     let localVarHeaders = this.defaultHeaders;
 
     let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
@@ -319,26 +329,11 @@ export class GitCommitControllerService {
       }
     }
 
-    let localVarPath = `/commits/${this.configuration.encodeParam({
-      name: "commitId",
-      value: commitId,
-      in: "path",
-      style: "simple",
-      explode: false,
-      dataType: "string",
-      dataFormat: "uuid"
-    })}/diff/${this.configuration.encodeParam({
-      name: "parentCommitId",
-      value: parentCommitId,
-      in: "path",
-      style: "simple",
-      explode: false,
-      dataType: "string",
-      dataFormat: "uuid"
-    })}`;
+    let localVarPath = `/commits/modified-files`;
     return this.httpClient.request<Array<GitCommitDiffFileDto>>('get', `${this.configuration.basePath}${localVarPath}`,
             {
               context: localVarHttpContext,
+              params: localVarQueryParameters,
               responseType: <any>responseType_,
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
@@ -500,95 +495,6 @@ export class GitCommitControllerService {
     })}/branches`;
     return this.httpClient.request<GitCommitBranchRelationshipDto>('get',
             `${this.configuration.basePath}${localVarPath}`,
-            {
-              context: localVarHttpContext,
-              responseType: <any>responseType_,
-              withCredentials: this.configuration.withCredentials,
-              headers: localVarHeaders,
-              observe: observe,
-              reportProgress: reportProgress
-            }
-    );
-  }
-
-  /**
-   * @param commitAId
-   * @param commitBId
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
-   *         returning the body.
-   * @param reportProgress flag to report request and response progress.
-   */
-  public findLowestCommonAncestor(commitAId: string, commitBId: string, observe?: 'body', reportProgress?: boolean, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<GitCommitDto>;
-  public findLowestCommonAncestor(commitAId: string, commitBId: string, observe?: 'response', reportProgress?: boolean, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<HttpResponse<GitCommitDto>>;
-  public findLowestCommonAncestor(commitAId: string, commitBId: string, observe?: 'events', reportProgress?: boolean, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<HttpEvent<GitCommitDto>>;
-  public findLowestCommonAncestor(commitAId: string, commitBId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
-    httpHeaderAccept?: 'application/json',
-    context?: HttpContext
-  }): Observable<any> {
-    if (commitAId === null || commitAId === undefined) {
-      throw new Error('Required parameter commitAId was null or undefined when calling findLowestCommonAncestor.');
-    }
-    if (commitBId === null || commitBId === undefined) {
-      throw new Error('Required parameter commitBId was null or undefined when calling findLowestCommonAncestor.');
-    }
-
-    let localVarHeaders = this.defaultHeaders;
-
-    let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
-    if (localVarHttpHeaderAcceptSelected === undefined) {
-      // to determine the Accept header
-      const httpHeaderAccepts: string[] = [
-        'application/json'
-      ];
-      localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-    }
-    if (localVarHttpHeaderAcceptSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-    }
-
-    let localVarHttpContext: HttpContext | undefined = options && options.context;
-    if (localVarHttpContext === undefined) {
-      localVarHttpContext = new HttpContext();
-    }
-
-    let responseType_: 'text' | 'json' | 'blob' = 'json';
-    if (localVarHttpHeaderAcceptSelected) {
-      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-        responseType_ = 'text';
-      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-        responseType_ = 'json';
-      } else {
-        responseType_ = 'blob';
-      }
-    }
-
-    let localVarPath = `/commits/${this.configuration.encodeParam({
-      name: "commitAId",
-      value: commitAId,
-      in: "path",
-      style: "simple",
-      explode: false,
-      dataType: "string",
-      dataFormat: "uuid"
-    })}/lca/${this.configuration.encodeParam({
-      name: "commitBId",
-      value: commitBId,
-      in: "path",
-      style: "simple",
-      explode: false,
-      dataType: "string",
-      dataFormat: "uuid"
-    })}`;
-    return this.httpClient.request<GitCommitDto>('get', `${this.configuration.basePath}${localVarPath}`,
             {
               context: localVarHttpContext,
               responseType: <any>responseType_,

@@ -1,8 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {
-  ActiveConflictAwarenessCommitComponent
-} from './active-conflict-awareness-commit.component';
+import { ActiveConflictAwarenessCommitComponent } from './active-conflict-awareness-commit.component';
 
 describe('ActiveConflictAwarenessCommitComponent', () => {
   let component: ActiveConflictAwarenessCommitComponent;

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { GitBranchDto, GitCommitDto } from "../../../../api";
+import { GitBranchDto, GitCommitDto } from "../../../../../api";
 
 @Component({
   selector: 'app-active-conflict-awareness-commit',

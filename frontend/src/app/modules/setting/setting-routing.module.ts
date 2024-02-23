@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import {
-  RepositoryConfigurationComponent
-} from "./repository-configuration/repository-configuration.component";
+import { RepositoryConfigurationComponent } from "./repository-configuration/repository-configuration.component";
 
 const routes: Routes = [
   {

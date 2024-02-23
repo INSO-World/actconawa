@@ -10,17 +10,17 @@
  * Do not edit the class manually.
  */
 import { PageableObject } from './pageableObject';
-import { GitCommitRelationshipDto } from './gitCommitRelationshipDto';
+import { GitBranchTrackingStatusDto } from './gitBranchTrackingStatusDto';
 import { SortObject } from './sortObject';
 
-export interface PageGitCommitRelationshipDto {
+export interface PageGitBranchTrackingStatusDto {
   totalPages?: number;
   totalElements?: number;
   pageable?: PageableObject;
   first?: boolean;
   last?: boolean;
   size?: number;
-  content?: Array<GitCommitRelationshipDto>;
+  content?: Array<GitBranchTrackingStatusDto>;
   number?: number;
   sort?: SortObject;
   numberOfElements?: number;

@@ -25,7 +25,11 @@ import { CustomHttpParameterCodec } from '../encoder';
 import { Observable } from 'rxjs';
 
 // @ts-ignore
+import { GitBranchTrackingStatusDto } from '../model/gitBranchTrackingStatusDto';
+// @ts-ignore
 import { PageGitBranchDto } from '../model/pageGitBranchDto';
+// @ts-ignore
+import { PageGitBranchTrackingStatusDto } from '../model/pageGitBranchTrackingStatusDto';
 // @ts-ignore
 import { Pageable } from '../model/pageable';
 
@@ -163,6 +167,167 @@ export class GitBranchControllerService {
 
     let localVarPath = `/branches`;
     return this.httpClient.request<PageGitBranchDto>('get', `${this.configuration.basePath}${localVarPath}`,
+            {
+              context: localVarHttpContext,
+              params: localVarQueryParameters,
+              responseType: <any>responseType_,
+              withCredentials: this.configuration.withCredentials,
+              headers: localVarHeaders,
+              observe: observe,
+              reportProgress: reportProgress
+            }
+    );
+  }
+
+  /**
+   * @param pageable
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
+   *         returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public getAllTrackingStatus(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<PageGitBranchTrackingStatusDto>;
+  public getAllTrackingStatus(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpResponse<PageGitBranchTrackingStatusDto>>;
+  public getAllTrackingStatus(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpEvent<PageGitBranchTrackingStatusDto>>;
+  public getAllTrackingStatus(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<any> {
+    if (pageable === null || pageable === undefined) {
+      throw new Error('Required parameter pageable was null or undefined when calling getAllTrackingStatus.');
+    }
+
+    let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+    if (pageable !== undefined && pageable !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>pageable, 'pageable');
+    }
+
+    let localVarHeaders = this.defaultHeaders;
+
+    let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+    if (localVarHttpHeaderAcceptSelected === undefined) {
+      // to determine the Accept header
+      const httpHeaderAccepts: string[] = [
+        'application/json'
+      ];
+      localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+    }
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    let localVarHttpContext: HttpContext | undefined = options && options.context;
+    if (localVarHttpContext === undefined) {
+      localVarHttpContext = new HttpContext();
+    }
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/branches/tracking-status`;
+    return this.httpClient.request<PageGitBranchTrackingStatusDto>('get',
+            `${this.configuration.basePath}${localVarPath}`,
+            {
+              context: localVarHttpContext,
+              params: localVarQueryParameters,
+              responseType: <any>responseType_,
+              withCredentials: this.configuration.withCredentials,
+              headers: localVarHeaders,
+              observe: observe,
+              reportProgress: reportProgress
+            }
+    );
+  }
+
+  /**
+   * @param branchA
+   * @param branchB
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
+   *         returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public getTrackingStatus(branchA: string, branchB: string, observe?: 'body', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<GitBranchTrackingStatusDto>;
+  public getTrackingStatus(branchA: string, branchB: string, observe?: 'response', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpResponse<GitBranchTrackingStatusDto>>;
+  public getTrackingStatus(branchA: string, branchB: string, observe?: 'events', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<HttpEvent<GitBranchTrackingStatusDto>>;
+  public getTrackingStatus(branchA: string, branchB: string, observe: any = 'body', reportProgress: boolean = false, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext
+  }): Observable<any> {
+    if (branchA === null || branchA === undefined) {
+      throw new Error('Required parameter branchA was null or undefined when calling getTrackingStatus.');
+    }
+    if (branchB === null || branchB === undefined) {
+      throw new Error('Required parameter branchB was null or undefined when calling getTrackingStatus.');
+    }
+
+    let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+    if (branchA !== undefined && branchA !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>branchA, 'branch-a');
+    }
+    if (branchB !== undefined && branchB !== null) {
+      localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+              <any>branchB, 'branch-b');
+    }
+
+    let localVarHeaders = this.defaultHeaders;
+
+    let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+    if (localVarHttpHeaderAcceptSelected === undefined) {
+      // to determine the Accept header
+      const httpHeaderAccepts: string[] = [
+        'application/json'
+      ];
+      localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+    }
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    let localVarHttpContext: HttpContext | undefined = options && options.context;
+    if (localVarHttpContext === undefined) {
+      localVarHttpContext = new HttpContext();
+    }
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/branches/compare`;
+    return this.httpClient.request<GitBranchTrackingStatusDto>('get', `${this.configuration.basePath}${localVarPath}`,
             {
               context: localVarHttpContext,
               params: localVarQueryParameters,

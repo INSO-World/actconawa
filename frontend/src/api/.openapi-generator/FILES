@@ -7,6 +7,7 @@ configuration.ts
 encoder.ts
 index.ts
 model/gitBranchDto.ts
+model/gitBranchTrackingStatusDto.ts
 model/gitCommitBranchRelationshipDto.ts
 model/gitCommitDiffCodeChangeDto.ts
 model/gitCommitDiffFileDto.ts
@@ -16,6 +17,7 @@ model/gitCommitDto.ts
 model/gitCommitRelationshipDto.ts
 model/models.ts
 model/pageGitBranchDto.ts
+model/pageGitBranchTrackingStatusDto.ts
 model/pageGitCommitDto.ts
 model/pageGitCommitRelationshipDto.ts
 model/pageable.ts

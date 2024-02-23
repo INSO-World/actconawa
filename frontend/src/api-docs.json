@@ -194,49 +194,6 @@
                 }
             }
         },
-        "/commits/{commitId}/diff/{parentCommitId}": {
-            "get": {
-                "tags": [
-                    "git-commit-controller"
-                ],
-                "operationId": "findAllModifiedFiles",
-                "parameters": [
-                    {
-                        "name": "commitId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
-                    },
-                    {
-                        "name": "parentCommitId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/GitCommitDiffFileDto"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/commits/{commitId}/branches": {
             "get": {
                 "tags": [
@@ -312,46 +269,6 @@
                 }
             }
         },
-        "/commits/{commitAId}/lca/{commitBId}": {
-            "get": {
-                "tags": [
-                    "git-commit-controller"
-                ],
-                "operationId": "findLowestCommonAncestor",
-                "parameters": [
-                    {
-                        "name": "commitAId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
-                    },
-                    {
-                        "name": "commitBId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/GitCommitDto"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/commits/relations": {
             "get": {
                 "tags": [
@@ -382,6 +299,49 @@
                 }
             }
         },
+        "/commits/modified-files": {
+            "get": {
+                "tags": [
+                    "git-commit-controller"
+                ],
+                "operationId": "findAllModifiedFiles",
+                "parameters": [
+                    {
+                        "name": "commitId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "parentCommitId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GitCommitDiffFileDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/branches": {
             "get": {
                 "tags": [
@@ -405,6 +365,76 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/PageGitBranchDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/branches/tracking-status": {
+            "get": {
+                "tags": [
+                    "git-branch-controller"
+                ],
+                "operationId": "getAllTrackingStatus",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PageGitBranchTrackingStatusDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/branches/compare": {
+            "get": {
+                "tags": [
+                    "git-branch-controller"
+                ],
+                "operationId": "getTrackingStatus",
+                "parameters": [
+                    {
+                        "name": "branch-a",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "branch-b",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitBranchTrackingStatusDto"
                                 }
                             }
                         }
@@ -592,6 +622,9 @@
                         "type": "integer",
                         "format": "int64"
                     },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
                     "first": {
                         "type": "boolean"
                     },
@@ -615,9 +648,6 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
-                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
@@ -630,13 +660,6 @@
             "PageableObject": {
                 "type": "object",
                 "properties": {
-                    "offset": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "sort": {
-                        "$ref": "#/components/schemas/SortObject"
-                    },
                     "pageNumber": {
                         "type": "integer",
                         "format": "int32"
@@ -644,6 +667,13 @@
                     "pageSize": {
                         "type": "integer",
                         "format": "int32"
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
                     },
                     "paged": {
                         "type": "boolean"
@@ -656,32 +686,14 @@
             "SortObject": {
                 "type": "object",
                 "properties": {
+                    "sorted": {
+                        "type": "boolean"
+                    },
                     "empty": {
                         "type": "boolean"
                     },
                     "unsorted": {
                         "type": "boolean"
-                    },
-                    "sorted": {
-                        "type": "boolean"
-                    }
-                }
-            },
-            "GitCommitDiffFileDto": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "newFilePath": {
-                        "type": "string"
-                    },
-                    "oldFilePath": {
-                        "type": "string"
-                    },
-                    "changeType": {
-                        "type": "string"
                     }
                 }
             },
@@ -725,6 +737,9 @@
                         "type": "integer",
                         "format": "int64"
                     },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
                     "first": {
                         "type": "boolean"
                     },
@@ -748,15 +763,30 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
-                    "pageable": {
-                        "$ref": "#/components/schemas/PageableObject"
-                    },
                     "numberOfElements": {
                         "type": "integer",
                         "format": "int32"
                     },
                     "empty": {
                         "type": "boolean"
+                    }
+                }
+            },
+            "GitCommitDiffFileDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "newFilePath": {
+                        "type": "string"
+                    },
+                    "oldFilePath": {
+                        "type": "string"
+                    },
+                    "changeType": {
+                        "type": "string"
                     }
                 }
             },
@@ -793,6 +823,9 @@
                         "type": "integer",
                         "format": "int64"
                     },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
                     "first": {
                         "type": "boolean"
                     },
@@ -816,8 +849,96 @@
                     "sort": {
                         "$ref": "#/components/schemas/SortObject"
                     },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "GitBranchTrackingStatusDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "branchAId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "branchBId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "mergeBaseCommitId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "mergeStatus": {
+                        "type": "string",
+                        "enum": [
+                            "MERGED",
+                            "TWO_WAY_MERGEABLE",
+                            "THREE_WAY_MERGEABLE",
+                            "CONFLICTS",
+                            "UNKNOWN_MERGE_BASE"
+                        ]
+                    },
+                    "aheadCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "behindCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "conflictingFilePaths": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "PageGitBranchTrackingStatusDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
                     "pageable": {
                         "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GitBranchTrackingStatusDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
                     },
                     "numberOfElements": {
                         "type": "integer",

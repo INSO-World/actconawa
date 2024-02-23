@@ -1,4 +1,5 @@
 export * from './gitBranchDto';
+export * from './gitBranchTrackingStatusDto';
 export * from './gitCommitBranchRelationshipDto';
 export * from './gitCommitDiffCodeChangeDto';
 export * from './gitCommitDiffFileDto';
@@ -7,6 +8,7 @@ export * from './gitCommitDiffLineChangeDto';
 export * from './gitCommitDto';
 export * from './gitCommitRelationshipDto';
 export * from './pageGitBranchDto';
+export * from './pageGitBranchTrackingStatusDto';
 export * from './pageGitCommitDto';
 export * from './pageGitCommitRelationshipDto';
 export * from './pageable';
