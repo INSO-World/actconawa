@@ -3,10 +3,15 @@ import {
   GitBranchControllerService,
   GitBranchDto,
   GitCommitControllerService,
+  GitCommitDiffCodeChangeDto,
+  GitCommitDiffFileDto,
+  GitCommitDiffHunkDto,
+  GitCommitDiffLineChangeDto,
   GitCommitDto,
   GitDiffControllerService
 } from "../../api";
 import { EMPTY, expand, filter, lastValueFrom, mergeMap, Observable, of, tap } from "rxjs";
+import { CompositeKeyMap } from "../utils/CompositeKeyMap";
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +27,17 @@ export class GitService {
   private commitById = new Map<string, GitCommitDto>;
 
   private branchIdsByCommitId = new Map<string, string[]>;
+
+  private commitDiffFilesByCommitIds = new CompositeKeyMap<string, GitCommitDiffFileDto[]>;
+
+  private changedCodeByCommitDiffFileId =
+          new Map<string, GitCommitDiffCodeChangeDto[]>;
+
+  private changedLinesByCommitDiffFileId =
+          new Map<string, GitCommitDiffLineChangeDto[]>;
+
+  private hunksByCommitDiffFileId =
+          new Map<string, GitCommitDiffHunkDto[]>;
 
   constructor(
           private gitCommitService: GitCommitControllerService,
@@ -69,36 +85,47 @@ export class GitService {
             .flatMap(b => b ? [b] : []);
   }
 
-  loadChangesOfCommit(commit: GitCommitDto) {
-    if (commit.id && commit.parentIds?.length == 1) {
-      lastValueFrom(this.gitCommitService.findAllModifiedFiles(commit.id, commit.parentIds[ 0 ]).pipe(
-              tap(x => console.log(x)),
-              mergeMap(x => x),
-              tap(x =>
-                      this.gitDiffControllerService.findDiffCodeChanges(x.id || "")
-                              .subscribe({
-                                next(v) {
-                                  console.log(v);
-                                }
-                              })
-              ),
-              tap(x =>
-                      this.gitDiffControllerService.findDiffHunks(x.id || "")
-                              .subscribe({
-                                next(v) {
-                                  console.log(v);
-                                }
-                              })
-              ),
-              tap(x =>
-                      this.gitDiffControllerService.findDiffLineChanges(x.id || "")
-                              .subscribe({
-                                next(v) {
-                                  console.log(v);
-                                }
-                              })
-              ),
-      ), {defaultValue: EMPTY})
+  async getModifiedFilesByCommitIds(commitAId: string, commitBId: string) {
+    if (!this.commitDiffFilesByCommitIds.has(commitAId, commitBId)) {
+      const diffFiles =
+              await lastValueFrom(this.gitCommitService.findAllModifiedFiles(commitAId, commitBId))
+      this.commitDiffFilesByCommitIds.set(commitAId, commitBId, diffFiles);
+      return diffFiles;
+    } else {
+      return this.commitDiffFilesByCommitIds.get(commitAId, commitBId);
+    }
+  }
+
+  async getHunksByDiffFileId(diffFileId: string) {
+    if (!this.hunksByCommitDiffFileId.has(diffFileId)) {
+      const hunks =
+              await lastValueFrom(this.gitDiffControllerService.findDiffHunks(diffFileId));
+      this.hunksByCommitDiffFileId.set(diffFileId, hunks);
+      return hunks;
+    } else {
+      return this.hunksByCommitDiffFileId.get(diffFileId);
+    }
+  }
+
+  async getCodeChangesByDiffFileId(diffFileId: string) {
+    if (!this.changedCodeByCommitDiffFileId.has(diffFileId)) {
+      const codeChanges =
+              await lastValueFrom(this.gitDiffControllerService.findDiffCodeChanges(diffFileId));
+      this.changedCodeByCommitDiffFileId.set(diffFileId, codeChanges);
+      return codeChanges;
+    } else {
+      return this.changedCodeByCommitDiffFileId.get(diffFileId);
+    }
+  }
+
+  async getLineChangesByDiffFileId(diffFileId: string) {
+    if (!this.changedLinesByCommitDiffFileId.has(diffFileId)) {
+      const lines =
+              await lastValueFrom(this.gitDiffControllerService.findDiffLineChanges(diffFileId));
+      this.changedLinesByCommitDiffFileId.set(diffFileId, lines);
+      return lines;
+    } else {
+      return this.changedLinesByCommitDiffFileId.get(diffFileId);
     }
   }
 

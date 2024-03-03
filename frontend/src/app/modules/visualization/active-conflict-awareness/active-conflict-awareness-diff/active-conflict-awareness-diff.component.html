@@ -1,0 +1,21 @@
+<mat-list *ngIf="commit">
+
+  <div *ngFor="let parentId of this.commit?.parentIds">
+    <div *ngFor="let file of this.diffFilesByParentCommitId.get(parentId)">
+      <ng-container *ngIf="file">
+        <div>{{file.newFilePath}}</div>
+        <strong>Hunks</strong>
+        <mat-list-item>{{hunksByFileId.get(file.id + "") | json}}</mat-list-item>
+        <mat-divider></mat-divider>
+        <strong>Changed lines</strong>
+        <mat-list-item> {{changedLinesByFileId.get(file.id + "") | json}}</mat-list-item>
+        <mat-divider></mat-divider>
+        <strong>Code Changes</strong>
+        <mat-list-item> {{changedCodeByFileId.get(file.id + "") | json}}</mat-list-item>
+        <mat-divider></mat-divider>
+      </ng-container>
+
+    </div>
+
+  </div>
+</mat-list>

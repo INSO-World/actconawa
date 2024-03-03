@@ -12,11 +12,19 @@ import {
 } from './active-conflict-awareness/active-conflict-awareness-commit/active-conflict-awareness-commit.component';
 import { MatGridListModule } from "@angular/material/grid-list";
 import { MatChipsModule } from "@angular/material/chips";
+import {
+  ActiveConflictAwarenessDiffComponent
+} from './active-conflict-awareness/active-conflict-awareness-diff/active-conflict-awareness-diff.component';
+import { MatTabsModule } from "@angular/material/tabs";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatListModule } from "@angular/material/list";
 
 @NgModule({
   declarations: [
     ActiveConflictAwarenessComponent,
-    ActiveConflictAwarenessCommitComponent
+    ActiveConflictAwarenessCommitComponent,
+    ActiveConflictAwarenessDiffComponent
   ],
   imports: [
     CommonModule,
@@ -27,6 +35,10 @@ import { MatChipsModule } from "@angular/material/chips";
     MatExpansionModule,
     MatGridListModule,
     MatChipsModule,
+    MatTabsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatListModule,
   ]
 })
 export class VisualizationModule {

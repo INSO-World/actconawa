@@ -11,6 +11,7 @@
  */
 
 export interface GitCommitRelationshipDto {
+  id?: string;
   parentId?: string;
   childId?: string;
 }

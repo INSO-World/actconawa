@@ -13,7 +13,7 @@ import { GitService } from "../../../services/git.service";
 })
 export class ActiveConflictAwarenessComponent implements OnInit {
 
-  private gitService = inject(GitService)
+  protected gitService = inject(GitService)
 
   protected loading = true;
 
@@ -26,7 +26,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   protected cytoscapeCommits: NodeDefinition[] = []
 
   protected cytoscapeCommitRelationships: EdgeDefinition[] = []
-
   constructor(private el: ElementRef) {
   }
 
@@ -57,15 +56,17 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     this.loading = false;
     this.cy.on('click', 'node', (e: any) => {
       this.selectedCommitsBranches = undefined
-      const commit = e.target._private.data;
+      const commit = e.target._private.data as GitCommitDto;
+      if (!commit.id) {
+        throw new Error('Commit id must not be null')
+      }
       this.selectedCommit = commit;
       this.gitService.getBranchesByCommitId(commit.id).then(branches => {
         return this.selectedCommitsBranches = branches;
       })
-      this.gitService.loadChangesOfCommit(commit);
+
     })
   }
-
 
 
 }
