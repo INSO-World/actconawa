@@ -2,7 +2,7 @@
   <mat-spinner></mat-spinner>
 </div>
 
-<div class="commit-interaction-accordion-container">
+<div class="commit-interaction-accordion-container" (appResize)="resizeChart()">
   <mat-expansion-panel class="commit-info-extension-panel" hideToggle [disabled]="!selectedCommit">
     <mat-expansion-panel-header>
       <mat-panel-title>

@@ -19,6 +19,7 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
+import { DirectivesModule } from "../../directives/directives.module";
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { MatListModule } from "@angular/material/list";
   ],
   imports: [
     CommonModule,
+    DirectivesModule,
     VisualizationRoutingModule,
     MatProgressSpinnerModule,
     MatCardModule,
@@ -39,6 +41,7 @@ import { MatListModule } from "@angular/material/list";
     MatButtonModule,
     MatIconModule,
     MatListModule,
+    DirectivesModule,
   ]
 })
 export class VisualizationModule {

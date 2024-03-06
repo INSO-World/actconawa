@@ -9,7 +9,7 @@ import { GitService } from "../../../services/git.service";
 @Component({
   selector: 'app-active-conflict-awareness',
   templateUrl: './active-conflict-awareness.component.html',
-  styleUrls: ['./active-conflict-awareness.component.scss']
+  styleUrls: ['./active-conflict-awareness.component.scss'],
 })
 export class ActiveConflictAwarenessComponent implements OnInit {
 
@@ -68,5 +68,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     })
   }
 
+  resizeChart() {
+    console.log("Resized chart");
+    this.cy?.resize();
+  }
 
 }
