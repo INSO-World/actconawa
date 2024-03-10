@@ -9,6 +9,7 @@ import {
 
 @Component({
   selector: 'app-active-conflict-awareness-diff',
+  standalone: false,
   templateUrl: './active-conflict-awareness-diff.component.html',
   styleUrls: ['./active-conflict-awareness-diff.component.scss']
 })

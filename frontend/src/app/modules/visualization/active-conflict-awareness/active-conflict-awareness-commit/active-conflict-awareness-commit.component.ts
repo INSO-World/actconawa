@@ -3,6 +3,7 @@ import { GitBranchDto, GitCommitDto } from "../../../../../api";
 
 @Component({
   selector: 'app-active-conflict-awareness-commit',
+  standalone: false,
   templateUrl: './active-conflict-awareness-commit.component.html',
   styleUrls: ['./active-conflict-awareness-commit.component.scss']
 })

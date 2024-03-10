@@ -3,6 +3,7 @@ import { debounceTime } from "rxjs";
 
 @Directive({
   selector: '[appResize]',
+  standalone: false
 })
 export class ResizeDirective {
 

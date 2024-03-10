@@ -1,13 +1,12 @@
 import { Component, ElementRef, inject, OnInit } from '@angular/core';
 import { GitBranchDto, GitCommitDto } from '../../../../api';
-import * as cytoscape from 'cytoscape';
-import { EdgeDefinition, NodeDefinition } from 'cytoscape';
-import * as dagre from 'cytoscape-dagre';
-import { DagreLayoutOptions } from 'cytoscape-dagre';
+import cytoscape, { EdgeDefinition, NodeDefinition } from 'cytoscape';
+import cytoscapeDagre, { DagreLayoutOptions } from 'cytoscape-dagre';
 import { GitService } from "../../../services/git.service";
 
 @Component({
   selector: 'app-active-conflict-awareness',
+  standalone: false,
   templateUrl: './active-conflict-awareness.component.html',
   styleUrls: ['./active-conflict-awareness.component.scss'],
 })
@@ -41,7 +40,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         }
       }))
     }
-    cytoscape.use(dagre);
+    cytoscape.use(cytoscapeDagre);
     this.cy = cytoscape({
       container: this.el.nativeElement.querySelector('#cy'),
       elements: {
