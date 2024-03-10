@@ -1,3 +1,6 @@
+.gitignore
+.openapi-generator-ignore
+README.md
 api.module.ts
 api/api.ts
 api/gitBranchController.service.ts
@@ -5,6 +8,7 @@ api/gitCommitController.service.ts
 api/gitDiffController.service.ts
 configuration.ts
 encoder.ts
+git_push.sh
 index.ts
 model/gitBranchDto.ts
 model/gitBranchTrackingStatusDto.ts

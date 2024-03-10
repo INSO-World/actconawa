@@ -14,9 +14,8 @@ import { GitBranchTrackingStatusDto } from './gitBranchTrackingStatusDto';
 import { SortObject } from './sortObject';
 
 export interface PageGitBranchTrackingStatusDto {
-  totalPages?: number;
   totalElements?: number;
-  pageable?: PageableObject;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   size?: number;
@@ -24,6 +23,7 @@ export interface PageGitBranchTrackingStatusDto {
   number?: number;
   sort?: SortObject;
   numberOfElements?: number;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 

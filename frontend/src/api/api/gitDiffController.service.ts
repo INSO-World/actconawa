@@ -85,7 +85,7 @@ export class GitDiffControllerService {
         (value as any[]).forEach(elem => httpParams = this.addToHttpParamsRecursive(httpParams, elem, key));
       } else if (value instanceof Date) {
         if (key != null) {
-          httpParams = httpParams.append(key, (value as Date).toISOString().substr(0, 10));
+          httpParams = httpParams.append(key, (value as Date).toISOString().substring(0, 10));
         } else {
           throw Error("key may not be null if value is Date");
         }
@@ -109,19 +109,23 @@ export class GitDiffControllerService {
    */
   public findDiffCodeChanges(commitDiffFileId: string, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<Array<GitCommitDiffCodeChangeDto>>;
   public findDiffCodeChanges(commitDiffFileId: string, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<Array<GitCommitDiffCodeChangeDto>>>;
   public findDiffCodeChanges(commitDiffFileId: string, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<Array<GitCommitDiffCodeChangeDto>>>;
   public findDiffCodeChanges(commitDiffFileId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (commitDiffFileId === null || commitDiffFileId === undefined) {
       throw new Error('Required parameter commitDiffFileId was null or undefined when calling findDiffCodeChanges.');
@@ -152,6 +156,11 @@ export class GitDiffControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -173,6 +182,7 @@ export class GitDiffControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
@@ -186,19 +196,23 @@ export class GitDiffControllerService {
    */
   public findDiffHunks(commitDiffFileId: string, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<Array<GitCommitDiffHunkDto>>;
   public findDiffHunks(commitDiffFileId: string, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<Array<GitCommitDiffHunkDto>>>;
   public findDiffHunks(commitDiffFileId: string, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<Array<GitCommitDiffHunkDto>>>;
   public findDiffHunks(commitDiffFileId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (commitDiffFileId === null || commitDiffFileId === undefined) {
       throw new Error('Required parameter commitDiffFileId was null or undefined when calling findDiffHunks.');
@@ -229,6 +243,11 @@ export class GitDiffControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -249,6 +268,7 @@ export class GitDiffControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
@@ -262,19 +282,23 @@ export class GitDiffControllerService {
    */
   public findDiffLineChanges(commitDiffFileId: string, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<Array<GitCommitDiffLineChangeDto>>;
   public findDiffLineChanges(commitDiffFileId: string, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<Array<GitCommitDiffLineChangeDto>>>;
   public findDiffLineChanges(commitDiffFileId: string, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<Array<GitCommitDiffLineChangeDto>>>;
   public findDiffLineChanges(commitDiffFileId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (commitDiffFileId === null || commitDiffFileId === undefined) {
       throw new Error('Required parameter commitDiffFileId was null or undefined when calling findDiffLineChanges.');
@@ -305,6 +329,11 @@ export class GitDiffControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -326,6 +355,7 @@ export class GitDiffControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
@@ -341,19 +371,23 @@ export class GitDiffControllerService {
    */
   public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<string>;
   public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<string>>;
   public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<string>>;
   public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (commitId === null || commitId === undefined) {
       throw new Error('Required parameter commitId was null or undefined when calling getPatch.');
@@ -395,6 +429,11 @@ export class GitDiffControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -415,6 +454,7 @@ export class GitDiffControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );

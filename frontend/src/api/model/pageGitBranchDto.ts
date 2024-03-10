@@ -14,9 +14,8 @@ import { GitBranchDto } from './gitBranchDto';
 import { SortObject } from './sortObject';
 
 export interface PageGitBranchDto {
-  totalPages?: number;
   totalElements?: number;
-  pageable?: PageableObject;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   size?: number;
@@ -24,6 +23,7 @@ export interface PageGitBranchDto {
   number?: number;
   sort?: SortObject;
   numberOfElements?: number;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 

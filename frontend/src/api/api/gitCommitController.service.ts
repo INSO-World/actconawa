@@ -91,7 +91,7 @@ export class GitCommitControllerService {
         (value as any[]).forEach(elem => httpParams = this.addToHttpParamsRecursive(httpParams, elem, key));
       } else if (value instanceof Date) {
         if (key != null) {
-          httpParams = httpParams.append(key, (value as Date).toISOString().substr(0, 10));
+          httpParams = httpParams.append(key, (value as Date).toISOString().substring(0, 10));
         } else {
           throw Error("key may not be null if value is Date");
         }
@@ -115,19 +115,23 @@ export class GitCommitControllerService {
    */
   public findAllCommitRelations(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<PageGitCommitRelationshipDto>;
   public findAllCommitRelations(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<PageGitCommitRelationshipDto>>;
   public findAllCommitRelations(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<PageGitCommitRelationshipDto>>;
   public findAllCommitRelations(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (pageable === null || pageable === undefined) {
       throw new Error('Required parameter pageable was null or undefined when calling findAllCommitRelations.');
@@ -158,6 +162,11 @@ export class GitCommitControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -178,6 +187,7 @@ export class GitCommitControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
@@ -191,19 +201,23 @@ export class GitCommitControllerService {
    */
   public findAllCommits(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<PageGitCommitDto>;
   public findAllCommits(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<PageGitCommitDto>>;
   public findAllCommits(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<PageGitCommitDto>>;
   public findAllCommits(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (pageable === null || pageable === undefined) {
       throw new Error('Required parameter pageable was null or undefined when calling findAllCommits.');
@@ -234,6 +248,11 @@ export class GitCommitControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -254,6 +273,7 @@ export class GitCommitControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
@@ -268,19 +288,23 @@ export class GitCommitControllerService {
    */
   public findAllModifiedFiles(commitId: string, parentCommitId: string, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<Array<GitCommitDiffFileDto>>;
   public findAllModifiedFiles(commitId: string, parentCommitId: string, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<Array<GitCommitDiffFileDto>>>;
   public findAllModifiedFiles(commitId: string, parentCommitId: string, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<Array<GitCommitDiffFileDto>>>;
   public findAllModifiedFiles(commitId: string, parentCommitId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (commitId === null || commitId === undefined) {
       throw new Error('Required parameter commitId was null or undefined when calling findAllModifiedFiles.');
@@ -318,6 +342,11 @@ export class GitCommitControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -338,6 +367,7 @@ export class GitCommitControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
@@ -352,19 +382,23 @@ export class GitCommitControllerService {
    */
   public findAncestors(commitId: string, maxDepth?: number, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<Array<GitCommitDto>>;
   public findAncestors(commitId: string, maxDepth?: number, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<Array<GitCommitDto>>>;
   public findAncestors(commitId: string, maxDepth?: number, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<Array<GitCommitDto>>>;
   public findAncestors(commitId: string, maxDepth?: number, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (commitId === null || commitId === undefined) {
       throw new Error('Required parameter commitId was null or undefined when calling findAncestors.');
@@ -395,6 +429,11 @@ export class GitCommitControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -423,6 +462,7 @@ export class GitCommitControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
@@ -436,19 +476,23 @@ export class GitCommitControllerService {
    */
   public findBranches(commitId: string, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<GitCommitBranchRelationshipDto>;
   public findBranches(commitId: string, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<GitCommitBranchRelationshipDto>>;
   public findBranches(commitId: string, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<GitCommitBranchRelationshipDto>>;
   public findBranches(commitId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (commitId === null || commitId === undefined) {
       throw new Error('Required parameter commitId was null or undefined when calling findBranches.');
@@ -471,6 +515,11 @@ export class GitCommitControllerService {
     let localVarHttpContext: HttpContext | undefined = options && options.context;
     if (localVarHttpContext === undefined) {
       localVarHttpContext = new HttpContext();
+    }
+
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
     }
 
     let responseType_: 'text' | 'json' | 'blob' = 'json';
@@ -501,6 +550,7 @@ export class GitCommitControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );

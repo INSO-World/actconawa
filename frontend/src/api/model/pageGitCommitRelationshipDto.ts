@@ -14,9 +14,8 @@ import { GitCommitRelationshipDto } from './gitCommitRelationshipDto';
 import { SortObject } from './sortObject';
 
 export interface PageGitCommitRelationshipDto {
-  totalPages?: number;
   totalElements?: number;
-  pageable?: PageableObject;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   size?: number;
@@ -24,6 +23,7 @@ export interface PageGitCommitRelationshipDto {
   number?: number;
   sort?: SortObject;
   numberOfElements?: number;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 

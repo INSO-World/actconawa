@@ -87,7 +87,7 @@ export class GitBranchControllerService {
         (value as any[]).forEach(elem => httpParams = this.addToHttpParamsRecursive(httpParams, elem, key));
       } else if (value instanceof Date) {
         if (key != null) {
-          httpParams = httpParams.append(key, (value as Date).toISOString().substr(0, 10));
+          httpParams = httpParams.append(key, (value as Date).toISOString().substring(0, 10));
         } else {
           throw Error("key may not be null if value is Date");
         }
@@ -111,19 +111,23 @@ export class GitBranchControllerService {
    */
   public findAllBranches(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<PageGitBranchDto>;
   public findAllBranches(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<PageGitBranchDto>>;
   public findAllBranches(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<PageGitBranchDto>>;
   public findAllBranches(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (pageable === null || pageable === undefined) {
       throw new Error('Required parameter pageable was null or undefined when calling findAllBranches.');
@@ -154,6 +158,11 @@ export class GitBranchControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -174,6 +183,7 @@ export class GitBranchControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
@@ -187,19 +197,23 @@ export class GitBranchControllerService {
    */
   public getAllTrackingStatus(pageable: Pageable, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<PageGitBranchTrackingStatusDto>;
   public getAllTrackingStatus(pageable: Pageable, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<PageGitBranchTrackingStatusDto>>;
   public getAllTrackingStatus(pageable: Pageable, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<PageGitBranchTrackingStatusDto>>;
   public getAllTrackingStatus(pageable: Pageable, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (pageable === null || pageable === undefined) {
       throw new Error('Required parameter pageable was null or undefined when calling getAllTrackingStatus.');
@@ -230,6 +244,11 @@ export class GitBranchControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -251,6 +270,7 @@ export class GitBranchControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
@@ -265,19 +285,23 @@ export class GitBranchControllerService {
    */
   public getTrackingStatus(branchA: string, branchB: string, observe?: 'body', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<GitBranchTrackingStatusDto>;
   public getTrackingStatus(branchA: string, branchB: string, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpResponse<GitBranchTrackingStatusDto>>;
   public getTrackingStatus(branchA: string, branchB: string, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<HttpEvent<GitBranchTrackingStatusDto>>;
   public getTrackingStatus(branchA: string, branchB: string, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
-    context?: HttpContext
+    context?: HttpContext,
+    transferCache?: boolean
   }): Observable<any> {
     if (branchA === null || branchA === undefined) {
       throw new Error('Required parameter branchA was null or undefined when calling getTrackingStatus.');
@@ -315,6 +339,11 @@ export class GitBranchControllerService {
       localVarHttpContext = new HttpContext();
     }
 
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
       if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -335,6 +364,7 @@ export class GitBranchControllerService {
               withCredentials: this.configuration.withCredentials,
               headers: localVarHeaders,
               observe: observe,
+              transferCache: localVarTransferCache,
               reportProgress: reportProgress
             }
     );
