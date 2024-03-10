@@ -1,39 +1,41 @@
 <div *ngIf="loading" class="loading-spinner">
   <mat-spinner></mat-spinner>
 </div>
+<div class="active-conflict-awareness-flex-container">
+  <div class="commit-interaction-accordion-container">
+    <mat-expansion-panel class="commit-info-extension-panel" hideToggle [disabled]="!selectedCommit">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Commit Information
+        </mat-panel-title>
+        <mat-panel-description>
+          <ng-container *ngIf="!selectedCommit">Select a commit to show the information</ng-container>
+          <ng-container *ngIf="selectedCommit">
+            <strong>{{selectedCommit.sha}} - {{selectedCommit.message}}</strong>
+          </ng-container>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <app-active-conflict-awareness-commit
+              [commit]="selectedCommit"
+              [branches]="selectedCommitsBranches">
+      </app-active-conflict-awareness-commit>
+    </mat-expansion-panel>
+    <mat-expansion-panel class="commit-diff-extension-panel" hideToggle [disabled]="!selectedCommit">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Commit Diffs
+        </mat-panel-title>
+        <mat-panel-description>
+          Changes to parent{{(selectedCommit?.parentIds?.length || 0) > 1 ? "s" : ""}}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <app-active-conflict-awareness-diff [commit]="selectedCommit" *ngIf="selectedCommit">
+      </app-active-conflict-awareness-diff>
+    </mat-expansion-panel>
+  </div>
+  <mat-card class="commit-graph-card" (appResize)="resizeChart()">
+    <div id="cy" style="height: 100%; width: 100%"></div>
+  </mat-card>
 
-<div class="commit-interaction-accordion-container" (appResize)="resizeChart()">
-  <mat-expansion-panel class="commit-info-extension-panel" hideToggle [disabled]="!selectedCommit">
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        Commit Information
-      </mat-panel-title>
-      <mat-panel-description>
-        <ng-container *ngIf="!selectedCommit">Select a commit to show the information</ng-container>
-        <ng-container *ngIf="selectedCommit">
-          <strong>{{selectedCommit.sha}} - {{selectedCommit.message}}</strong>
-        </ng-container>
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <app-active-conflict-awareness-commit
-            [commit]="selectedCommit"
-            [branches]="selectedCommitsBranches">
-    </app-active-conflict-awareness-commit>
-  </mat-expansion-panel>
-  <mat-expansion-panel class="commit-diff-extension-panel" hideToggle [disabled]="!selectedCommit">
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        Commit Diffs
-      </mat-panel-title>
-      <mat-panel-description>
-        Changes to parent{{(selectedCommit?.parentIds?.length || 0) > 1 ? "s" : ""}}
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <app-active-conflict-awareness-diff [commit]="selectedCommit" *ngIf="selectedCommit">
-    </app-active-conflict-awareness-diff>
-  </mat-expansion-panel>
 </div>
 
-<mat-card class="git-graph-card">
-  <div id="cy" style="height: 100%; width: 100%"></div>
-</mat-card>

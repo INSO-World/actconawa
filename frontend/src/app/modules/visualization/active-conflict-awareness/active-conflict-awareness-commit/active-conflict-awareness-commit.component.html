@@ -1,44 +1,28 @@
 <ng-container *ngIf="commit">
-  <mat-grid-list cols="12" rowHeight="3em">
-    <mat-grid-tile colspan="1">
-      <div><strong>Id:</strong></div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="5">
+
+  <div><strong>Id:</strong></div>
       <div>{{commit.id}}</div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="1">
-      <div><strong>Sha:</strong></div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="5">
-      <div>{{commit.sha}}</div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="1">
+
+  <div><strong>Sha:</strong></div>
+
+  <div>{{commit.sha}}</div>
       <div><strong>Author:</strong></div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="5">
-      <div>{{commit.authorName}} &lt;{{commit.authorEmail}}&gt;</div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="1">
-      <div><strong>Date:</strong></div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="5">
-      <div>{{commit.commitDate}}</div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="1">
-      <div><strong>Message:</strong></div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="11">
-      <div>{{commit.message}}</div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="1">
-      <div><strong>Branches:</strong></div>
-    </mat-grid-tile>
-    <mat-grid-tile *ngIf="branches" colspan="10">
-      <div class="branch-tag-container">
+
+  <div>{{commit.authorName}} &lt;{{commit.authorEmail}}&gt;</div>
+
+  <div><strong>Date:</strong></div>
+
+  <div>{{commit.commitDate}}</div>
+
+  <div><strong>Message:</strong></div>
+
+  <div>{{commit.message}}</div>
+
+  <div><strong>Branches:</strong></div>
+
+  <div class="branch-tag-container">
             <span class="branch-tag" *ngFor="let branch of branches">
           {{branch?.name}}
         </span>
       </div>
-    </mat-grid-tile>
-  </mat-grid-list>
 </ng-container>

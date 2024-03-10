@@ -1,29 +1,25 @@
-<mat-list *ngIf="commit">
+<div *ngIf="commit">
   <div *ngFor="let parentId of this.commit?.parentIds">
     <div>
       <strong>Patch</strong>
       <div class="patch-viewer">{{patchByParentCommitId.get(parentId + '')?.patch}}</div>
-      <mat-divider></mat-divider>
     </div>
     <div *ngFor="let file of this.diffFilesByParentCommitId.get(parentId + '')">
       <ng-container *ngIf="file">
         <div>{{file.newFilePath}}</div>
         <strong>Hunks</strong>
         <ng-container *ngFor="let hunk of hunksByFileId.get(file.id + '')">
-          <mat-list-item>{{hunk | json}}</mat-list-item>
-          <mat-divider></mat-divider>
+          <div>{{hunk | json}}</div>
         </ng-container>
         <strong>Changed lines</strong>
         <ng-container *ngFor="let lines of changedLinesByFileId.get(file.id + '')">
-          <mat-list-item>{{lines | json}}</mat-list-item>
-          <mat-divider></mat-divider>
+          <div>{{lines | json}}</div>
         </ng-container>
         <strong>Code Changes</strong>
         <ng-container *ngFor="let codechanges of changedCodeByFileId.get(file.id + '')">
-          <mat-list-item>{{codechanges | json}}</mat-list-item>
-          <mat-divider></mat-divider>
+          <div>{{codechanges | json}}</div>
         </ng-container>
       </ng-container>
     </div>
   </div>
-</mat-list>
+</div>

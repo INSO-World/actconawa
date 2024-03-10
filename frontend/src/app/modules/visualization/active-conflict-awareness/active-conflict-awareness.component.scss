@@ -1,12 +1,45 @@
+@import 'common';
+
 .commit-interaction-accordion-container {
-  margin: 2em;
-  overflow: hidden;
+  margin: $actconawa-container-standard-margin;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 1;
+  @media #{$mat-gt-sm} {
+    flex-basis: 40%;
+  }
+  max-height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin);
+  min-width: 30em;
 }
 
-.git-graph-card {
-  margin: 2em;
+.commit-graph-card {
+  margin: $actconawa-container-standard-margin;
+  overflow: hidden;
   padding: 1em;
-  height: 600px;
+  height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin);
+  display: flex;
+  @media #{$mat-gt-sm} {
+    flex-basis: 60%;
+    width: 100%;
+  }
+  @media #{$mat-lt-md} {
+    width: auto;
+    flex-direction: column;
+  }
+}
+
+.active-conflict-awareness-flex-container {
+  display: flex;
+  justify-content: space-between;
+  @media #{$mat-gt-sm} {
+    flex-direction: row;
+  }
+  @media #{$mat-lt-md} {
+    flex-direction: column;
+  }
+  flex-direction: row;
+  height: calc(100vh - $actconawa-navbar-height);
 }
 
 .loading-spinner {
@@ -14,5 +47,5 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin);
 }
