@@ -1,19 +1,19 @@
-import { Directive, ElementRef, EventEmitter, Input, NgZone, Output } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { debounceTime } from "rxjs";
 
 @Directive({
   selector: '[appResize]',
   standalone: false
 })
-export class ResizeDirective {
+export class ResizeDirective implements OnInit, OnDestroy {
 
   @Output()
-  readonly appResize = new EventEmitter<any>();
+  readonly appResize = new EventEmitter<void>();
 
   @Input()
   readonly debounceTime = 300;
 
-  private readonly debouncer = new EventEmitter<any>();
+  private readonly debouncer = new EventEmitter<void>();
 
   private observer: ResizeObserver;
 
@@ -21,7 +21,7 @@ export class ResizeDirective {
           private readonly el: ElementRef,
           private readonly zone: NgZone
   ) {
-    this.observer = new ResizeObserver(e => this.zone.run(() => {
+    this.observer = new ResizeObserver(() => this.zone.run(() => {
       this.debouncer.emit();
     }));
   }

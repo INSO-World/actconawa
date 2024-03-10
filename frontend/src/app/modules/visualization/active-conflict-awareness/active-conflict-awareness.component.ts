@@ -1,6 +1,6 @@
 import { Component, ElementRef, inject, OnInit } from '@angular/core';
 import { GitBranchDto, GitCommitDto } from '../../../../api';
-import cytoscape, { EdgeDefinition, NodeDefinition } from 'cytoscape';
+import cytoscape, { EdgeDefinition, EventObject, NodeDefinition } from 'cytoscape';
 import cytoscapeDagre, { DagreLayoutOptions } from 'cytoscape-dagre';
 import { GitService } from "../../../services/git.service";
 
@@ -53,7 +53,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       } as DagreLayoutOptions
     });
     this.loading = false;
-    this.cy.on('click', 'node', (e: any) => {
+    this.cy.on('click', 'node', (e: EventObject) => {
       this.selectedCommitsBranches = undefined
       const commit = e.target._private.data as GitCommitDto;
       if (!commit.id) {

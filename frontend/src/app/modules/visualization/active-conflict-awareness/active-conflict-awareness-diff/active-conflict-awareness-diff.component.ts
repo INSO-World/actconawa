@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
 import { GitService } from "../../../../services/git.service";
 import {
   GitCommitDiffFileDto,
@@ -36,7 +36,7 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, OnChanges {
     this.refresh();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
     this.refresh();
   }
 
