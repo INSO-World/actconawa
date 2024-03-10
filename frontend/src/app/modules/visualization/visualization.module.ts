@@ -20,6 +20,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
 import { DirectivesModule } from "../../directives/directives.module";
+import { MatFormField, MatInput } from "@angular/material/input";
 
 @NgModule({
   declarations: [
@@ -42,6 +43,8 @@ import { DirectivesModule } from "../../directives/directives.module";
     MatIconModule,
     MatListModule,
     DirectivesModule,
+    MatInput,
+    MatFormField,
   ]
 })
 export class VisualizationModule {

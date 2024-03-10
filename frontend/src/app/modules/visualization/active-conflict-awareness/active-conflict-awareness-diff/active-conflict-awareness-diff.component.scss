@@ -1,0 +1,10 @@
+.patch-viewer {
+  white-space: pre-wrap;
+  word-break: keep-all;
+  text-overflow: clip;
+  overflow: auto;
+  background-color: #efefef;
+  padding: 1em;
+  margin: 1em;
+  border: lightgray 1px solid;
+}

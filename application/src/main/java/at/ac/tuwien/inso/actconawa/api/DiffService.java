@@ -4,6 +4,7 @@ import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffCodeChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
+import at.ac.tuwien.inso.actconawa.dto.GitPatchDto;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.util.List;
@@ -25,13 +26,13 @@ public interface DiffService {
     /**
      * Retrieve a diff between a commit and a parent.
      *
-     * @param commitId         the id of the commit {@link UUID}.
-     * @param parentCommitId   parent commit id ({@link UUID}). This value might be null for root commits without parent.
-     * @param contextLines   the number of context lines to be added to the changed lines
-     *                       changes (0 == only changed lines themselves)
+     * @param commitId       the id of the commit {@link UUID}.
+     * @param parentCommitId parent commit id ({@link UUID}). This value might be null for root commits without parent.
+     * @param contextLines   the number of context lines to be added to the changed lines changes (0 == only changed
+     *                       lines themselves)
      * @return the formatted diff.
      */
-    String getDiff(UUID commitId, UUID parentCommitId, int contextLines);
+    GitPatchDto getDiff(UUID commitId, UUID parentCommitId, int contextLines);
 
     /**
      * Retrieve all the diff hunks of a {@link GitCommitDiffFileDto}. In case no hunks are found for

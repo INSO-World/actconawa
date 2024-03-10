@@ -4,6 +4,7 @@ import at.ac.tuwien.inso.actconawa.api.DiffService;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffCodeChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
+import at.ac.tuwien.inso.actconawa.dto.GitPatchDto;
 import at.ac.tuwien.inso.actconawa.mapper.GitMapper;
 import at.ac.tuwien.inso.actconawa.repository.CodeChangeRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffHunkRepository;
@@ -83,14 +84,16 @@ public class GitDiffService implements DiffService {
     }
 
     @Override
-    public String getDiff(UUID commitId, UUID parentCommitId, int contextLines) {
+    public GitPatchDto getDiff(UUID commitId, UUID parentCommitId, int contextLines) {
         LOG.info("Creating diff of {} {} {}",
                 commitId,
                 parentCommitId == null ? "(root)" : "and",
                 parentCommitId == null ? "" : parentCommitId);
         var commit = gitCommitService.getRevCommitByGitCommitId(commitId);
         var parentCommit = parentCommitId == null ? null : gitCommitService.getRevCommitByGitCommitId(parentCommitId);
-        return getDiff(commit, parentCommit, contextLines);
+        var result = new GitPatchDto();
+        result.setPatch(getDiff(commit, parentCommit, contextLines));
+        return result;
 
     }
 

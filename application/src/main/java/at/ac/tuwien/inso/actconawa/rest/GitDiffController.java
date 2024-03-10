@@ -3,6 +3,7 @@ package at.ac.tuwien.inso.actconawa.rest;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffCodeChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
+import at.ac.tuwien.inso.actconawa.dto.GitPatchDto;
 import at.ac.tuwien.inso.actconawa.service.GitDiffService;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -54,8 +55,8 @@ public class GitDiffController {
         return gitDiffService.findGitCommitCodeChangesByDiffFileId(commitDiffFileId);
     }
 
-    @GetMapping("/patch")
-    public String getPatch(
+    @GetMapping(value = "/patch")
+    public GitPatchDto getPatch(
             @NotNull
             @RequestParam(name = "commit-id") UUID commitId,
             @RequestParam(name = "parent-commit-id") UUID parentCommitId,

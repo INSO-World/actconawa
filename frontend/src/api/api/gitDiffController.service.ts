@@ -30,6 +30,8 @@ import { GitCommitDiffCodeChangeDto } from '../model/gitCommitDiffCodeChangeDto'
 import { GitCommitDiffHunkDto } from '../model/gitCommitDiffHunkDto';
 // @ts-ignore
 import { GitCommitDiffLineChangeDto } from '../model/gitCommitDiffLineChangeDto';
+// @ts-ignore
+import { GitPatchDto } from '../model/gitPatchDto';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS } from '../variables';
@@ -373,17 +375,17 @@ export class GitDiffControllerService {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext,
     transferCache?: boolean
-  }): Observable<string>;
+  }): Observable<GitPatchDto>;
   public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe?: 'response', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext,
     transferCache?: boolean
-  }): Observable<HttpResponse<string>>;
+  }): Observable<HttpResponse<GitPatchDto>>;
   public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe?: 'events', reportProgress?: boolean, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext,
     transferCache?: boolean
-  }): Observable<HttpEvent<string>>;
+  }): Observable<HttpEvent<GitPatchDto>>;
   public getPatch(commitId: string, parentCommitId: string, contextLines?: number, observe: any = 'body', reportProgress: boolean = false, options?: {
     httpHeaderAccept?: 'application/json',
     context?: HttpContext,
@@ -446,7 +448,7 @@ export class GitDiffControllerService {
     }
 
     let localVarPath = `/diffs/patch`;
-    return this.httpClient.request<string>('get', `${this.configuration.basePath}${localVarPath}`,
+    return this.httpClient.request<GitPatchDto>('get', `${this.configuration.basePath}${localVarPath}`,
             {
               context: localVarHttpContext,
               params: localVarQueryParameters,

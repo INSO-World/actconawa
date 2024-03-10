@@ -68,7 +68,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   }
 
   resizeChart() {
-    console.log("Resized chart");
     this.cy?.resize();
   }
 

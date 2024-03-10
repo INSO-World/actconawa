@@ -7,6 +7,7 @@ export * from './gitCommitDiffHunkDto';
 export * from './gitCommitDiffLineChangeDto';
 export * from './gitCommitDto';
 export * from './gitCommitRelationshipDto';
+export * from './gitPatchDto';
 export * from './pageGitBranchDto';
 export * from './pageGitBranchTrackingStatusDto';
 export * from './pageGitCommitDto';

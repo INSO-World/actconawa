@@ -4,7 +4,8 @@ import {
   GitCommitDiffFileDto,
   GitCommitDiffHunkDto,
   GitCommitDiffLineChangeDto,
-  GitCommitDto
+  GitCommitDto,
+  GitPatchDto
 } from "../../../../../api";
 
 @Component({
@@ -22,6 +23,8 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, OnChanges {
 
   private currentCommit?: GitCommitDto
 
+  private readonly pathContextLines = 3;
+
   hunksByFileId = new Map<string, GitCommitDiffHunkDto[]>();
 
   changedLinesByFileId = new Map<string, GitCommitDiffLineChangeDto[]>();
@@ -31,6 +34,8 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, OnChanges {
   diffFilesByParentCommitId = new Map<string, GitCommitDiffFileDto[]>
 
   diffFilesById = new Map<string, GitCommitDiffFileDto>
+
+  patchByParentCommitId = new Map<string, GitPatchDto>;
 
   ngOnInit(): void {
     this.refresh();
@@ -49,6 +54,9 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, OnChanges {
     for (const parentId of this.commit?.parentIds || []) {
       this.gitService.getModifiedFilesByCommitIds(this.commit.id || "", parentId).then(diffs => {
         this.diffFilesByParentCommitId.set(parentId, diffs || []);
+        this.gitService.getPatch(this.commit.id || "", parentId, this.pathContextLines).then(patch => {
+          this.patchByParentCommitId.set(parentId, patch);
+        })
         for (const diff of diffs || []) {
           this.diffFilesById.set(diff.id || "", diff)
           if (diff && diff.id) {
@@ -71,7 +79,8 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, OnChanges {
     this.hunksByFileId = new Map<string, GitCommitDiffHunkDto[]>();
     this.changedLinesByFileId = new Map<string, GitCommitDiffLineChangeDto[]>();
     this.changedCodeByFileId = new Map<string, GitCommitDiffLineChangeDto[]>();
-    this.diffFilesByParentCommitId = new Map<string, GitCommitDiffFileDto[]>
-    this.diffFilesById = new Map<string, GitCommitDiffFileDto>
+    this.diffFilesByParentCommitId = new Map<string, GitCommitDiffFileDto[]>();
+    this.diffFilesById = new Map<string, GitCommitDiffFileDto>();
+    this.patchByParentCommitId = new Map<string, GitPatchDto>();
   }
 }

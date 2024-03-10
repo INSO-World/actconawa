@@ -129,6 +129,10 @@ export class GitService {
     }
   }
 
+  async getPatch(commitId: string, parentCommitId: string, contextLines: number) {
+    return await lastValueFrom(this.gitDiffControllerService.getPatch(commitId, parentCommitId, contextLines));
+  }
+
   private async loadBranches() {
     const branchPages = this.gitBranchService.findAllBranches({page: 0, size: this.BRANCH_PAGE_SIZE}).pipe(
             expand(branchesPage => {
