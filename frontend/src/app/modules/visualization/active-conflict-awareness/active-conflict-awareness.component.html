@@ -2,16 +2,20 @@
   <mat-spinner></mat-spinner>
 </div>
 <div class="active-conflict-awareness-flex-container">
-  <div class="commit-interaction-accordion-container">
-    <mat-expansion-panel class="commit-info-extension-panel" hideToggle [disabled]="!selectedCommit">
+  <mat-accordion class="commit-interaction-accordion-container" multi>
+    <mat-expansion-panel class="commit-info-extension-panel" hideToggle [disabled]="!selectedCommit"
+                         [expanded]="selectedCommit">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          Commit Information
+          <ng-container *ngIf="!selectedCommit">Commit Information</ng-container>
+          <ng-container *ngIf="selectedCommit">
+            Commit {{selectedCommit.sha | slice:0:8}}
+          </ng-container>
         </mat-panel-title>
         <mat-panel-description>
           <ng-container *ngIf="!selectedCommit">Select a commit to show the information</ng-container>
           <ng-container *ngIf="selectedCommit">
-            <strong>{{selectedCommit.sha}} - {{selectedCommit.message}}</strong>
+            <small>{{selectedCommit.message}}</small>
           </ng-container>
         </mat-panel-description>
       </mat-expansion-panel-header>
@@ -32,7 +36,7 @@
       <app-active-conflict-awareness-diff [commit]="selectedCommit" *ngIf="selectedCommit">
       </app-active-conflict-awareness-diff>
     </mat-expansion-panel>
-  </div>
+  </mat-accordion>
   <mat-card class="commit-graph-card" (appResize)="resizeChart()">
     <div id="cy" style="height: 100%; width: 100%"></div>
   </mat-card>

@@ -8,8 +8,8 @@
   flex-shrink: 1;
   @media #{$mat-gt-sm} {
     flex-basis: 40%;
+    max-height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin);
   }
-  max-height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin);
   min-width: 30em;
 }
 
@@ -34,12 +34,12 @@
   justify-content: space-between;
   @media #{$mat-gt-sm} {
     flex-direction: row;
+    height: calc(100vh - $actconawa-navbar-height);
   }
   @media #{$mat-lt-md} {
     flex-direction: column;
   }
   flex-direction: row;
-  height: calc(100vh - $actconawa-navbar-height);
 }
 
 .loading-spinner {

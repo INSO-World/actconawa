@@ -7,10 +7,26 @@
   margin-right: 1px;
   padding: 0.5em;
   border-radius: 2em;
+  line-height: 0.5em;
+  height: 0.5em;
 }
 
 .branch-tag-container {
   overflow: auto;
   display: flex;
   justify-content: left;
+  flex-flow: wrap;
+  max-height: 6em;
+}
+
+.copy-action {
+  margin-left: 0.5em;
+
+}
+
+.mat-icon {
+  font-size: 1em !important;
+  line-height: 1em;
+  width: 1em;
+  height: 1em;
 }

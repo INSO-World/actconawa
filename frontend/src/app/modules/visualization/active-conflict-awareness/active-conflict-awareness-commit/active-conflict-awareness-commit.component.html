@@ -1,28 +1,33 @@
 <ng-container *ngIf="commit">
 
-  <div><strong>Id:</strong></div>
-      <div>{{commit.id}}</div>
-
-  <div><strong>Sha:</strong></div>
+  <div>
+    <strong>Sha</strong>
+    <a class="copy-action">
+      <mat-icon (click)="copyText(commit.sha)">content_copy</mat-icon>
+    </a>
+  </div>
 
   <div>{{commit.sha}}</div>
-      <div><strong>Author:</strong></div>
+  <div><strong>Author</strong></div>
 
   <div>{{commit.authorName}} &lt;{{commit.authorEmail}}&gt;</div>
 
-  <div><strong>Date:</strong></div>
+  <div><strong>Date</strong></div>
 
   <div>{{commit.commitDate}}</div>
 
-  <div><strong>Message:</strong></div>
+  <div><strong>Message</strong></div>
 
   <div>{{commit.message}}</div>
 
-  <div><strong>Branches:</strong></div>
+  <div><strong>Database Id</strong></div>
+  <div>{{commit.id}}</div>
+
+  <div><strong>Branches</strong></div>
 
   <div class="branch-tag-container">
-            <span class="branch-tag" *ngFor="let branch of branches">
+    <span class="branch-tag" *ngFor="let branch of branches" appContentBasedColor>
           {{branch?.name}}
-        </span>
-      </div>
+    </span>
+  </div>
 </ng-container>
