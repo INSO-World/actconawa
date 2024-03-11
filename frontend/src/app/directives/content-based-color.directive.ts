@@ -18,10 +18,11 @@ export class ContentBasedColorDirective implements AfterViewInit {
     for (let i = 0; i < text.length; i++) {
       hash = text.charCodeAt(i) + ((hash << 5) - hash);
     }
-    console.log(text + " " + hash)
-    this.el.nativeElement.style.backgroundColor = `hsl(${Math.abs(hash) % 360}, ${Math.abs(hash)
-    % 30
-    + 70}%, ${Math.abs(hash) % 10 + 80}%)`;
+    this.el.nativeElement.style.backgroundColor = `hsl(
+      ${Math.abs(hash) % 360},
+      ${Math.abs(hash) % 30 + 70}%,
+      ${Math.abs(hash) % 10 + 80}%
+    )`;
   }
 
 }

@@ -57,7 +57,7 @@ export class GitService {
     if (this.commitById.size === 0) {
       await this.getCommits();
     }
-    return this.branchById.get(commitId);
+    return this.commitById.get(commitId);
   }
 
   async getBranches(): Promise<GitBranchDto[]> {
