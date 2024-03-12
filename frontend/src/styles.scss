@@ -2,7 +2,10 @@
 @import 'styles/roboto.scss';
 @import 'styles/material-icons.scss';
 
-html, body { height: 100%; }
+html, body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
@@ -10,4 +13,11 @@ body {
 
 .mat-grid-tile-content {
   justify-content: space-between !important;
+}
+
+.mat-mdc-snack-bar-container {
+  &.error-snackbar {
+    --mdc-snackbar-container-color: #ff0000;
+    --mat-snack-bar-button-color: #fff;
+  }
 }

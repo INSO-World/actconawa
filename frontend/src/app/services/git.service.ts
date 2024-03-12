@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {
   GitBranchControllerService,
   GitBranchDto,
+  GitBranchTrackingStatusDto,
   GitCommitControllerService,
   GitCommitDiffCodeChangeDto,
   GitCommitDiffFileDto,
@@ -18,9 +19,11 @@ import { CompositeKeyMap } from "../utils/CompositeKeyMap";
 })
 export class GitService {
 
-  private BRANCH_PAGE_SIZE = 10;
+  private readonly BRANCH_PAGE_SIZE = 10;
 
-  private COMMIT_QUERY_DEPTH = 3;
+  private readonly BRANCH_TRACKING_PAGE_SIZE = 50;
+
+  private readonly COMMIT_QUERY_DEPTH = 3;
 
   private branchById = new Map<string, GitBranchDto>;
 
@@ -29,6 +32,8 @@ export class GitService {
   private branchIdsByCommitId = new Map<string, string[]>;
 
   private commitDiffFilesByCommitIds = new CompositeKeyMap<string, GitCommitDiffFileDto[]>;
+
+  private trackingStatusByBranchIds = new CompositeKeyMap<string, GitBranchTrackingStatusDto>;
 
   private changedCodeByCommitDiffFileId =
           new Map<string, GitCommitDiffCodeChangeDto[]>;
@@ -72,6 +77,20 @@ export class GitService {
       await this.getBranches();
     }
     return this.branchById.get(branchId);
+  }
+
+  async getBranchTrackingStatusByIds(branchAId: string, branchBId: string): Promise<GitBranchTrackingStatusDto | undefined> {
+    if (this.trackingStatusByBranchIds.size() === 0) {
+      await this.loadBranchTrackingStatus();
+    }
+    return this.trackingStatusByBranchIds.get(branchAId, branchBId);
+  }
+
+  async getBranchTrackingStatusById(branchId: string): Promise<GitBranchTrackingStatusDto[]> {
+    if (this.trackingStatusByBranchIds.size() === 0) {
+      await this.loadBranchTrackingStatus();
+    }
+    return this.trackingStatusByBranchIds.getAllOfKey(branchId);
   }
 
   async getBranchesByCommitId(commitId: string): Promise<GitBranchDto[]> {
@@ -136,7 +155,7 @@ export class GitService {
   private async loadBranches() {
     const branchPages = this.gitBranchService.findAllBranches({page: 0, size: this.BRANCH_PAGE_SIZE}).pipe(
             expand(branchesPage => {
-              if (!branchesPage.last && branchesPage.number != undefined) {
+              if (!branchesPage.last && branchesPage.number !== undefined) {
                 return this.gitBranchService.findAllBranches({
                   page: branchesPage.number + 1,
                   size: this.BRANCH_PAGE_SIZE
@@ -153,6 +172,31 @@ export class GitService {
               });
             }));
     await lastValueFrom(branchPages);
+  }
+
+  private async loadBranchTrackingStatus(): Promise<void> {
+    const branchTrackingPages = this.gitBranchService
+            .getAllTrackingStatus({page: 0, size: this.BRANCH_TRACKING_PAGE_SIZE}).pipe(
+                    expand(trackingPage => {
+                      if (!trackingPage.last && trackingPage.number !== undefined) {
+                        return this.gitBranchService.getAllTrackingStatus({
+                          page: trackingPage.number + 1,
+                          size: this.BRANCH_TRACKING_PAGE_SIZE
+                        });
+                      } else {
+                        return EMPTY;
+                      }
+                    }),
+                    tap(trackingPage => {
+                      (trackingPage.content || []).forEach(tracking => {
+                        if (tracking.id) {
+                          this.trackingStatusByBranchIds.set(tracking.branchAId || "",
+                                  tracking.branchBId || "",
+                                  tracking);
+                        }
+                      });
+                    }));
+    await lastValueFrom(branchTrackingPages);
   }
 
   private async loadCommitsForBranches() {

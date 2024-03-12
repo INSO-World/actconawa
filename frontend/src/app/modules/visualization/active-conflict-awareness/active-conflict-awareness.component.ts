@@ -1,9 +1,10 @@
 import { Component, ElementRef, inject, OnInit } from '@angular/core';
-import { GitBranchDto, GitCommitDto } from '../../../../api';
+import { GitBranchDto, GitBranchTrackingStatusDto, GitCommitDto } from '../../../../api';
 import cytoscape, { EdgeDefinition, EventObject, NodeDefinition } from 'cytoscape';
 import cytoscapeDagre, { DagreLayoutOptions } from 'cytoscape-dagre';
 import { GitService } from "../../../services/git.service";
 import { ActivatedRoute, Router } from "@angular/router";
+import { SettingService } from "../../../services/setting.service";
 
 @Component({
   selector: 'app-active-conflict-awareness',
@@ -15,6 +16,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected gitService = inject(GitService)
 
+  protected settingService = inject(SettingService)
+
   protected loading = true;
 
   protected cy: cytoscape.Core | undefined;
@@ -23,11 +26,15 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected parentCommits = new Map<string, GitCommitDto>();
 
+  protected trackingStatusWithReferenceBranchByBranchId = new Map<string, GitBranchTrackingStatusDto>();
+
   protected selectedCommitsBranches?: GitBranchDto[];
 
   protected cytoscapeCommits: NodeDefinition[] = []
 
   protected cytoscapeCommitRelationships: EdgeDefinition[] = []
+
+  private referenceBranchId = "";
 
   constructor(private el: ElementRef, private route: ActivatedRoute, private router: Router) {
   }
@@ -43,6 +50,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         }
       }))
     }
+    await this.loadReferenceBranchTrackingStatus();
+
     const presetCommitId = this.route.snapshot.queryParamMap.get('commitId');
     if (presetCommitId) {
       this.gitService.getCommitById(presetCommitId).then(presetCommit => {
@@ -100,7 +109,20 @@ export class ActiveConflictAwarenessComponent implements OnInit {
               }
             }))
     this.gitService.getBranchesByCommitId(commit.id).then(branches => {
-      return this.selectedCommitsBranches = branches;
+      return this.selectedCommitsBranches = branches.sort();
     })
+  }
+
+  async loadReferenceBranchTrackingStatus() {
+    this.referenceBranchId = await this.settingService.getReferenceBranchId();
+    this.gitService.getBranchTrackingStatusById(this.referenceBranchId).then(result => {
+      result.forEach(ts => {
+        if (ts.branchAId === this.referenceBranchId && ts.branchBId) {
+          this.trackingStatusWithReferenceBranchByBranchId.set(ts.branchBId, ts);
+        } else if (ts.branchBId === this.referenceBranchId && ts.branchAId) {
+          this.trackingStatusWithReferenceBranchByBranchId.set(ts.branchAId, ts);
+        }
+      })
+    });
   }
 }
