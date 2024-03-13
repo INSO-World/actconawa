@@ -123,7 +123,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   }
 
   openDiffDialog() {
-    this.dialog.open(ActiveConflictAwarenessDiffComponent, {data: this.selectedCommit});
+    this.dialog.open(ActiveConflictAwarenessDiffComponent, {data: this.selectedCommit, hasBackdrop: true});
   }
 
   selectCommit(commit: GitCommitDto, selectOnGraph: boolean) {

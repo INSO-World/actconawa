@@ -1,10 +1,6 @@
-.patch-viewer {
-  white-space: pre-wrap;
-  word-break: keep-all;
-  text-overflow: clip;
-  overflow: auto;
-  background-color: #efefef;
+@import 'common';
+
+.patch-viewer-container {
+  height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin - 4em);
   padding: 1em;
-  margin: 1em;
-  border: lightgray 1px solid;
 }

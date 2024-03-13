@@ -1,8 +1,10 @@
 <div *ngIf="commit">
-  <div *ngFor="let parentId of this.commit?.parentIds">
-    <div>
-      <strong>Patch</strong>
-      <div class="patch-viewer">{{patchByParentCommitId.get(parentId + '')?.patch}}</div>
-    </div>
-  </div>
+  <div mat-dialog-title>Diff</div>
+  <mat-tab-group class="patch-viewer-container">
+    <ng-container *ngFor="let parentId of this.commit?.parentIds">
+      <mat-tab label="Parent {{parentId}}">
+        <div id="patch-viewer-{{parentId}}"></div>
+      </mat-tab>
+    </ng-container>
+  </mat-tab-group>
 </div>

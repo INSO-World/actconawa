@@ -24,6 +24,7 @@ import { MatFormField, MatInput } from "@angular/material/input";
 import {
   ActiveConflictAwarenessMetadataComponent
 } from "./active-conflict-awareness/active-conflict-awareness-metadata/active-conflict-awareness-metadata.component";
+import { MatDialogTitle } from "@angular/material/dialog";
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import {
     DirectivesModule,
     MatInput,
     MatFormField,
+    MatDialogTitle,
   ]
 })
 export class VisualizationModule {
