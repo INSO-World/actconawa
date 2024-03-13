@@ -157,7 +157,7 @@ public class DeclarationProcessUtils {
                 .map(x -> (JavaParser.AnnotationContext) x)
                 .map(x -> new DeclarationInfo(
                         DeclarationType.ANNOTATION,
-                        x.qualifiedName().getText(),
+                        x.qualifiedName() == null ? "" : x.qualifiedName().getText(),
                         IntegerRange.of(x.start.getLine(), x.stop.getLine()), Resolution.DETAILED))
                 .toList();
     }
