@@ -21,12 +21,16 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
 import { DirectivesModule } from "../../directives/directives.module";
 import { MatFormField, MatInput } from "@angular/material/input";
+import {
+  ActiveConflictAwarenessMetadataComponent
+} from "./active-conflict-awareness/active-conflict-awareness-metadata/active-conflict-awareness-metadata.component";
 
 @NgModule({
   declarations: [
     ActiveConflictAwarenessComponent,
     ActiveConflictAwarenessCommitComponent,
-    ActiveConflictAwarenessDiffComponent
+    ActiveConflictAwarenessDiffComponent,
+    ActiveConflictAwarenessMetadataComponent
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,21 @@
+<div *ngIf="commit">
+  <div *ngFor="let parentId of this.commit?.parentIds">
+    <div *ngFor="let file of this.diffFilesByParentCommitId.get(parentId + '')">
+      <ng-container *ngIf="file">
+        <div>{{file.newFilePath}}</div>
+        <strong>Hunks</strong>
+        <ng-container *ngFor="let hunk of hunksByFileId.get(file.id + '')">
+          <div>{{hunk | json}}</div>
+        </ng-container>
+        <strong>Changed lines</strong>
+        <ng-container *ngFor="let lines of changedLinesByFileId.get(file.id + '')">
+          <div>{{lines | json}}</div>
+        </ng-container>
+        <strong>Code Changes</strong>
+        <ng-container *ngFor="let codechanges of changedCodeByFileId.get(file.id + '')">
+          <div>{{codechanges | json}}</div>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+</div>

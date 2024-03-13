@@ -5,6 +5,10 @@ import cytoscapeDagre, { DagreLayoutOptions } from 'cytoscape-dagre';
 import { GitService } from "../../../services/git.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { SettingService } from "../../../services/setting.service";
+import { MatDialog } from "@angular/material/dialog";
+import {
+  ActiveConflictAwarenessDiffComponent
+} from "./active-conflict-awareness-diff/active-conflict-awareness-diff.component";
 
 @Component({
   selector: 'app-active-conflict-awareness',
@@ -38,7 +42,11 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   private referenceBranchId = "";
 
-  constructor(private el: ElementRef, private route: ActivatedRoute, private router: Router) {
+  constructor(
+          private el: ElementRef,
+          private route: ActivatedRoute,
+          private router: Router,
+          private dialog: MatDialog) {
   }
 
   async ngOnInit() {
@@ -112,6 +120,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   resizeChart() {
     this.cy?.resize();
+  }
+
+  openDiffDialog() {
+    this.dialog.open(ActiveConflictAwarenessDiffComponent, {data: this.selectedCommit});
   }
 
   selectCommit(commit: GitCommitDto, selectOnGraph: boolean) {

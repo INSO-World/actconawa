@@ -49,3 +49,9 @@
   flex-direction: column;
   height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin);
 }
+
+.action-card {
+  margin: 1em 0;
+  position: sticky;
+  bottom: 0;
+}
