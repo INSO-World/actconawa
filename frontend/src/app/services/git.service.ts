@@ -11,7 +11,7 @@ import {
   GitCommitDto,
   GitDiffControllerService
 } from "../../api";
-import { EMPTY, expand, filter, lastValueFrom, mergeMap, Observable, of, tap } from "rxjs";
+import { EMPTY, expand, lastValueFrom, tap } from "rxjs";
 import { CompositeKeyMap } from "../utils/CompositeKeyMap";
 
 @Injectable({
@@ -19,11 +19,11 @@ import { CompositeKeyMap } from "../utils/CompositeKeyMap";
 })
 export class GitService {
 
-  private readonly BRANCH_PAGE_SIZE = 10;
+  private readonly BRANCH_PAGE_SIZE = 1000;
 
-  private readonly BRANCH_TRACKING_PAGE_SIZE = 50;
+  private readonly BRANCH_TRACKING_PAGE_SIZE = 1000;
 
-  private readonly COMMIT_QUERY_DEPTH = 3;
+  private readonly COMMIT_PAGE_SIZE = 1000;
 
   private branchById = new Map<string, GitBranchDto>;
 
@@ -53,7 +53,7 @@ export class GitService {
 
   async getCommits(): Promise<GitCommitDto[]> {
     if (this.commitById.size === 0) {
-      await this.loadCommitsForBranches();
+      await this.loadCommits();
     }
     return Array.from(this.commitById.values());
   }
@@ -199,37 +199,30 @@ export class GitService {
     await lastValueFrom(branchTrackingPages);
   }
 
-  private async loadCommitsForBranches() {
-    if (this.branchById.size === 0) {
-      await this.getBranches();
+  private async loadCommits(): Promise<void> {
+    if (this.commitById.size > 0) {
+      return;
     }
-    for (const branch of this.branchById.values()) {
-      if (branch.headCommitId) {
-        await this.loadCommitsAndAncestors(branch.headCommitId, true);
-      }
-    }
-  }
-
-  private async loadCommitsAndAncestors(commitId: string, loadAll: boolean): Promise<Observable<never>> {
-    if (this.commitById.has(commitId)) {
-      return EMPTY;
-    }
-    const commits = await lastValueFrom(this.gitCommitService.findAncestors(commitId, this.COMMIT_QUERY_DEPTH),
-            {defaultValue: undefined});
-    const parentIds = commits?.flatMap(commit => {
-      this.commitById.set(commit.id || "", commit);
-      return commit.parentIds || [];
-    }) || [];
-    if (loadAll) {
-      return lastValueFrom(of(parentIds).pipe(
-              mergeMap(parentIds => parentIds),
-              filter(parentId => !this.commitById.has(parentId)),
-              mergeMap(parentId => this.loadCommitsAndAncestors(parentId, loadAll))
-      ), {defaultValue: EMPTY})
-
-    } else {
-      return EMPTY;
-    }
+    const commitPages = this.gitCommitService
+            .findAllCommits({page: 0, size: this.COMMIT_PAGE_SIZE}).pipe(
+                    expand(commitPage => {
+                      if (!commitPage.last && commitPage.number !== undefined) {
+                        return this.gitCommitService.findAllCommits({
+                          page: commitPage.number + 1,
+                          size: this.COMMIT_PAGE_SIZE
+                        });
+                      } else {
+                        return EMPTY;
+                      }
+                    }),
+                    tap(commit => {
+                      (commit.content || []).forEach(c => {
+                        if (c.id) {
+                          this.commitById.set(c.id || "", c);
+                        }
+                      });
+                    }));
+    await lastValueFrom(commitPages);
   }
 
 }

@@ -96,9 +96,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       },
       layout: {
         name: 'dagre',
+        ranker: 'longest-path',
         rankDir: "LR",
-        nodeSep: 50,
-        rankSep: 100
+        align: "UR",
+        nodeDimensionsIncludeLabels: true,
       } as DagreLayoutOptions
     });
     this.loading = false;
@@ -144,15 +145,15 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   async loadReferenceBranchTrackingStatus() {
     this.referenceBranchId = await this.settingService.getReferenceBranchId();
-    this.gitService.getBranchTrackingStatusById(this.referenceBranchId).then(result => {
-      result.forEach(ts => {
-        if (ts.branchAId === this.referenceBranchId && ts.branchBId) {
-          this.trackingStatusWithReferenceBranchByBranchId.set(ts.branchBId, ts);
-        } else if (ts.branchBId === this.referenceBranchId && ts.branchAId) {
-          this.trackingStatusWithReferenceBranchByBranchId.set(ts.branchAId, ts);
-        }
-      })
-    });
+    const result = await this.gitService.getBranchTrackingStatusById(this.referenceBranchId)
+    result.forEach(ts => {
+              if (ts.branchAId === this.referenceBranchId && ts.branchBId) {
+                this.trackingStatusWithReferenceBranchByBranchId.set(ts.branchBId, ts);
+              } else if (ts.branchBId === this.referenceBranchId && ts.branchAId) {
+                this.trackingStatusWithReferenceBranchByBranchId.set(ts.branchAId, ts);
+              }
+            }
+    );
   }
 
   private async setCommitBranchLabelAndGetColorOfLabel(commit: GitCommitDto): Promise<string> {
