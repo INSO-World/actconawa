@@ -26,6 +26,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected parentCommits = new Map<string, GitCommitDto>();
 
+  private readonly branchHeadMap = new Map<string, GitBranchDto[]>();
+
   protected trackingStatusWithReferenceBranchByBranchId = new Map<string, GitBranchTrackingStatusDto>();
 
   protected selectedCommitsBranches?: GitBranchDto[];
@@ -40,18 +42,22 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   }
 
   async ngOnInit() {
+    await this.loadReferenceBranchTrackingStatus();
+    await this.fillBranchHeadCommitMap();
+
     for (const commit of await this.gitService.getCommits()) {
-      this.cytoscapeCommits.push({data: commit, selectable: true, selected: false})
+      let color = await this.setCommitBranchLabelAndGetColorOfLabel(commit);
+      this.cytoscapeCommits.push({
+        data: commit, selectable: true, selected: false, classes: "branch-label", style: {
+          "text-background-color": color
+        }
+      })
       commit.parentIds?.forEach(parentId => this.cytoscapeCommitRelationships.push({
         data: {
-          id: commit.id
-                  + "-"
-                  + parentId, source: parentId, target: commit.id || ""
+          id: commit.id + "-" + parentId, source: parentId, target: commit.id || ""
         }
       }))
     }
-    await this.loadReferenceBranchTrackingStatus();
-
     const presetCommitId = this.route.snapshot.queryParamMap.get('commitId');
     if (presetCommitId) {
       this.gitService.getCommitById(presetCommitId).then(presetCommit => {
@@ -62,6 +68,27 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     }
     cytoscape.use(cytoscapeDagre);
     this.cy = cytoscape({
+      style: [
+        {
+          "selector": "node[label]",
+          "style": {
+            "label": "data(label)"
+          }
+        },
+        {
+          "selector": ".branch-label",
+          "style": {
+            "text-wrap": "wrap",
+            "text-background-opacity": 1,
+            "color": "#fff",
+            "text-background-shape": "roundrectangle",
+            "text-border-color": "#000",
+            "font-size": "0.75em",
+            "text-border-width": 1,
+            "text-border-opacity": 1
+          }
+        }
+      ],
       container: this.el.nativeElement.querySelector('#cy'),
       elements: {
         nodes: this.cytoscapeCommits,
@@ -69,7 +96,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       },
       layout: {
         name: 'dagre',
-        rankDir: "LR"
+        rankDir: "LR",
+        nodeSep: 50,
+        rankSep: 100
       } as DagreLayoutOptions
     });
     this.loading = false;
@@ -123,6 +152,39 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           this.trackingStatusWithReferenceBranchByBranchId.set(ts.branchAId, ts);
         }
       })
+    });
+  }
+
+  private async setCommitBranchLabelAndGetColorOfLabel(commit: GitCommitDto): Promise<string> {
+    if (this.branchHeadMap.has(commit.id || "")) {
+      (commit as any).label = this.branchHeadMap.get(commit.id || "")?.map(x => x.name).join("\n");
+      const anyBranchIdOfCommit = this.branchHeadMap.get(commit.id || "")?.at(0)?.id;
+      const trackingStatus = this.trackingStatusWithReferenceBranchByBranchId
+              .get(anyBranchIdOfCommit || "");
+      switch (trackingStatus?.mergeStatus) {
+        case "UNKNOWN_MERGE_BASE":
+          return '#8a0000';
+        case "CONFLICTS":
+          return '#ff0000';
+        case "TWO_WAY_MERGEABLE":
+          return '#afe1af';
+        case "THREE_WAY_MERGEABLE":
+          return '#50c878';
+        default:
+          return '#888';
+      }
+    }
+    return '#888';
+  }
+
+  private async fillBranchHeadCommitMap() {
+    (await this.gitService.getBranches()).forEach(x => {
+      const existing = this.branchHeadMap.get(x.headCommitId || "")
+      if (existing) {
+        existing.push(x)
+      } else {
+        this.branchHeadMap.set(x.headCommitId || "", [x]);
+      }
     });
   }
 }
