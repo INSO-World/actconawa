@@ -1,8 +1,11 @@
 <div *ngIf="commit">
   <div mat-dialog-title>Diff</div>
-  <mat-tab-group class="patch-viewer-container" dynamicHeight="">
+  <mat-tab-group class="patch-viewer-container" dynamicHeight="true">
     <ng-container *ngFor="let parentId of this.commit?.parentIds">
-      <mat-tab label="Parent {{parentId}}">
+      <mat-tab label="Parent {{shaByParentCommitId.get(parentId) | slice:0:8}}">
+        <div *ngIf="!patchByParentCommitId.get(parentId)?.patch" class="no-changes-hint">
+          No changes
+        </div>
         <div id="patch-viewer-{{parentId}}" class="patch-viewer"></div>
       </mat-tab>
     </ng-container>

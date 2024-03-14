@@ -19,6 +19,8 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, AfterViewIn
 
   private readonly pathContextLines = 3;
 
+  shaByParentCommitId = new Map<string, string>;
+
   patchByParentCommitId = new Map<string, GitPatchDto>;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: GitCommitDto,
@@ -29,13 +31,15 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, AfterViewIn
   ngOnInit(): void {
   }
 
-  ngAfterViewInit() {
+  async ngAfterViewInit() {
     this.refresh();
   }
 
-  refresh() {
+  async refresh() {
     this.clear();
     for (const parentId of this.commit?.parentIds || []) {
+      const parentCommit = await this.gitService.getCommitById(parentId);
+      this.shaByParentCommitId.set(parentId, parentCommit?.sha || "");
       this.gitService.getModifiedFilesByCommitIds(this.commit.id || "", parentId).then(diffs => {
         this.gitService.getPatch(this.commit.id || "", parentId, this.pathContextLines).then(patch => {
           this.patchByParentCommitId.set(parentId, patch);
