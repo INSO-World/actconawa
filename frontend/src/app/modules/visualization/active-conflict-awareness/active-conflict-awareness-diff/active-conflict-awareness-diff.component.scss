@@ -1,6 +1,11 @@
 @import 'common';
 
 .patch-viewer-container {
-  height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin - 4em);
   padding: 1em;
+  height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin - 4em);
+}
+
+.patch-viewer {
+  overflow: auto;
+  height: 100%;
 }

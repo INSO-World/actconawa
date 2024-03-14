@@ -40,14 +40,17 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, AfterViewIn
         this.gitService.getPatch(this.commit.id || "", parentId, this.pathContextLines).then(patch => {
           this.patchByParentCommitId.set(parentId, patch);
           const patchViewer = this.el.nativeElement.querySelector('#patch-viewer-' + parentId)
-          const configuration = {drawFileList: true, matching: 'lines'};
-          const diff2htmlUi = new Diff2HtmlUI(patchViewer, patch.patch);
+          const diff2htmlUi = new Diff2HtmlUI(patchViewer, patch.patch, {
+            drawFileList: false,
+            matching: 'lines',
+            stickyFileHeaders: false,
+            synchronisedScroll: false
+          });
           diff2htmlUi.draw();
         })
       })
     }
   }
-
   clear() {
     this.patchByParentCommitId = new Map<string, GitPatchDto>();
   }
