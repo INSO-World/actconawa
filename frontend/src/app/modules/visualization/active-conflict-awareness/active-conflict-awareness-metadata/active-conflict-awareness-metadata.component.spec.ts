@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ActiveConflictAwarenessDiffComponent } from './active-conflict-awareness-metadata.component';
+import { ActiveConflictAwarenessMetadataComponent } from './active-conflict-awareness-metadata.component';
 
-describe('ActiveConflictAwarenessDiffComponent', () => {
-  let component: ActiveConflictAwarenessDiffComponent;
-  let fixture: ComponentFixture<ActiveConflictAwarenessDiffComponent>;
+describe('ActiveConflictAwarenessMetadataComponent', () => {
+  let component: ActiveConflictAwarenessMetadataComponent;
+  let fixture: ComponentFixture<ActiveConflictAwarenessMetadataComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ActiveConflictAwarenessDiffComponent]
+      declarations: [ActiveConflictAwarenessMetadataComponent]
     });
-    fixture = TestBed.createComponent(ActiveConflictAwarenessDiffComponent);
+    fixture = TestBed.createComponent(ActiveConflictAwarenessMetadataComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,0 +1,29 @@
+.metadata-info-file-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+
+  div {
+    flex-basis: 100%;
+  }
+}
+
+.metadata-info-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-left: 2em;
+}
+
+.metadata-info-entry {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 50%;
+}
+
+.metadata-info-header {
+  font-weight: bold;
+  margin-left: 1em;
+}

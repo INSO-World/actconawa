@@ -1,6 +1,7 @@
 import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
 import { GitService } from "../../../../services/git.service";
 import {
+  GitCommitDiffCodeChangeDto,
   GitCommitDiffFileDto,
   GitCommitDiffHunkDto,
   GitCommitDiffLineChangeDto,
@@ -29,7 +30,7 @@ export class ActiveConflictAwarenessMetadataComponent implements OnInit, OnChang
 
   changedLinesByFileId = new Map<string, GitCommitDiffLineChangeDto[]>();
 
-  changedCodeByFileId = new Map<string, GitCommitDiffLineChangeDto[]>();
+  changedCodeByFileId = new Map<string, GitCommitDiffCodeChangeDto[]>();
 
   diffFilesByParentCommitId = new Map<string, GitCommitDiffFileDto[]>
 
