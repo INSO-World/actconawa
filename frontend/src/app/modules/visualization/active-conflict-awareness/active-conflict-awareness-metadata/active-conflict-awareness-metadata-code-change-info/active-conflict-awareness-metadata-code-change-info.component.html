@@ -1,0 +1,44 @@
+<div class="metadata-info-row">
+  <div class="metadata-info-entry">
+    <div><strong>Start Line</strong></div>
+    <div>{{codechanges?.sourceLineStart}}</div>
+  </div>
+  <div class="metadata-info-entry">
+    <div><strong>End Line</strong></div>
+    <div>{{codechanges?.sourceLineEnd}}</div>
+  </div>
+</div>
+<div class="metadata-info-row">
+  <div class="metadata-info-entry">
+    <div><strong>Type</strong></div>
+    <div>{{codechanges?.type}}</div>
+  </div>
+  <div class="metadata-info-entry">
+    <div><strong>Just Context</strong></div>
+    <div>{{codechanges?.justContext}}</div>
+  </div>
+</div>
+<div class="metadata-info-row">
+  <div class="metadata-info-entry">
+    <div><strong>Identifier</strong></div>
+    <div>{{codechanges?.identifier}}</div>
+  </div>
+</div>
+<div class="metadata-info-row">
+  <div class="metadata-info-entry">
+    <div><strong>Parent Database Id</strong></div>
+    <div>{{codechanges?.parentId ? codechanges?.parentId : "n/a"}}</div>
+  </div>
+</div>
+<div class="metadata-info-row">
+  <div class="metadata-info-entry">
+    <div><strong>Child Ids</strong></div>
+    <div *ngFor="let child of codechanges?.childrenIds">
+      {{child}}
+    </div>
+    <div *ngIf="!codechanges?.childrenIds || codechanges?.childrenIds?.length == 0">
+      n/a
+    </div>
+  </div>
+</div>
+<mat-divider></mat-divider>

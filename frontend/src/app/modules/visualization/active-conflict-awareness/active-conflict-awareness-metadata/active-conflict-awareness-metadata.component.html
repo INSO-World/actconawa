@@ -10,124 +10,29 @@
           <div><strong>File Database ID</strong></div>
           <div>{{file.id}}</div>
         </div>
-        <mat-divider></mat-divider>
-        <div class="metadata-info-header">Hunks</div>
-        <ng-container *ngFor="let hunk of hunksByFileId.get(file.id + '')">
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Database Id</strong></div>
-              <div>{{hunk.id}}</div>
-            </div>
-          </div>
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Old start line</strong></div>
-              <div>{{hunk.oldStartLine}}</div>
-            </div>
-            <div class="metadata-info-entry">
-              <div><strong>Old line count</strong></div>
-              <div>{{hunk.oldLineCount}}</div>
-            </div>
-          </div>
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>New start line</strong></div>
-              <div>{{hunk.newStartLine}}</div>
-            </div>
-            <div class="metadata-info-entry">
-              <div><strong>New line count</strong></div>
-              <div>{{hunk.newLineCount}}</div>
-            </div>
-          </div>
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Commit dependency Ids</strong></div>
-              <div *ngFor="let dep of hunk.commitDependencyIds">
-                {{dep}}
-              </div>
-            </div>
-          </div>
-          <mat-divider></mat-divider>
-        </ng-container>
-        <div class="metadata-info-header">Changed Lines</div>
-        <ng-container *ngFor="let lines of changedLinesByFileId.get(file.id + '')">
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Database Id</strong></div>
-              <div>{{lines.id}}</div>
-            </div>
-          </div>
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Old start line</strong></div>
-              <div>{{lines.oldStartLine}}</div>
-            </div>
-            <div class="metadata-info-entry">
-              <div><strong>Old line count</strong></div>
-              <div>{{lines.oldLineCount}}</div>
-            </div>
-          </div>
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>New start line</strong></div>
-              <div>{{lines.newStartLine}}</div>
-            </div>
-            <div class="metadata-info-entry">
-              <div><strong>New line count</strong></div>
-              <div>{{lines.newLineCount}}</div>
-            </div>
-          </div>
-          <mat-divider></mat-divider>
-        </ng-container>
-        <div class="metadata-info-header">Code Changes</div>
-        <!--        { "id": "0aa479cb-5419-460a-abe5-46d50db09b27", "type": "PACKAGE", "identifier": "com.example.testrepo.command", "sourceLineStart": 1, "sourceLineEnd": 1, "justContext": true, "parentId": null, "childrenIds": null-->
-        <ng-container *ngFor="let codechanges of changedCodeByFileId.get(file.id + '')">
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Start</strong></div>
-              <div>{{codechanges.sourceLineStart}}</div>
-            </div>
-            <div class="metadata-info-entry">
-              <div><strong>Start</strong></div>
-              <div>{{codechanges.sourceLineEnd}}</div>
-            </div>
-          </div>
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Type</strong></div>
-              <div>{{codechanges.type}}</div>
-            </div>
-            <div class="metadata-info-entry">
-              <div><strong>Just Context</strong></div>
-              <div>{{codechanges.justContext}}</div>
-            </div>
-          </div>
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Identifier</strong></div>
-              <div>{{codechanges.identifier}}</div>
-            </div>
-          </div>
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Parent Database Id</strong></div>
-              <div>{{codechanges.parentId ? codechanges.parentId : "n/a"}}</div>
-            </div>
-          </div>
-          <div class="metadata-info-row">
-            <div class="metadata-info-entry">
-              <div><strong>Child Ids</strong></div>
-              <div *ngFor="let child of codechanges.childrenIds">
-                {{child}}
-              </div>
-              <div *ngIf="!codechanges.childrenIds || codechanges.childrenIds.length == 0">
-                n/a
-              </div>
-            </div>
-          </div>
-          <mat-divider></mat-divider>
-        </ng-container>
-        <mat-divider></mat-divider>
+        <mat-tab-group>
+          <mat-tab label="Hunks">
+            <ng-container *ngFor="let hunk of hunksByFileId.get(file.id + '')">
+              <app-active-conflict-awareness-metadata-hunk-info [hunk]="hunk">
+              </app-active-conflict-awareness-metadata-hunk-info>
+              <mat-divider></mat-divider>
+            </ng-container>
+          </mat-tab>
+          <mat-tab label="Line Changes">
+            <ng-container *ngFor="let lines of changedLinesByFileId.get(file.id + '')">
+              <app-active-conflict-awareness-metadata-line-change-info [lines]="lines">
+              </app-active-conflict-awareness-metadata-line-change-info>
+              <mat-divider></mat-divider>
+            </ng-container>
+          </mat-tab>
+          <mat-tab label="Code Changes"
+                   [disabled]="!changedCodeByFileId.get(file.id + '') || changedCodeByFileId.get(file.id + '')?.length == 0">
+            <ng-container *ngFor="let codechanges of changedCodeByFileId.get(file.id + '')">
+              <app-active-conflict-awareness-metadata-code-change-info [codechanges]="codechanges">
+              </app-active-conflict-awareness-metadata-code-change-info>
+            </ng-container>
+          </mat-tab>
+        </mat-tab-group>
       </ng-container>
     </div>
   </div>

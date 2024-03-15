@@ -1,0 +1,37 @@
+<div class="metadata-info-row">
+  <div class="metadata-info-entry">
+    <div><strong>Database Id</strong></div>
+    <div>{{hunk?.id}}</div>
+  </div>
+</div>
+<div class="metadata-info-row">
+  <div class="metadata-info-entry">
+    <div><strong>Old start line</strong></div>
+    <div>{{hunk?.oldStartLine}}</div>
+  </div>
+  <div class="metadata-info-entry">
+    <div><strong>Old line count</strong></div>
+    <div>{{hunk?.oldLineCount}}</div>
+  </div>
+</div>
+<div class="metadata-info-row">
+  <div class="metadata-info-entry">
+    <div><strong>New start line</strong></div>
+    <div>{{hunk?.newStartLine}}</div>
+  </div>
+  <div class="metadata-info-entry">
+    <div><strong>New line count</strong></div>
+    <div>{{hunk?.newLineCount}}</div>
+  </div>
+</div>
+<div class="metadata-info-row">
+  <div class="metadata-info-entry">
+    <div><strong>Commit dependency Ids</strong></div>
+    <div *ngFor="let dep of hunk?.commitDependencyIds">
+      {{dep}}
+    </div>
+    <div *ngIf="!hunk?.commitDependencyIds || hunk.commitDependencyIds.length == 0">
+      n/a
+    </div>
+  </div>
+</div>

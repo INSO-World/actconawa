@@ -25,6 +25,15 @@ import {
   ActiveConflictAwarenessMetadataComponent
 } from "./active-conflict-awareness/active-conflict-awareness-metadata/active-conflict-awareness-metadata.component";
 import { MatDialogTitle } from "@angular/material/dialog";
+import {
+  ActiveConflictAwarenessMetadataHunkInfoComponent
+} from "./active-conflict-awareness/active-conflict-awareness-metadata/active-conflict-awareness-metadata-hunk-info/active-conflict-awareness-metadata-hunk-info.component";
+import {
+  ActiveConflictAwarenessMetadataLineChangeInfoComponent
+} from "./active-conflict-awareness/active-conflict-awareness-metadata/active-conflict-awareness-metadata-line-change-info/active-conflict-awareness-metadata-line-change-info.component";
+import {
+  ActiveConflictAwarenessMetadataCodeChangeInfoComponent
+} from "./active-conflict-awareness/active-conflict-awareness-metadata/active-conflict-awareness-metadata-code-change-info/active-conflict-awareness-metadata-code-change-info.component";
 
 @NgModule({
   declarations: [
@@ -51,6 +60,9 @@ import { MatDialogTitle } from "@angular/material/dialog";
     MatInput,
     MatFormField,
     MatDialogTitle,
+    ActiveConflictAwarenessMetadataHunkInfoComponent,
+    ActiveConflictAwarenessMetadataLineChangeInfoComponent,
+    ActiveConflictAwarenessMetadataCodeChangeInfoComponent,
   ]
 })
 export class VisualizationModule {
