@@ -22,6 +22,39 @@ body {
   }
 }
 
+.popper-div {
+  z-index: 9999;
+  pointer-events: none;
+  width: max-content;
+  position: absolute;
+
+  .popper-branch-tag {
+    border: grey 1px solid;
+    border-radius: 3px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 2px;
+    background-color: #888;
+    width: fit-content;
+
+    &.UNKNOWN_MERGE_BASE {
+      background-color: #8a0000;
+    }
+
+    &.CONFLICTS {
+      background-color: #ff0000;
+    }
+
+    &.TWO_WAY_MERGEABLE {
+      background-color: #afe1af;
+    }
+
+    &.THREE_WAY_MERGEABLE {
+      background-color: #50c878;
+    }
+  }
+}
+
 .dialog-100vw {
   width: 100vw;
 }

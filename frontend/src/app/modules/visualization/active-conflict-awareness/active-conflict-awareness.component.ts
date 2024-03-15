@@ -2,6 +2,8 @@ import { Component, ElementRef, inject, OnInit } from '@angular/core';
 import { GitBranchDto, GitBranchTrackingStatusDto, GitCommitDto } from '../../../../api';
 import cytoscape, { EdgeDefinition, EventObject, NodeDefinition } from 'cytoscape';
 import cytoscapeDagre, { DagreLayoutOptions } from 'cytoscape-dagre';
+import cytoscapePopper, { PopperOptions, RefElement } from 'cytoscape-popper';
+import { computePosition } from '@floating-ui/dom';
 import { GitService } from "../../../services/git.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { SettingService } from "../../../services/setting.service";
@@ -54,11 +56,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     await this.fillBranchHeadCommitMap();
 
     for (const commit of await this.gitService.getCommits()) {
-      let color = await this.setCommitBranchLabelAndGetColorOfLabel(commit);
       this.cytoscapeCommits.push({
-        data: commit, selectable: true, selected: false, classes: "branch-label", style: {
-          "text-background-color": color
-        }
+        data: commit, selectable: true, selected: false
       })
       commit.parentIds?.forEach(parentId => this.cytoscapeCommitRelationships.push({
         data: {
@@ -75,28 +74,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       });
     }
     cytoscape.use(cytoscapeDagre);
+    cytoscape.use(cytoscapePopper(this.popperFactory));
     this.cy = cytoscape({
-      style: [
-        {
-          "selector": "node[label]",
-          "style": {
-            "label": "data(label)"
-          }
-        },
-        {
-          "selector": ".branch-label",
-          "style": {
-            "text-wrap": "wrap",
-            "text-background-opacity": 1,
-            "color": "#fff",
-            "text-background-shape": "roundrectangle",
-            "text-border-color": "#000",
-            "font-size": "0.75em",
-            "text-border-width": 1,
-            "text-border-opacity": 1
-          }
-        }
-      ],
       container: this.el.nativeElement.querySelector('#cy'),
       elements: {
         nodes: this.cytoscapeCommits,
@@ -104,10 +83,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       },
       layout: {
         name: 'dagre',
-        ranker: 'longest-path',
         rankDir: "LR",
-        align: "UR",
+        rankSep: 130,
         nodeDimensionsIncludeLabels: true,
+        spacingFactor: 1.75
       } as DagreLayoutOptions
     });
     this.loading = false;
@@ -116,6 +95,48 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       const commit = e.target._private.data as GitCommitDto;
       this.selectCommit(commit, false);
     })
+    const branchesByHeadCommitId = new Map<string, GitBranchDto[]>;
+    const branches = await this.gitService.getBranches();
+    branches.forEach(b => {
+      const existing = branchesByHeadCommitId.get(b.headCommitId || "");
+      if (existing) {
+        existing.push(b);
+      } else {
+        branchesByHeadCommitId.set(b.headCommitId || "", [b]);
+      }
+    })
+
+    for (let branchHeadAtCommit of branchesByHeadCommitId.values()) {
+      const branchHead = this.cy.$('#' + branchHeadAtCommit[ 0 ].headCommitId);
+      let branchHeadPopper = branchHead.popper({
+        content: () => {
+          let div = document.createElement('div');
+
+          // Taking first one is sufficient
+          const trackingStatus =
+                  this.trackingStatusWithReferenceBranchByBranchId.get(branchHeadAtCommit[ 0 ].id || "");
+          let branchTags = "";
+          for (let branch of branchHeadAtCommit) {
+            branchTags += `<div class="popper-branch-tag ${trackingStatus?.mergeStatus}">${branch.name}</div>`
+          }
+          div.innerHTML = `${branchTags}
+                           <span>${trackingStatus?.behindCount} Behind / ${trackingStatus?.aheadCount} Ahead</span><br>
+                           <span>${trackingStatus?.conflictingFilePaths?.length} Conflicting Files</span>
+                          `;
+          div.classList.add('popper-div');
+          this.el.nativeElement.querySelector('#cy').appendChild(div);
+          return div;
+        },
+        popper: {
+          placement: 'bottom',
+        },
+      });
+      this.cy.on('pan zoom resize drag', (e: EventObject) => {
+        (branchHeadPopper as any).update(this.cy?.zoom());
+      });
+      branchHead.on('position', (branchHeadPopper as any).update());
+    }
+
   }
 
   resizeChart() {
@@ -128,6 +149,26 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       hasBackdrop: true,
       panelClass: "dialog-100vw"
     });
+  }
+
+  popperFactory(ref: RefElement, content: HTMLElement, options?: PopperOptions): any {
+    const popperOptions = {
+      ...options,
+    }
+
+    function update(zoom?: number) {
+      computePosition(ref, content, popperOptions).then(({x, y}) => {
+        Object.assign(content.style, {
+          'font-size': (zoom || 1) + "rem",
+          'line-height': (zoom || 1) + "rem",
+          left: `${x}px`,
+          top: `${y}px`,
+        });
+      });
+    }
+
+    update();
+    return {update};
   }
 
   selectCommit(commit: GitCommitDto, selectOnGraph: boolean) {
@@ -170,28 +211,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
               }
             }
     );
-  }
-
-  private async setCommitBranchLabelAndGetColorOfLabel(commit: GitCommitDto): Promise<string> {
-    if (this.branchHeadMap.has(commit.id || "")) {
-      (commit as any).label = this.branchHeadMap.get(commit.id || "")?.map(x => x.name).join("\n");
-      const anyBranchIdOfCommit = this.branchHeadMap.get(commit.id || "")?.at(0)?.id;
-      const trackingStatus = this.trackingStatusWithReferenceBranchByBranchId
-              .get(anyBranchIdOfCommit || "");
-      switch (trackingStatus?.mergeStatus) {
-        case "UNKNOWN_MERGE_BASE":
-          return '#8a0000';
-        case "CONFLICTS":
-          return '#ff0000';
-        case "TWO_WAY_MERGEABLE":
-          return '#afe1af';
-        case "THREE_WAY_MERGEABLE":
-          return '#50c878';
-        default:
-          return '#888';
-      }
-    }
-    return '#888';
   }
 
   private async fillBranchHeadCommitMap() {
