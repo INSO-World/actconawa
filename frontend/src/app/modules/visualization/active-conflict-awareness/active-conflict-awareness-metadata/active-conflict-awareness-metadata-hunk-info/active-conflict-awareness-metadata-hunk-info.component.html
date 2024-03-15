@@ -30,7 +30,7 @@
     <div *ngFor="let dep of hunk?.commitDependencyIds">
       {{dep}}
     </div>
-    <div *ngIf="!hunk?.commitDependencyIds || hunk.commitDependencyIds.length == 0">
+    <div *ngIf="!hunk?.commitDependencyIds || hunk?.commitDependencyIds?.length == 0">
       n/a
     </div>
   </div>

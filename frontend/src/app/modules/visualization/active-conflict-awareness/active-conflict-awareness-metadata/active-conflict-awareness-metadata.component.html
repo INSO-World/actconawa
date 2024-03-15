@@ -1,39 +1,50 @@
-<div *ngIf="commit">
-  <div *ngFor="let parentId of this.commit?.parentIds">
-    <div *ngFor="let file of this.diffFilesByParentCommitId.get(parentId + '')">
-      <ng-container *ngIf="file">
-        <div class="metadata-info-file-row">
-          <div><strong>File path</strong></div>
-          <div>{{file.newFilePath}}</div>
-        </div>
-        <div class="metadata-info-file-row">
-          <div><strong>File Database ID</strong></div>
-          <div>{{file.id}}</div>
-        </div>
-        <mat-tab-group>
-          <mat-tab label="Hunks">
-            <ng-container *ngFor="let hunk of hunksByFileId.get(file.id + '')">
-              <app-active-conflict-awareness-metadata-hunk-info [hunk]="hunk">
-              </app-active-conflict-awareness-metadata-hunk-info>
-              <mat-divider></mat-divider>
-            </ng-container>
-          </mat-tab>
-          <mat-tab label="Line Changes">
-            <ng-container *ngFor="let lines of changedLinesByFileId.get(file.id + '')">
-              <app-active-conflict-awareness-metadata-line-change-info [lines]="lines">
-              </app-active-conflict-awareness-metadata-line-change-info>
-              <mat-divider></mat-divider>
-            </ng-container>
-          </mat-tab>
-          <mat-tab label="Code Changes"
-                   [disabled]="!changedCodeByFileId.get(file.id + '') || changedCodeByFileId.get(file.id + '')?.length == 0">
-            <ng-container *ngFor="let codechanges of changedCodeByFileId.get(file.id + '')">
-              <app-active-conflict-awareness-metadata-code-change-info [codechanges]="codechanges">
-              </app-active-conflict-awareness-metadata-code-change-info>
-            </ng-container>
-          </mat-tab>
-        </mat-tab-group>
-      </ng-container>
+<div *ngIf="commit
+&& this.diffFilesByParentCommitId.get(selectedParentCommitId + '')?.length || 0 > 0">
+  <mat-form-field class="file-picker-select-form-field">
+    <mat-select class="file-picker-select" [(value)]="selectedFile" required>
+      <mat-option class="file-picker-option"
+                  *ngFor="let file of this.diffFilesByParentCommitId.get(selectedParentCommitId + '')"
+                  [value]="file">
+        {{file.newFilePath}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <ng-container *ngIf="selectedFile">
+    <div class="metadata-info-file-row">
+      <div><strong>File Database ID</strong></div>
+      <div>{{selectedFile.id}}</div>
     </div>
-  </div>
+    <div *ngIf="selectedFile.oldFilePath != selectedFile.newFilePath && selectedFile.oldFilePath"
+         class="metadata-info-file-row">
+      <div><strong>Old File Path</strong></div>
+      <div>{{selectedFile.oldFilePath}}</div>
+    </div>
+    <mat-tab-group>
+      <mat-tab label="Hunks">
+        <ng-container *ngFor="let hunk of hunksByFileId.get(selectedFile.id + '')">
+          <app-active-conflict-awareness-metadata-hunk-info [hunk]="hunk">
+          </app-active-conflict-awareness-metadata-hunk-info>
+          <mat-divider></mat-divider>
+        </ng-container>
+      </mat-tab>
+      <mat-tab label="Line Changes">
+        <ng-container *ngFor="let lines of changedLinesByFileId.get(selectedFile.id + '')">
+          <app-active-conflict-awareness-metadata-line-change-info [lines]="lines">
+          </app-active-conflict-awareness-metadata-line-change-info>
+          <mat-divider></mat-divider>
+        </ng-container>
+      </mat-tab>
+      <mat-tab label="Code Changes"
+               [disabled]="!changedCodeByFileId.get(selectedFile.id + '') || changedCodeByFileId.get(selectedFile.id + '')?.length == 0">
+        <ng-container *ngFor="let codechanges of changedCodeByFileId.get(selectedFile.id + '')">
+          <app-active-conflict-awareness-metadata-code-change-info [codechanges]="codechanges">
+          </app-active-conflict-awareness-metadata-code-change-info>
+        </ng-container>
+      </mat-tab>
+    </mat-tab-group>
+  </ng-container>
+</div>
+<div *ngIf="!commit
+|| this.diffFilesByParentCommitId.get(selectedParentCommitId + '')?.length || 0 == 0">
+  No changes
 </div>

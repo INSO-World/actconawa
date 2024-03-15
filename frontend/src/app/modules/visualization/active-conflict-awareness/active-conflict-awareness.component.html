@@ -32,10 +32,13 @@
               Commit Metadata
             </mat-panel-title>
             <mat-panel-description>
-              Changes to parent {{parentCommits.get(parentId)?.sha | slice:0:8}}
+              <small>Changes to parent {{parentCommits.get(parentId)?.sha | slice:0:8}}</small>
             </mat-panel-description>
           </mat-expansion-panel-header>
-          <app-active-conflict-awareness-metadata [commit]="selectedCommit" *ngIf="selectedCommit">
+          <app-active-conflict-awareness-metadata
+                  [commit]="selectedCommit"
+                  [selectedParentCommitId]="parentId"
+                  *ngIf="selectedCommit">
           </app-active-conflict-awareness-metadata>
         </mat-expansion-panel>
       </ng-container>

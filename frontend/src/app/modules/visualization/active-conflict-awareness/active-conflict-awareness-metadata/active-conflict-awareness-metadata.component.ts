@@ -22,9 +22,8 @@ export class ActiveConflictAwarenessMetadataComponent implements OnInit, OnChang
   @Input()
   commit!: GitCommitDto;
 
-  private currentCommit?: GitCommitDto
-
-  private readonly pathContextLines = 3;
+  @Input()
+  selectedParentCommitId!: string;
 
   hunksByFileId = new Map<string, GitCommitDiffHunkDto[]>();
 
@@ -37,6 +36,12 @@ export class ActiveConflictAwarenessMetadataComponent implements OnInit, OnChang
   diffFilesById = new Map<string, GitCommitDiffFileDto>
 
   patchByParentCommitId = new Map<string, GitPatchDto>;
+
+  selectedFile?: GitCommitDiffFileDto;
+
+  private currentCommit?: GitCommitDto
+
+  private readonly pathContextLines = 3;
 
   ngOnInit(): void {
     this.refresh();
@@ -52,28 +57,30 @@ export class ActiveConflictAwarenessMetadataComponent implements OnInit, OnChang
       return;
     }
     this.currentCommit = this.commit;
-    for (const parentId of this.commit?.parentIds || []) {
-      this.gitService.getModifiedFilesByCommitIds(this.commit.id || "", parentId).then(diffs => {
-        this.diffFilesByParentCommitId.set(parentId, diffs || []);
-        this.gitService.getPatch(this.commit.id || "", parentId, this.pathContextLines).then(patch => {
-          this.patchByParentCommitId.set(parentId, patch);
-        })
-        for (const diff of diffs || []) {
-          this.diffFilesById.set(diff.id || "", diff)
-          if (diff && diff.id) {
-            this.gitService.getHunksByDiffFileId(diff.id).then(changes => {
-              this.hunksByFileId.set(diff.id || "", changes || []);
-            });
-            this.gitService.getLineChangesByDiffFileId(diff.id).then(changes => {
-              this.changedLinesByFileId.set(diff.id || "", changes || []);
-            });
-            this.gitService.getCodeChangesByDiffFileId(diff.id).then(changes => {
-              this.changedCodeByFileId.set(diff.id || "", changes || []);
-            });
-          }
-        }
+
+    this.gitService.getModifiedFilesByCommitIds(this.commit.id || "", this.selectedParentCommitId).then(diffs => {
+      this.diffFilesByParentCommitId.set(this.selectedParentCommitId, diffs || []);
+      this.gitService.getPatch(this.commit.id || "", this.selectedParentCommitId, this.pathContextLines).then(patch => {
+        this.patchByParentCommitId.set(this.selectedParentCommitId, patch);
       })
-    }
+      for (const diff of diffs || []) {
+        if (!this.selectedFile) {
+          this.selectedFile = diff;
+        }
+        this.diffFilesById.set(diff.id || "", diff)
+        if (diff && diff.id) {
+          this.gitService.getHunksByDiffFileId(diff.id).then(changes => {
+            this.hunksByFileId.set(diff.id || "", changes || []);
+          });
+          this.gitService.getLineChangesByDiffFileId(diff.id).then(changes => {
+            this.changedLinesByFileId.set(diff.id || "", changes || []);
+          });
+          this.gitService.getCodeChangesByDiffFileId(diff.id).then(changes => {
+            this.changedCodeByFileId.set(diff.id || "", changes || []);
+          });
+        }
+      }
+    })
   }
 
   clear() {
