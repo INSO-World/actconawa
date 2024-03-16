@@ -81,6 +81,15 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         nodes: this.cytoscapeCommits,
         edges: this.cytoscapeCommitRelationships
       },
+      style: [
+        {
+          selector: ".commit-dependency",
+          style: {
+            "border-color": "black",
+            "border-width": "5px"
+          }
+        }
+      ],
       layout: {
         name: 'dagre',
         rankDir: "LR",
@@ -198,9 +207,11 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     this.gitService.getBranchesByCommitId(commit.id).then(branches => {
       return this.selectedCommitsBranches = branches.sort();
     })
+
+    this.loadDependencies(commit).then(() => console.log("done"));
   }
 
-  async loadReferenceBranchTrackingStatus() {
+  private async loadReferenceBranchTrackingStatus() {
     this.referenceBranchId = await this.settingService.getReferenceBranchId();
     const result = await this.gitService.getBranchTrackingStatusById(this.referenceBranchId)
     result.forEach(ts => {
@@ -222,5 +233,25 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         this.branchHeadMap.set(x.headCommitId || "", [x]);
       }
     });
+  }
+
+  private async loadDependencies(commit: GitCommitDto) {
+    this.cy?.$("node").removeClass("commit-dependency");
+    for (const parentId of commit.parentIds || "") {
+      const files =
+              await this.gitService.getModifiedFilesByCommitIds(commit.id || "", parentId) || [];
+      for (const file of files) {
+        const hunks = await this.gitService.getHunksByDiffFileId(file.id || "") || [];
+        for (const hunk of hunks) {
+          const dependencyCommitIds = hunk.commitDependencyIds || [];
+          for (const dep of dependencyCommitIds) {
+            if (dep && dep.length > 0) {
+              console.log(dep)
+              this.cy?.$('#' + dep).addClass("commit-dependency");
+            }
+          }
+        }
+      }
+    }
   }
 }
