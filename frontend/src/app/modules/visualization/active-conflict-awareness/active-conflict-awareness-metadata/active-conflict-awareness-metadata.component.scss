@@ -9,13 +9,36 @@
   }
 }
 
-// TODO: find cleaner fix to stop overflowing the fixed action card
-::ng-deep .mat-expansion-panel-body {
+.mat-expansion-panel-body {
   z-index: 0;
 }
 
+.tab-segment {
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
+.mat-mdc-select-value-text {
+  white-space: normal !important;
+  font-size: smaller;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+.mat-mdc-option {
+  font-size: smaller !important;
+}
+
+.mat-mdc-form-field-infix {
+  padding-top: 0.5em !important;
+  padding-bottom: 0.5em !important;
+  min-height: 1em !important;
+  line-height: 1em !important;
+  width: fit-content !important;
+}
+
 .file-picker-select-form-field {
-  width: 100%;
+  width: fit-content;
 }
 
 .file-picker-option {

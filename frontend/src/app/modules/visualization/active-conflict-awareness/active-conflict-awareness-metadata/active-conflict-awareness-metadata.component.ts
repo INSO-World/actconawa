@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core';
 import { GitService } from "../../../../services/git.service";
 import {
   GitCommitDiffCodeChangeDto,
@@ -12,6 +12,7 @@ import {
 @Component({
   selector: 'app-active-conflict-awareness-metadata',
   standalone: false,
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './active-conflict-awareness-metadata.component.html',
   styleUrls: ['./active-conflict-awareness-metadata.component.scss']
 })

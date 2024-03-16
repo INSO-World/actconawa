@@ -1,5 +1,6 @@
 <div *ngIf="commit
 && this.diffFilesByParentCommitId.get(selectedParentCommitId + '')?.length || 0 > 0">
+  <div><strong>File</strong></div>
   <mat-form-field class="file-picker-select-form-field">
     <mat-select class="file-picker-select" [(value)]="selectedFile" required>
       <mat-option class="file-picker-option"
@@ -21,25 +22,25 @@
     </div>
     <mat-tab-group>
       <mat-tab label="Hunks">
-        <ng-container *ngFor="let hunk of hunksByFileId.get(selectedFile.id + '')">
+        <div class="tab-segment" *ngFor="let hunk of hunksByFileId.get(selectedFile.id + '')">
           <app-active-conflict-awareness-metadata-hunk-info [hunk]="hunk">
           </app-active-conflict-awareness-metadata-hunk-info>
           <mat-divider></mat-divider>
-        </ng-container>
+        </div>
       </mat-tab>
       <mat-tab label="Line Changes">
-        <ng-container *ngFor="let lines of changedLinesByFileId.get(selectedFile.id + '')">
+        <div class="tab-segment" *ngFor="let lines of changedLinesByFileId.get(selectedFile.id + '')">
           <app-active-conflict-awareness-metadata-line-change-info [lines]="lines">
           </app-active-conflict-awareness-metadata-line-change-info>
           <mat-divider></mat-divider>
-        </ng-container>
+        </div>
       </mat-tab>
       <mat-tab label="Code Changes"
                [disabled]="!changedCodeByFileId.get(selectedFile.id + '') || changedCodeByFileId.get(selectedFile.id + '')?.length == 0">
-        <ng-container *ngFor="let codechanges of changedCodeByFileId.get(selectedFile.id + '')">
+        <div class="tab-segment" *ngFor="let codechanges of changedCodeByFileId.get(selectedFile.id + '')">
           <app-active-conflict-awareness-metadata-code-change-info [codechanges]="codechanges">
           </app-active-conflict-awareness-metadata-code-change-info>
-        </ng-container>
+        </div>
       </mat-tab>
     </mat-tab-group>
   </ng-container>
