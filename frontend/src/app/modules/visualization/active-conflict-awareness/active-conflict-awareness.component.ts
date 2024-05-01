@@ -32,6 +32,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected parentCommits = new Map<string, GitCommitDto>();
 
+  protected drawnCommits = new Set<string>;
+
+  protected drawnPlaceholderCommits = new Set<string>;
+
   private readonly branchHeadMap = new Map<string, GitBranchDto[]>();
 
   protected trackingStatusWithReferenceBranchByBranchId = new Map<string, GitBranchTrackingStatusDto>();
@@ -55,15 +59,43 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     await this.loadReferenceBranchTrackingStatus();
     await this.fillBranchHeadCommitMap();
 
-    for (const commit of await this.gitService.getCommits()) {
-      this.cytoscapeCommits.push({
-        data: commit, selectable: true, selected: false
-      })
-      commit.parentIds?.forEach(parentId => this.cytoscapeCommitRelationships.push({
-        data: {
-          id: commit.id + "-" + parentId, source: parentId, target: commit.id || ""
-        }
-      }))
+    const branchesByHeadCommitId = new Map<string, GitBranchDto[]>;
+    const branches = await this.gitService.getBranches();
+    branches.forEach(b => {
+      const existing = branchesByHeadCommitId.get(b.headCommitId || "");
+      if (existing) {
+        existing.push(b);
+      } else {
+        branchesByHeadCommitId.set(b.headCommitId || "", [b]);
+      }
+    })
+    for (const commitId of branchesByHeadCommitId.keys()) {
+      const commit = (await this.gitService.getCommitAndAncestory(commitId, 0))[ 0 ];
+      if (branchesByHeadCommitId.has(commit.id || "")) {
+        this.cytoscapeCommits.push({
+          data: commit, selectable: true, selected: false
+        })
+        commit.parentIds?.forEach(parentId => {
+          if (branchesByHeadCommitId.has(parentId || "")) {
+            this.drawnCommits.add(parentId);
+            this.cytoscapeCommitRelationships.push({
+              data: {
+                id: commit.id + "-" + parentId, source: parentId, target: commit.id || ""
+              }
+            });
+          } else {
+            this.drawnPlaceholderCommits.add(parentId);
+            this.cytoscapeCommits.push({
+              data: {id: "ph-" + parentId}, selectable: true, selected: false, classes: "commit-placeholder"
+            })
+            this.cytoscapeCommitRelationships.push({
+              data: {
+                id: commit.id + "-" + "ph-" + parentId, source: "ph-" + parentId, target: commit.id || ""
+              }
+            });
+          }
+        })
+      }
     }
     const presetCommitId = this.route.snapshot.queryParamMap.get('commitId');
     if (presetCommitId) {
@@ -88,31 +120,111 @@ export class ActiveConflictAwarenessComponent implements OnInit {
             "border-color": "black",
             "border-width": "5px"
           }
+        },
+        {
+          selector: ".commit-placeholder",
+          style: {
+            "shape": "rectangle",
+            "background-color": "lightgrey",
+            "font-weight": "bold",
+            "content": "+",
+            "text-valign": "center",
+            "text-halign": "center"
+          }
         }
       ],
       layout: {
-        name: 'dagre',
-        rankDir: "LR",
-        rankSep: 130,
+        name: 'concentric',
+        concentric: function (node) {
+          return (node as any).data().id.startsWith("ph") ? 1 : 3;
+        },
+        levelWidth: function (nodes) { // the variation of concentric values in each level
+          return 1;
+        },
+        fit: true,
         nodeDimensionsIncludeLabels: true,
-        spacingFactor: 1.75,
-        fit: false
-      } as DagreLayoutOptions
+        minNodeSpacing: 10,
+        spacingFactor: 4
+      }
     });
     this.loading = false;
     this.cy.on('click', 'node', (e: EventObject) => {
       this.selectedCommitsBranches = undefined
       const commit = e.target._private.data as GitCommitDto;
-      this.selectCommit(commit, false);
-    })
-    const branchesByHeadCommitId = new Map<string, GitBranchDto[]>;
-    const branches = await this.gitService.getBranches();
-    branches.forEach(b => {
-      const existing = branchesByHeadCommitId.get(b.headCommitId || "");
-      if (existing) {
-        existing.push(b);
+      if (!commit.id?.startsWith("ph-")) {
+        this.selectCommit(commit, false);
       } else {
-        branchesByHeadCommitId.set(b.headCommitId || "", [b]);
+        this.drawnPlaceholderCommits.delete(commit.id);
+        this.gitService.getCommitAndAncestory(commit.id?.slice(3)).then(realcommit => {
+          let newNodes: NodeDefinition[] = realcommit.map(c => {
+            this.drawnCommits.add(c.id || "")
+            return ({
+              data: c,
+              selectable: true,
+              selected: false
+            })
+          })
+          let newEdges: EdgeDefinition[] = realcommit.flatMap(c => c.parentIds?.map(pid => {
+                            if (!this.drawnCommits.has(pid)) {
+                              this.drawnPlaceholderCommits.add(pid);
+                              newNodes.push({
+                                data: {id: "ph-" + pid}, selectable: true, selected: false, classes: "commit-placeholder"
+                              })
+                              return ({
+                                data: {
+                                  id: c.id + "-" + "ph-" + pid,
+                                  source: "ph-" + pid,
+                                  target: c.id || ""
+                                }
+                              } as EdgeDefinition)
+                            } else {
+                              return ({
+                                data: {
+                                  id: c.id + "-" + pid,
+                                  source: pid,
+                                  target: c.id || ""
+                                }
+                              } as EdgeDefinition);
+                            }
+                          }
+                  ) || []
+          );
+
+          this.cy?.$('#' + commit.id).connectedEdges().forEach(ele => {
+            newEdges.push({
+              data: {
+                id: ele.data().target + "-" + commit.id?.slice(3),
+                source: commit.id?.slice(3) || "",
+                target: ele.data().target || ""
+              }
+            });
+          });
+          this.cy?.remove('#' + commit.id);
+          this.cy?.add({
+            nodes: newNodes,
+            edges: newEdges
+          })
+          this.cy?.layout({
+            name: 'dagre',
+            rankDir: "LR",
+            rankSep: 130,
+            nodeDimensionsIncludeLabels: true,
+            spacingFactor: 1.75,
+            fit: true,
+            animate: true,
+            animationDuration: 500,
+            ready: e1 => {
+              this.gitService.getCommitById(commit.id?.slice(3) || "")
+                      .then(commitToSelect => {
+                        if (commitToSelect) {
+                          this.selectCommit(commitToSelect, true);
+                        }
+                      })
+
+            }
+          } as DagreLayoutOptions).run();
+        })
+
       }
     })
 
@@ -215,7 +327,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       return this.selectedCommitsBranches = branches.sort();
     })
 
-    this.loadDependencies(commit).then(() => console.log("done"));
+    this.loadDependencies(commit).then(() => {
+    });
   }
 
   private async loadReferenceBranchTrackingStatus() {
