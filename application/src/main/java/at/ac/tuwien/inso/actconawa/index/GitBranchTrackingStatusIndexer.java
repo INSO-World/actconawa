@@ -98,8 +98,8 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                     // reset walk and get difference count
                     walk.reset();
                     walk.setRevFilter(RevFilter.ALL);
-                    int aheadCount = RevWalkUtils.count(walk, refA, mergeBase);
-                    int behindCount = RevWalkUtils.count(walk, refB, mergeBase);
+                    int behindCount = RevWalkUtils.count(walk, refA, mergeBase);
+                    int aheadCount = RevWalkUtils.count(walk, refB, mergeBase);
                     LOG.debug("Branch {} and {} is {} ahead and {} behind",
                             branchA.getName(), branchB.getName(), aheadCount, behindCount);
                     // check if a branch b was merged into a already

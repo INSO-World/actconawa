@@ -129,10 +129,16 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           for (let branch of branchHeadAtCommit) {
             branchTags += `<div class="popper-branch-tag ${trackingStatus?.mergeStatus}">${branch.name}</div>`
           }
-          div.innerHTML = `${branchTags}
+          if (!trackingStatus) {
+            div.innerHTML = `${branchTags}
+                           <span>Reference Branch</span>
+                          `;
+          } else {
+            div.innerHTML = `${branchTags}
                            <span>${trackingStatus?.behindCount} Behind / ${trackingStatus?.aheadCount} Ahead</span><br>
                            <span>${trackingStatus?.conflictingFilePaths?.length} Conflicting Files</span>
                           `;
+          }
           div.classList.add('popper-div');
           this.el.nativeElement.querySelector('#cy').appendChild(div);
           return div;
