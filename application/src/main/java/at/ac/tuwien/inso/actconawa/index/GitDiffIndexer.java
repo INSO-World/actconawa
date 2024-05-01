@@ -248,9 +248,27 @@ public class GitDiffIndexer implements Indexer {
                     throw new IllegalStateException("Parent commit seems to be null but changetype is not ADD");
                 }
 
-                hunkEntity.getDependencyCommitShaSet().addAll(
-                        findContextualDependencies(hunk, blame.get())
-                );
+                if (hunk.getOldImage().getLineCount() == 0) {
+                    // if there is no line count, that means the file must have been emptied (or created empty)
+                    // in the previous commit. Therefore the commit depends on the previous commit of that file.
+                    var pathHistoryIterator = git.log()
+                            .addPath(fileHeader.getOldPath())
+                            .add(commit.getId())
+                            .setMaxCount(2)
+                            .call()
+                            .iterator();
+                    RevCommit prevCommit = null;
+                    while (pathHistoryIterator.hasNext()) {
+                        prevCommit = pathHistoryIterator.next();
+                    }
+                    if (prevCommit != null) {
+                        hunkEntity.getDependencyCommitShaSet().add(prevCommit.getName());
+                    }
+                } else {
+                    hunkEntity.getDependencyCommitShaSet().addAll(
+                            findContextualDependencies(hunk, blame.get())
+                    );
+                }
             }
         }
     }

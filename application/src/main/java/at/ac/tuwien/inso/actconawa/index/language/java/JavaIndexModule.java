@@ -65,6 +65,9 @@ public class JavaIndexModule implements LanguageIndexModule {
             JavaParser.CompilationUnitContext cu = aparser.compilationUnit();
 
             CodeChange affectedPackage = null;
+            if (cu.children == null) {
+                return true;
+            }
             for (var child : cu.children) {
                 var lineChanges = Optional.ofNullable(commitDiffFile.getGitCommitDiffLineChanges()).orElse(List.of());
                 for (GitCommitDiffLineChange gitCommitDiffLineChange : lineChanges) {

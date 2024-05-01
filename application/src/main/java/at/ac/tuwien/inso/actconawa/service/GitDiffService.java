@@ -70,7 +70,7 @@ public class GitDiffService implements DiffService {
                     new CanonicalTreeParser(null, reader, parentCommit.getTree().getId());
 
             formatter.setRepository(git.getRepository());
-            formatter.setContext(Math.min(0, contextLines));
+            formatter.setContext(Math.max(0, contextLines));
             formatter.format(parentCommitTree, commitTree);
             return outputStream.toString();
         } catch (IOException e) {

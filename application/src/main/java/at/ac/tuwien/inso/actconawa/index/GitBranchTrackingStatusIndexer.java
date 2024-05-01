@@ -82,11 +82,19 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                     walk.markStart(refA);
                     walk.markStart(refB);
                     RevCommit mergeBase = walk.next();
-                    var gitCommitMergeBase = gitCommitRepository.findByShaStartsWith(mergeBase.getName())
+                    // TODO: investigate further
+                    var gitCommitMergeBase = mergeBase == null
+                            ? null
+                            : gitCommitRepository.findByShaStartsWith(mergeBase.getName())
                             .orElseThrow(CommitNotFoundException::new);
 
-                    LOG.debug("Merge Base of {} and {} is commit {}",
-                            branchA.getName(), branchB.getName(), mergeBase.getName());
+                    if (mergeBase != null) {
+                        LOG.debug("Merge Base of {} and {} is commit {}",
+                                branchA.getName(), branchB.getName(), mergeBase.getName());
+                    } else {
+                        LOG.debug("No common merge Base of {} and {} ",
+                                branchA.getName(), branchB.getName());
+                    }
                     // reset walk and get difference count
                     walk.reset();
                     walk.setRevFilter(RevFilter.ALL);

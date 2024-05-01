@@ -33,6 +33,9 @@ public interface GitMapper {
     }
 
     default UUID idFromModel(GitCommit branch) {
+        if (branch == null) {
+            return null;
+        }
         return branch.getId();
     }
 

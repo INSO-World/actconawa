@@ -95,7 +95,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         rankDir: "LR",
         rankSep: 130,
         nodeDimensionsIncludeLabels: true,
-        spacingFactor: 1.75
+        spacingFactor: 1.75,
+        fit: false
       } as DagreLayoutOptions
     });
     this.loading = false;
