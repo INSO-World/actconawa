@@ -34,7 +34,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected drawnCommits = new Set<string>;
 
-  protected drawnPlaceholderCommits = new Set<string>;
+  protected missingRelationShipsByCommitId = new Map<string, Set<string>>;
+
+  protected missingRelationShipsByParentCommitId = new Map<string, Set<string>>;
 
   private readonly branchHeadMap = new Map<string, GitBranchDto[]>();
 
@@ -70,31 +72,27 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       }
     })
     for (const commitId of branchesByHeadCommitId.keys()) {
+      this.drawnCommits.add(commitId);
       const commit = (await this.gitService.getCommitAndAncestory(commitId, 0))[ 0 ];
       if (branchesByHeadCommitId.has(commit.id || "")) {
-        this.cytoscapeCommits.push({
-          data: commit, selectable: true, selected: false
-        })
+        const cytoscapeCommit: cytoscape.NodeDefinition = {
+          data: commit, selectable: true, selected: false, classes: []
+        }
+        this.cytoscapeCommits.push(cytoscapeCommit)
         commit.parentIds?.forEach(parentId => {
           if (branchesByHeadCommitId.has(parentId || "")) {
-            this.drawnCommits.add(parentId);
             this.cytoscapeCommitRelationships.push({
               data: {
                 id: commit.id + "-" + parentId, source: parentId, target: commit.id || ""
               }
             });
           } else {
-            this.drawnPlaceholderCommits.add(parentId);
-            this.cytoscapeCommits.push({
-              data: {id: "ph-" + parentId}, selectable: true, selected: false, classes: "commit-placeholder"
-            })
-            this.cytoscapeCommitRelationships.push({
-              data: {
-                id: commit.id + "-" + "ph-" + parentId, source: "ph-" + parentId, target: commit.id || ""
-              }
-            });
+            this.addMissingCommitRelationship(commit.id || "", parentId)
           }
         })
+        if (this.missingRelationShipsByCommitId.has(commit.id || "")) {
+          (cytoscapeCommit.classes as string[]).push("commit-placeholder");
+        }
       }
     }
     const presetCommitId = this.route.snapshot.queryParamMap.get('commitId');
@@ -124,8 +122,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         {
           selector: ".commit-placeholder",
           style: {
-            "shape": "rectangle",
-            "background-color": "lightgrey",
+            "shape": "diamond",
             "font-weight": "bold",
             "content": "+",
             "text-valign": "center",
@@ -151,33 +148,43 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     this.cy.on('click', 'node', (e: EventObject) => {
       this.selectedCommitsBranches = undefined
       const commit = e.target._private.data as GitCommitDto;
-      if (!commit.id?.startsWith("ph-")) {
+      if (!this.missingRelationShipsByCommitId.has(commit.id || "")) {
         this.selectCommit(commit, false);
       } else {
-        this.drawnPlaceholderCommits.delete(commit.id);
-        this.gitService.getCommitAndAncestory(commit.id?.slice(3)).then(realcommit => {
-          let newNodes: NodeDefinition[] = realcommit.map(c => {
-            this.drawnCommits.add(c.id || "")
-            return ({
-              data: c,
-              selectable: true,
-              selected: false
+        const parentIdsToBeLoaded = this.missingRelationShipsByCommitId.get(commit.id || "") || []
+
+        this.missingRelationShipsByCommitId.delete(commit.id || "");
+        this.cy?.$('#' + commit.id).removeClass("commit-placeholder")
+
+        for (let missingParentId of parentIdsToBeLoaded) {
+          this.gitService.getCommitAndAncestory(missingParentId).then(loadedAncestors => {
+
+            // Retrieve new nodes
+            const newNodes: NodeDefinition[] = loadedAncestors.map(c => {
+              this.drawnCommits.add(c.id || "")
+              return {
+                data: c,
+                selectable: true,
+                selected: false,
+                classes: []
+              }
+            });
+            // Declare new node as one that has missing ancestors
+            newNodes.forEach(newNode => {
+              ((newNode.data as GitCommitDto).parentIds || []).forEach(newNodeParentId => {
+                if (!this.drawnCommits.has(newNodeParentId)) {
+                  this.addMissingCommitRelationship(newNode.data.id || "", newNodeParentId);
+                  const classes = newNode.classes as string[];
+                  if (classes.indexOf("commit-placeholder") < 0) {
+                    classes.push("commit-placeholder")
+                  }
+                }
+              })
             })
-          })
-          let newEdges: EdgeDefinition[] = realcommit.flatMap(c => c.parentIds?.map(pid => {
-                            if (!this.drawnCommits.has(pid)) {
-                              this.drawnPlaceholderCommits.add(pid);
-                              newNodes.push({
-                                data: {id: "ph-" + pid}, selectable: true, selected: false, classes: "commit-placeholder"
-                              })
-                              return ({
-                                data: {
-                                  id: c.id + "-" + "ph-" + pid,
-                                  source: "ph-" + pid,
-                                  target: c.id || ""
-                                }
-                              } as EdgeDefinition)
-                            } else {
+            // retrieve all new edges for all new nodes (not existing ones)
+            let newEdges: EdgeDefinition[] = loadedAncestors.flatMap(c => (c.parentIds || [])
+                    .filter(pid => this.drawnCommits.has(pid))
+                    .map(pid => {
                               return ({
                                 data: {
                                   id: c.id + "-" + pid,
@@ -186,44 +193,52 @@ export class ActiveConflictAwarenessComponent implements OnInit {
                                 }
                               } as EdgeDefinition);
                             }
-                          }
-                  ) || []
-          );
-
-          this.cy?.$('#' + commit.id).connectedEdges().forEach(ele => {
-            newEdges.push({
-              data: {
-                id: ele.data().target + "-" + commit.id?.slice(3),
-                source: commit.id?.slice(3) || "",
-                target: ele.data().target || ""
+                    ) || []
+            );
+            // retrieve all new edges for all existing nodes
+            for (let newAddedCommitNode of newNodes) {
+              for (let childCommitOfLoadedParent of
+              this.missingRelationShipsByParentCommitId.get(newAddedCommitNode.data.id || "") || []) {
+                newEdges.push({
+                  data: {
+                    id: childCommitOfLoadedParent + "-" + newAddedCommitNode.data.id || "",
+                    source: newAddedCommitNode.data.id || "",
+                    target: childCommitOfLoadedParent || ""
+                  }
+                });
+                this.missingRelationShipsByCommitId.get(childCommitOfLoadedParent)?.delete(newAddedCommitNode.data.id
+                        || "");
+                this.cy?.$('#' + childCommitOfLoadedParent).removeClass("commit-placeholder")
               }
-            });
-          });
-          this.cy?.remove('#' + commit.id);
-          this.cy?.add({
-            nodes: newNodes,
-            edges: newEdges
-          })
-          this.cy?.layout({
-            name: 'dagre',
-            rankDir: "LR",
-            rankSep: 130,
-            nodeDimensionsIncludeLabels: true,
-            spacingFactor: 1.75,
-            fit: true,
-            animate: true,
-            animationDuration: 500,
-            ready: e1 => {
-              this.gitService.getCommitById(commit.id?.slice(3) || "")
-                      .then(commitToSelect => {
-                        if (commitToSelect) {
-                          this.selectCommit(commitToSelect, true);
-                        }
-                      })
-
+              this.missingRelationShipsByParentCommitId.delete(newAddedCommitNode.data.id || "")
             }
-          } as DagreLayoutOptions).run();
-        })
+
+            // Add nodes/edges to graph and apply layout
+            this.cy?.add({
+              nodes: newNodes,
+              edges: newEdges
+            })
+            this.cy?.layout({
+              name: 'dagre',
+              rankDir: "LR",
+              rankSep: 130,
+              nodeDimensionsIncludeLabels: true,
+              spacingFactor: 1.75,
+              fit: true,
+              animate: true,
+              animationDuration: 500,
+              ready: e1 => {
+                this.gitService.getCommitById(commit.id || "")
+                        .then(commitToSelect => {
+                          if (commitToSelect) {
+                            this.selectCommit(commitToSelect, true);
+                          }
+                        })
+
+              }
+            } as DagreLayoutOptions).run();
+          })
+        }
 
       }
     })
@@ -269,6 +284,19 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   resizeChart() {
     this.cy?.resize();
+  }
+
+  addMissingCommitRelationship(commitId: string, parentId: string) {
+    if (!this.missingRelationShipsByCommitId.has(commitId)) {
+      this.missingRelationShipsByCommitId.set(commitId, new Set<string>());
+    }
+    (this.missingRelationShipsByCommitId.get(commitId) || new Set<string>()).add(parentId)
+
+    if (!this.missingRelationShipsByParentCommitId.has(parentId)) {
+      this.missingRelationShipsByParentCommitId.set(parentId, new Set<string>());
+    }
+    (this.missingRelationShipsByParentCommitId.get(parentId) || new Set<string>()).add(commitId)
+
   }
 
   openDiffDialog() {
