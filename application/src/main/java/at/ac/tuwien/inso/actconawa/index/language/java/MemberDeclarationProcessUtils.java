@@ -9,8 +9,6 @@ import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.JavaMemberDeclarationInfo;
 import org.antlr.v4.runtime.RuleContext;
 import org.apache.commons.lang3.IntegerRange;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 
 import java.util.ArrayList;
@@ -41,8 +39,6 @@ import static at.ac.tuwien.inso.actconawa.antlr.java.JavaParser.VariableDeclarat
 import static at.ac.tuwien.inso.actconawa.antlr.java.JavaParser.VariableDeclaratorIdContext;
 
 public class MemberDeclarationProcessUtils {
-
-    private static final Logger LOG = LoggerFactory.getLogger(MemberDeclarationProcessUtils.class);
 
     private MemberDeclarationProcessUtils() {
     }

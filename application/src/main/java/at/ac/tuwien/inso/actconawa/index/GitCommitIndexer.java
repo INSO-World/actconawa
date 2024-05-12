@@ -123,71 +123,72 @@ public class GitCommitIndexer implements Indexer {
             Ref remoteBranchRef,
             GitBranch gitBranch,
             HashMap<String, GitCommit> commitCache) throws IOException {
-        var revWalk = new RevWalk(repository);
-        revWalk.sort(RevSort.TOPO);
-        revWalk.markStart(revWalk.parseCommit(remoteBranchRef.getObjectId()));
-        LOG.debug("Start indexing commits of branch {}", gitBranch.getName());
-        // first commit of revwalk is always the head commit of the branch,
-        // so no string sha comparisons are necessary
-        boolean headCommitProcessed = false;
-        var indexedCommitCount = 0;
-        var relationships = new ArrayList<GitCommitRelationship>();
-        for (var commit : revWalk) {
-            if (commitCache.containsKey(commit.getId().getName())) {
-                var cachedCommit = commitCache.get(commit.getId().getName());
-                if (cachedCommit.getId() != null) {
-                    if (!headCommitProcessed) {
-                        gitBranch.setHeadCommit(cachedCommit);
-                        headCommitProcessed = true;
+        try (var revWalk = new RevWalk(repository)) {
+            revWalk.sort(RevSort.TOPO);
+            revWalk.markStart(revWalk.parseCommit(remoteBranchRef.getObjectId()));
+            LOG.debug("Start indexing commits of branch {}", gitBranch.getName());
+            // first commit of revwalk is always the head commit of the branch,
+            // so no string sha comparisons are necessary
+            boolean headCommitProcessed = false;
+            var indexedCommitCount = 0;
+            var relationships = new ArrayList<GitCommitRelationship>();
+            for (var commit : revWalk) {
+                if (commitCache.containsKey(commit.getId().getName())) {
+                    var cachedCommit = commitCache.get(commit.getId().getName());
+                    if (cachedCommit.getId() != null) {
+                        if (!headCommitProcessed) {
+                            gitBranch.setHeadCommit(cachedCommit);
+                            headCommitProcessed = true;
+                        }
+                        continue;
                     }
-                    continue;
                 }
-            }
 
-            commitCache.putIfAbsent(commit.getId().getName(), new GitCommit());
-            final GitCommit gitCommit = commitCache.get(commit.getId().getName());
-            gitCommit.setSha(commit.getName());
-            gitCommit.setMessage(commit.getShortMessage()
-                    .substring(0,
-                            Math.min(commit.getShortMessage().length(), 255)));
-            gitCommit.setAuthorName(commit.getAuthorIdent().getName());
-            gitCommit.setAuthorEmail(commit.getAuthorIdent().getEmailAddress());
-            // https://bugs.eclipse.org/bugs/show_bug.cgi?id=319142
-            gitCommit.setCommitDate(LocalDateTime.ofEpochSecond(commit.getCommitTime(),
-                    0,
-                    ZoneOffset.UTC));
-            if (!headCommitProcessed) {
-                gitBranch.setHeadCommit(gitCommit);
-                headCommitProcessed = true;
-            }
-            var parents = commit.getParents();
-            if (ArrayUtils.isNotEmpty(parents)) {
-                for (RevCommit parent : parents) {
-                    commitCache.putIfAbsent(parent.getId().getName(), new GitCommit());
-                    var parentCommit = commitCache.get(parent.getId().getName());
+                commitCache.putIfAbsent(commit.getId().getName(), new GitCommit());
+                final GitCommit gitCommit = commitCache.get(commit.getId().getName());
+                gitCommit.setSha(commit.getName());
+                gitCommit.setMessage(commit.getShortMessage()
+                        .substring(0,
+                                Math.min(commit.getShortMessage().length(), 255)));
+                gitCommit.setAuthorName(commit.getAuthorIdent().getName());
+                gitCommit.setAuthorEmail(commit.getAuthorIdent().getEmailAddress());
+                // https://bugs.eclipse.org/bugs/show_bug.cgi?id=319142
+                gitCommit.setCommitDate(LocalDateTime.ofEpochSecond(commit.getCommitTime(),
+                        0,
+                        ZoneOffset.UTC));
+                if (!headCommitProcessed) {
+                    gitBranch.setHeadCommit(gitCommit);
+                    headCommitProcessed = true;
+                }
+                var parents = commit.getParents();
+                if (ArrayUtils.isNotEmpty(parents)) {
+                    for (RevCommit parent : parents) {
+                        commitCache.putIfAbsent(parent.getId().getName(), new GitCommit());
+                        var parentCommit = commitCache.get(parent.getId().getName());
+                        var relationship = new GitCommitRelationship();
+                        relationship.setChild(gitCommit);
+                        relationship.setParent(parentCommit);
+                        relationships.add(relationship);
+                    }
+                } else {
                     var relationship = new GitCommitRelationship();
                     relationship.setChild(gitCommit);
-                    relationship.setParent(parentCommit);
                     relationships.add(relationship);
                 }
-            } else {
-                var relationship = new GitCommitRelationship();
-                relationship.setChild(gitCommit);
-                relationships.add(relationship);
+
+                gitCommit.setId(gitCommitRepository.save(gitCommit).getId());
+                indexedCommitCount++;
             }
-
-            gitCommit.setId(gitCommitRepository.save(gitCommit).getId());
-            indexedCommitCount++;
+            relationships.forEach(x -> {
+                x.setChild(x.getChild());
+                x.setParent(x.getParent() == null ? null : x.getParent());
+            });
+            gitCommitRelationshipRepository.saveAllAndFlush(relationships);
+            gitBranch.setContainingExclusiveCommits(indexedCommitCount != 0);
+            LOG.debug("Done indexing {} unique commits of branch {}",
+                    indexedCommitCount,
+                    gitBranch.getName());
         }
-        relationships.forEach(x -> {
-            x.setChild(x.getChild());
-            x.setParent(x.getParent() == null ? null : x.getParent());
-        });
-        gitCommitRelationshipRepository.saveAllAndFlush(relationships);
-        gitBranch.setContainingExclusiveCommits(indexedCommitCount != 0);
-        LOG.debug("Done indexing {} unique commits of branch {}",
-                indexedCommitCount,
-                gitBranch.getName());
-    }
 
+    }
 }

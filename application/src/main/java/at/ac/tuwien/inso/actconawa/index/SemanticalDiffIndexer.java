@@ -4,8 +4,6 @@ import at.ac.tuwien.inso.actconawa.index.language.LanguageIndexModule;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffFileRepository;
 import jakarta.transaction.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +12,6 @@ import java.util.List;
 @Component
 @Order(4)
 public class SemanticalDiffIndexer implements Indexer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SemanticalDiffIndexer.class);
 
     private final GitCommitDiffFileRepository gitCommitDiffFileRepository;
 

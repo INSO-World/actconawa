@@ -8,7 +8,6 @@ import at.ac.tuwien.inso.actconawa.persistence.GitBranchTrackingStatus;
 import at.ac.tuwien.inso.actconawa.repository.GitBranchRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitBranchTrackingStatusRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRepository;
-import at.ac.tuwien.inso.actconawa.service.GitCommitService;
 import jakarta.transaction.Transactional;
 import org.eclipse.jgit.errors.NoMergeBaseException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -44,9 +43,6 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
 
     private final GitBranchTrackingStatusRepository gitBranchTrackingStatusRepository;
 
-    private final GitCommitService gitCommitService;
-
-
     private final Repository repository;
 
     ;
@@ -55,12 +51,10 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
             GitBranchRepository gitBranchRepository,
             GitCommitRepository gitCommitRepository,
             GitBranchTrackingStatusRepository gitBranchTrackingStatusRepository,
-            GitCommitService gitCommitService,
             Repository repository) {
         this.gitBranchRepository = gitBranchRepository;
         this.gitCommitRepository = gitCommitRepository;
         this.gitBranchTrackingStatusRepository = gitBranchTrackingStatusRepository;
-        this.gitCommitService = gitCommitService;
         this.repository = repository;
     }
 
