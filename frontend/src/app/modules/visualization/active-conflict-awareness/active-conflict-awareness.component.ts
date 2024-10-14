@@ -63,6 +63,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
     const branchesByHeadCommitId = new Map<string, GitBranchDto[]>;
     const branches = await this.gitService.getBranches();
+    // commit can be head of multiple branches.
     branches.forEach(b => {
       const existing = branchesByHeadCommitId.get(b.headCommitId || "");
       if (existing) {
@@ -71,30 +72,41 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         branchesByHeadCommitId.set(b.headCommitId || "", [b]);
       }
     })
+
     for (const commitId of branchesByHeadCommitId.keys()) {
+      // load the branch head commit
       this.drawnCommits.add(commitId);
       const commit = (await this.gitService.getCommitAndAncestory(commitId, 0))[ 0 ];
-      if (branchesByHeadCommitId.has(commit.id || "")) {
-        const cytoscapeCommit: cytoscape.NodeDefinition = {
-          data: commit, selectable: true, selected: false, classes: []
+      if (!branchesByHeadCommitId.has(commit.id || "")) {
+        console.error("Bug detected. Wrong commit loaded: " + commit.id + " , expected: " + commitId);
+      }
+
+      // add commit to cytoscape graph
+      const cytoscapeCommit: cytoscape.NodeDefinition = {
+        data: commit, selectable: true, selected: false, classes: []
+      }
+      this.cytoscapeCommits.push(cytoscapeCommit)
+
+      // add parent relationships or mark as missing relationship (because other commit was not loaded yet)
+      commit.parentIds?.forEach(parentId => {
+        if (branchesByHeadCommitId.has(parentId || "")) {
+          this.cytoscapeCommitRelationships.push({
+            data: {
+              id: commit.id + "-" + parentId, source: parentId, target: commit.id || ""
+            }
+          });
+        } else {
+          this.addMissingCommitRelationship(commit.id || "", parentId)
         }
-        this.cytoscapeCommits.push(cytoscapeCommit)
-        commit.parentIds?.forEach(parentId => {
-          if (branchesByHeadCommitId.has(parentId || "")) {
-            this.cytoscapeCommitRelationships.push({
-              data: {
-                id: commit.id + "-" + parentId, source: parentId, target: commit.id || ""
-              }
-            });
-          } else {
-            this.addMissingCommitRelationship(commit.id || "", parentId)
-          }
-        })
-        if (this.missingRelationShipsByCommitId.has(commit.id || "")) {
-          (cytoscapeCommit.classes as string[]).push("commit-placeholder");
-        }
+      })
+
+      // if commit was marked for having missing relationships, add the placeholder class to commit.
+      if (this.missingRelationShipsByCommitId.has(commit.id || "")) {
+        (cytoscapeCommit.classes as string[]).push("commit-placeholder");
       }
     }
+
+    // preselect commit if provided in the route.
     const presetCommitId = this.route.snapshot.queryParamMap.get('commitId');
     if (presetCommitId) {
       this.gitService.getCommitById(presetCommitId).then(presetCommit => {
@@ -103,6 +115,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         }
       });
     }
+
+    // initialize graph
     cytoscape.use(cytoscapeDagre);
     cytoscape.use(cytoscapePopper(this.popperFactory));
     this.cy = cytoscape({
@@ -243,6 +257,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       }
     })
 
+    // Add branch labels/tags to graph with popper
     for (let branchHeadAtCommit of branchesByHeadCommitId.values()) {
       const branchHead = this.cy.$('#' + branchHeadAtCommit[ 0 ].headCommitId);
       let branchHeadPopper = branchHead.popper({
