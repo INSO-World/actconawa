@@ -21,6 +21,8 @@ export class GitService {
 
   private readonly BRANCH_PAGE_SIZE = 1000;
 
+  private readonly COMMIT_PAGE_SIZE = 1000;
+
   private readonly BRANCH_TRACKING_PAGE_SIZE = 1000;
 
   private branchById = new Map<string, GitBranchDto>;
@@ -47,6 +49,13 @@ export class GitService {
           private gitBranchService: GitBranchControllerService,
           private gitDiffControllerService: GitDiffControllerService
   ) {
+  }
+
+  async getCommits(): Promise<GitCommitDto[]> {
+    if (this.commitById.size === 0) {
+      await this.loadCommits();
+    }
+    return Array.from(this.commitById.values());
   }
 
   async getCommitById(commitId: string): Promise<GitCommitDto | undefined> {
@@ -185,6 +194,32 @@ export class GitService {
                       });
                     }));
     await lastValueFrom(branchTrackingPages);
+  }
+
+  private async loadCommits(): Promise<void> {
+    if (this.commitById.size > 0) {
+      return;
+    }
+    const commitPages = this.gitCommitService
+            .findAllCommits({page: 0, size: this.COMMIT_PAGE_SIZE}).pipe(
+                    expand(commitPage => {
+                      if (!commitPage.last && commitPage.number !== undefined) {
+                        return this.gitCommitService.findAllCommits({
+                          page: commitPage.number + 1,
+                          size: this.COMMIT_PAGE_SIZE
+                        });
+                      } else {
+                        return EMPTY;
+                      }
+                    }),
+                    tap(commit => {
+                      (commit.content || []).forEach(c => {
+                        if (c.id) {
+                          this.commitById.set(c.id || "", c);
+                        }
+                      });
+                    }));
+    await lastValueFrom(commitPages);
   }
 
   async getCommitAndAncestory(commitId: string, maxDepth: number = 100) {
