@@ -19,5 +19,6 @@ export interface GitCommitDto {
   commitDate?: string;
   headOfBranchesIds?: Array<string>;
   parentIds?: Array<string>;
+  childIds?: Array<string>;
 }
 

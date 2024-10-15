@@ -14,16 +14,16 @@ import { GitBranchTrackingStatusDto } from './gitBranchTrackingStatusDto';
 import { SortObject } from './sortObject';
 
 export interface PageGitBranchTrackingStatusDto {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
   first?: boolean;
   last?: boolean;
   size?: number;
   content?: Array<GitBranchTrackingStatusDto>;
   number?: number;
   sort?: SortObject;
-  numberOfElements?: number;
   pageable?: PageableObject;
+  numberOfElements?: number;
   empty?: boolean;
 }
 
