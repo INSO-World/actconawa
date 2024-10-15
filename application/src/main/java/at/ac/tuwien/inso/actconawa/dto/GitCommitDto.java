@@ -24,6 +24,8 @@ public class GitCommitDto implements Serializable {
 
     private List<UUID> parentIds;
 
+    private List<UUID> childIds;
+
     public UUID getId() {
         return id;
     }
@@ -86,5 +88,13 @@ public class GitCommitDto implements Serializable {
 
     public void setParentIds(List<UUID> parentIds) {
         this.parentIds = parentIds;
+    }
+
+    public List<UUID> getChildIds() {
+        return childIds;
+    }
+
+    public void setChildIds(List<UUID> childIds) {
+        this.childIds = childIds;
     }
 }

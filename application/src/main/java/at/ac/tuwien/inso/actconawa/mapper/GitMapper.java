@@ -59,6 +59,7 @@ public interface GitMapper {
 
     @Mapping(target = "headOfBranchesIds", expression = "java(getHeadOfBranchesIds(commit.getHeadOfBranches()))")
     @Mapping(target = "parentIds", expression = "java(getParentCommitIds(commit.getParents()))")
+    @Mapping(target = "childIds", expression = "java(getChildCommitIds(commit.getChildren()))")
     GitCommitDto mapModelToDto(GitCommit commit);
 
     @Mapping(source = "branches", target = "branchIds")
@@ -80,6 +81,14 @@ public interface GitMapper {
     default List<UUID> getParentCommitIds(List<GitCommitRelationship> gitCommitRelationships) {
         return gitCommitRelationships.stream()
                 .map(GitCommitRelationship::getParent)
+                .filter(Objects::nonNull)
+                .map(GitCommit::getId)
+                .collect(Collectors.toList());
+    }
+
+    default List<UUID> getChildCommitIds(List<GitCommitRelationship> gitCommitRelationships) {
+        return gitCommitRelationships.stream()
+                .map(GitCommitRelationship::getChild)
                 .filter(Objects::nonNull)
                 .map(GitCommit::getId)
                 .collect(Collectors.toList());

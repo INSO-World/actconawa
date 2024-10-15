@@ -47,7 +47,6 @@ public class GitCommit implements Serializable {
     @OneToMany(mappedBy = "child", cascade = CascadeType.PERSIST)
     private List<GitCommitRelationship> parents;
 
-    @Lazy
     @OneToMany(mappedBy = "parent")
     private List<GitCommitRelationship> children;
 
