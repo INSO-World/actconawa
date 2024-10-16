@@ -29,7 +29,7 @@ import static org.eclipse.jgit.merge.MergeStrategy.RECURSIVE;
 import static org.eclipse.jgit.merge.MergeStrategy.SIMPLE_TWO_WAY_IN_CORE;
 
 @Component
-@Order(2)
+@Order(3)
 /*
  * Index maximum distance to root commit and lowest common ancestors of branch heads.
  */

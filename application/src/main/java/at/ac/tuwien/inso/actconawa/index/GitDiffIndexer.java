@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 
 
 @Component
-@Order(3)
+@Order(4)
 public class GitDiffIndexer implements Indexer {
 
     private static final Logger LOG = LoggerFactory.getLogger(GitDiffIndexer.class);

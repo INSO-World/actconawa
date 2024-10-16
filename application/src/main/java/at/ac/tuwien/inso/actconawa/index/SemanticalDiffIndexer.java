@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@Order(4)
+@Order(5)
 public class SemanticalDiffIndexer implements Indexer {
 
     private final GitCommitDiffFileRepository gitCommitDiffFileRepository;
