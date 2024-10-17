@@ -17,6 +17,7 @@ export interface GitCommitDto {
   authorName?: string;
   authorEmail?: string;
   commitDate?: string;
+  groupId?: string;
   headOfBranchesIds?: Array<string>;
   parentIds?: Array<string>;
   childIds?: Array<string>;

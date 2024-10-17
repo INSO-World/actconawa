@@ -16,6 +16,7 @@ import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffFile;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffHunk;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitDiffLineChange;
+import at.ac.tuwien.inso.actconawa.persistence.GitCommitGroup;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommitRelationship;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -39,6 +40,13 @@ public interface GitMapper {
         return branch.getId();
     }
 
+    default UUID idFromModel(GitCommitGroup group) {
+        if (group == null) {
+            return null;
+        }
+        return group.getId();
+    }
+
     default UUID idFromModel(GitCommitDiffFile diffFile) {
         return diffFile.getId();
     }
@@ -57,6 +65,7 @@ public interface GitMapper {
     @Mapping(source = "child", target = "childId")
     GitCommitRelationshipDto mapModelToDto(GitCommitRelationship relationship);
 
+    @Mapping(source = "group", target = "groupId")
     @Mapping(target = "headOfBranchesIds", expression = "java(getHeadOfBranchesIds(commit.getHeadOfBranches()))")
     @Mapping(target = "parentIds", expression = "java(getParentCommitIds(commit.getParents()))")
     @Mapping(target = "childIds", expression = "java(getChildCommitIds(commit.getChildren()))")

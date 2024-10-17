@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.springframework.context.annotation.Lazy;
@@ -53,6 +54,9 @@ public class GitCommit implements Serializable {
     @Lazy
     @OneToMany(mappedBy = "headCommit")
     private List<GitBranch> headOfBranches;
+
+    @ManyToOne(cascade = CascadeType.DETACH)
+    private GitCommitGroup group;
 
     @Lazy
     @ManyToMany(cascade = CascadeType.PERSIST)
@@ -143,6 +147,14 @@ public class GitCommit implements Serializable {
 
     public void setHeadOfBranches(List<GitBranch> headOfBranches) {
         this.headOfBranches = headOfBranches;
+    }
+
+    public GitCommitGroup getGroup() {
+        return group;
+    }
+
+    public void setGroup(GitCommitGroup group) {
+        this.group = group;
     }
 
     public List<GitBranch> getBranches() {
