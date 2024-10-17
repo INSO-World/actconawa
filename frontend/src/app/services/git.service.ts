@@ -13,6 +13,9 @@ import {
 } from "../../api";
 import { EMPTY, expand, lastValueFrom, tap } from "rxjs";
 import { CompositeKeyMap } from "../utils/CompositeKeyMap";
+import { NodeDefinition } from "cytoscape";
+import { v4 as uuidv4 } from "uuid";
+import { ExtendedGitCommitDto } from "../utils/ExtendedGitCommitDto";
 
 @Injectable({
   providedIn: 'root'
@@ -21,13 +24,15 @@ export class GitService {
 
   private readonly BRANCH_PAGE_SIZE = 1000;
 
-  private readonly COMMIT_PAGE_SIZE = 1000;
+  private readonly COMMIT_PAGE_SIZE = 100;
 
   private readonly BRANCH_TRACKING_PAGE_SIZE = 1000;
 
   private branchById = new Map<string, GitBranchDto>;
 
-  private commitById = new Map<string, GitCommitDto>;
+  private commitById = new Map<string, ExtendedGitCommitDto>;
+
+  private commitCompound = new Map<string, NodeDefinition>;
 
   private branchIdsByCommitId = new Map<string, string[]>;
 
@@ -51,14 +56,22 @@ export class GitService {
   ) {
   }
 
-  async getCommits(): Promise<GitCommitDto[]> {
+  async getCommits(): Promise<ExtendedGitCommitDto[]> {
     if (this.commitById.size === 0) {
       await this.loadCommits();
     }
     return Array.from(this.commitById.values());
   }
 
+  async getCommitCompounds(): Promise<NodeDefinition[]> {
+    if (this.commitById.size === 0) {
+      await this.loadCommits();
+    }
+    return Array.from(this.commitCompound.values());
+  }
+
   async getCommitById(commitId: string): Promise<GitCommitDto | undefined> {
+    // TODO: remove this extra loading of commits?
     return this.commitById.get(commitId) || (await this.getCommitAndAncestory(commitId, 0))[ 0 ];
   }
 
@@ -196,35 +209,77 @@ export class GitService {
     await lastValueFrom(branchTrackingPages);
   }
 
+  async getCommitAndAncestory(commitId: string, maxDepth: number = 100) {
+    // TODO: Document that this is not cached.
+    return await lastValueFrom(this.gitCommitService.findAncestors(commitId, maxDepth));
+  }
+
   private async loadCommits(): Promise<void> {
     if (this.commitById.size > 0) {
       return;
     }
-    const commitPages = this.gitCommitService
-            .findAllCommits({page: 0, size: this.COMMIT_PAGE_SIZE}).pipe(
-                    expand(commitPage => {
-                      if (!commitPage.last && commitPage.number !== undefined) {
-                        return this.gitCommitService.findAllCommits({
-                          page: commitPage.number + 1,
-                          size: this.COMMIT_PAGE_SIZE
-                        });
-                      } else {
-                        return EMPTY;
-                      }
-                    }),
-                    tap(commit => {
-                      (commit.content || []).forEach(c => {
-                        if (c.id) {
-                          this.commitById.set(c.id || "", c);
-                        }
-                      });
-                    }));
-    await lastValueFrom(commitPages);
+
+    const visited = new Set<string>;
+    const stack: string[] = [];
+
+    // Load branch heads
+    for (const branchDto of await this.getBranches()) {
+      const headCommitId = branchDto.headCommitId;
+      const headCommit = await this.getCommitById(headCommitId || "");
+      // Only load the branch head commits that have no children (== leafs). The others will be loaded anyway
+      if (headCommitId && headCommit?.childIds?.length == 0) {
+        stack.push(headCommitId);
+      }
+    }
+
+    let currentCommitId: string | undefined;
+    let compositeNode: NodeDefinition = {data: {id: uuidv4()}};
+    while ((currentCommitId = stack.pop()) !== undefined) {
+      if (visited.has(currentCommitId)) {
+        continue;
+      }
+      const loadedCommits = await lastValueFrom(this.gitCommitService.findAncestors(currentCommitId,
+              this.COMMIT_PAGE_SIZE));
+      const extendedLoadedCommits = loadedCommits
+              .filter(commit => !this.commitById.has(commit.id || ""))
+              .map(commit => {
+                const extendedCommit = commit as ExtendedGitCommitDto;
+                this.commitById.set(commit.id || "", extendedCommit);
+                return extendedCommit;
+              });
+      let index = 0;
+      for (const extendedLoadedCommit of extendedLoadedCommits) {
+        index++;
+        if (visited.has(extendedLoadedCommit.id || "")) {
+          break;
+        }
+        if (extendedLoadedCommit.parentIds &&
+                (extendedLoadedCommit.parentIds.length > 1 || index === extendedLoadedCommits.length)) {
+          extendedLoadedCommit.parentIds.forEach(parentId => stack.push(parentId));
+        }
+        visited.add(extendedLoadedCommit.id || "");
+
+        // Composite node handling
+        if ((extendedLoadedCommit.parentIds && extendedLoadedCommit.parentIds?.length != 1)
+                || (extendedLoadedCommit.headOfBranchesIds && extendedLoadedCommit.headOfBranchesIds?.length > 0)
+        ) {
+          // new composite node required
+          compositeNode = {data: {id: uuidv4()}};
+          // those commits may not be part of a composite
+          extendedLoadedCommit.parent = undefined;
+
+        } else {
+          if (extendedLoadedCommit.childIds && extendedLoadedCommit.childIds?.length > 1) {
+            // new composite node required
+            compositeNode = {data: {id: uuidv4()}};
+          }
+          if (compositeNode.data.id && !this.commitCompound.has(compositeNode.data.id)) {
+            this.commitCompound.set(compositeNode.data.id, compositeNode);
+          }
+          extendedLoadedCommit.parent = compositeNode.data.id || "";
+        }
+      }
+    }
   }
 
-  async getCommitAndAncestory(commitId: string, maxDepth: number = 100) {
-    const commits = await lastValueFrom(this.gitCommitService.findAncestors(commitId, maxDepth));
-    commits.forEach(c => this.commitById.set(c.id || "", c));
-    return commits;
-  }
 }

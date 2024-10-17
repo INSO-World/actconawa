@@ -65,6 +65,12 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         }
       }))
     }
+    const commitCompounds = await this.gitService.getCommitCompounds();
+    for (const commitCompound of commitCompounds) {
+      this.cytoscapeCommits.push({
+        data: commitCompound.data, selectable: false, selected: false
+      })
+    }
 
     // preselect commit if provided in the route.
     const presetCommitId = this.route.snapshot.queryParamMap.get('commitId');
@@ -174,6 +180,16 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   resizeChart() {
     this.cy?.resize();
+    this.cy?.layout({
+      name: 'dagre',
+      rankDir: "LR",
+      rankSep: 130,
+      nodeDimensionsIncludeLabels: true,
+      spacingFactor: 1.75,
+      fit: true,
+      animate: true,
+      animationDuration: 500,
+    } as DagreLayoutOptions)
   }
 
   openDiffDialog() {
@@ -271,7 +287,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           const dependencyCommitIds = hunk.commitDependencyIds || [];
           for (const dep of dependencyCommitIds) {
             if (dep && dep.length > 0) {
-              console.log(dep)
               this.cy?.$('#' + dep).addClass("commit-dependency");
             }
           }
