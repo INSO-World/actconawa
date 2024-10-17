@@ -8,6 +8,7 @@ import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffHunkDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffLineChangeDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitGroupDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import at.ac.tuwien.inso.actconawa.persistence.CodeChange;
 import at.ac.tuwien.inso.actconawa.persistence.GitBranch;
@@ -64,6 +65,8 @@ public interface GitMapper {
     @Mapping(source = "parent", target = "parentId")
     @Mapping(source = "child", target = "childId")
     GitCommitRelationshipDto mapModelToDto(GitCommitRelationship relationship);
+
+    GitCommitGroupDto mapModelToDto(GitCommitGroup group);
 
     @Mapping(source = "group", target = "groupId")
     @Mapping(target = "headOfBranchesIds", expression = "java(getHeadOfBranchesIds(commit.getHeadOfBranches()))")

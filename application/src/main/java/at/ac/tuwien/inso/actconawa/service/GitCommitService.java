@@ -4,11 +4,13 @@ import at.ac.tuwien.inso.actconawa.api.CommitService;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitGroupDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import at.ac.tuwien.inso.actconawa.exception.CommitNotFoundException;
 import at.ac.tuwien.inso.actconawa.mapper.GitMapper;
 import at.ac.tuwien.inso.actconawa.persistence.GitCommit;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitDiffFileRepository;
+import at.ac.tuwien.inso.actconawa.repository.GitCommitGroupRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRelationshipRepository;
 import at.ac.tuwien.inso.actconawa.repository.GitCommitRepository;
 import jakarta.transaction.Transactional;
@@ -37,6 +39,8 @@ public class GitCommitService implements CommitService {
 
     private final GitCommitDiffFileRepository gitCommitDiffFileRepository;
 
+    private final GitCommitGroupRepository gitCommitGroupRepository;
+
     private final GitMapper gitMapper;
 
     private final Git git;
@@ -44,10 +48,15 @@ public class GitCommitService implements CommitService {
 
     public GitCommitService(GitCommitRepository gitCommitRepository,
             GitCommitRelationshipRepository gitCommitRelationshipRepository,
-            GitCommitDiffFileRepository gitCommitDiffFileRepository, GitMapper gitMapper, Git git) {
+            GitCommitDiffFileRepository gitCommitDiffFileRepository,
+            GitCommitGroupRepository gitCommitGroupRepository,
+            GitMapper gitMapper,
+            Git git
+    ) {
         this.gitCommitRepository = gitCommitRepository;
         this.gitCommitRelationshipRepository = gitCommitRelationshipRepository;
         this.gitCommitDiffFileRepository = gitCommitDiffFileRepository;
+        this.gitCommitGroupRepository = gitCommitGroupRepository;
         this.gitMapper = gitMapper;
         this.git = git;
     }
@@ -82,6 +91,11 @@ public class GitCommitService implements CommitService {
     @Override
     public Page<GitCommitRelationshipDto> findAllRelations(Pageable pageable) {
         return gitCommitRelationshipRepository.findAll(pageable).map(gitMapper::mapModelToDto);
+    }
+
+    @Override
+    public Page<GitCommitGroupDto> findAllCommitGroups(Pageable pageable) {
+        return gitCommitGroupRepository.findAll(pageable).map(gitMapper::mapModelToDto);
     }
 
     @Override

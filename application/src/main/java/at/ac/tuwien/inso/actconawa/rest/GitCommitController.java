@@ -4,6 +4,7 @@ import at.ac.tuwien.inso.actconawa.api.CommitService;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitGroupDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,11 @@ public class GitCommitController {
     @GetMapping("/relations")
     public Page<GitCommitRelationshipDto> findAllCommitRelations(Pageable pageable) {
         return commitService.findAllRelations(pageable);
+    }
+
+    @GetMapping("/groups")
+    public Page<GitCommitGroupDto> findAllCommitGroups(Pageable pageable) {
+        return commitService.findAllCommitGroups(pageable);
     }
 
     @GetMapping("/modified-files")

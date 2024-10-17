@@ -14,12 +14,14 @@ model/gitCommitDiffFileDto.ts
 model/gitCommitDiffHunkDto.ts
 model/gitCommitDiffLineChangeDto.ts
 model/gitCommitDto.ts
+model/gitCommitGroupDto.ts
 model/gitCommitRelationshipDto.ts
 model/gitPatchDto.ts
 model/models.ts
 model/pageGitBranchDto.ts
 model/pageGitBranchTrackingStatusDto.ts
 model/pageGitCommitDto.ts
+model/pageGitCommitGroupDto.ts
 model/pageGitCommitRelationshipDto.ts
 model/pageable.ts
 model/pageableObject.ts

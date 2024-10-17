@@ -3,6 +3,7 @@ package at.ac.tuwien.inso.actconawa.api;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitGroupDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitRelationshipDto;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,14 @@ public interface CommitService {
      * @return A page containing {@link GitCommitRelationshipDto}
      */
     Page<GitCommitRelationshipDto> findAllRelations(Pageable pageable);
+
+    /**
+     * Return all commit groups.
+     *
+     * @param pageable The pagination information.
+     * @return A page containing {@link GitCommitGroupDto}
+     */
+    Page<GitCommitGroupDto> findAllCommitGroups(Pageable pageable);
 
     /**
      * Return all Branches in which the commit occurs in.
