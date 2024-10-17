@@ -11,8 +11,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Stack;
+import java.util.UUID;
 
 @Component
 @Order(2)
@@ -58,6 +61,7 @@ public class CommitGraphHelperIndexer implements Indexer {
         }
         Stack<Pair<GitCommit, Integer>> stack = new Stack<>();
         stack.add(Pair.of(rootCommit, 0));
+        Set<UUID> visited = new HashSet<>();
 
         GitCommitGroup group = new GitCommitGroup();
         while (!stack.isEmpty()) {
@@ -69,6 +73,14 @@ public class CommitGraphHelperIndexer implements Indexer {
                     || currentCommit.getMaxDistanceFromRoot() < currentDistance) {
                 currentCommit.setMaxDistanceFromRoot(currentDistance);
             }
+            currentCommit.getChildren().forEach(x -> stack.push(Pair.of(x.getChild(), currentDistance + 1)));
+
+            // For grouping of commits multiple visits may not occur, however above the max index is requiring
+            // all visits.
+            if (visited.contains(currentCommit.getId())) {
+                continue;
+            }
+            visited.add(currentCommit.getId());
             if (!currentCommit.getHeadOfBranches().isEmpty() || currentCommit.getParents().size() > 1 || Objects.equals(
                     rootCommit,
                     currentCommit)) {
@@ -87,9 +99,7 @@ public class CommitGraphHelperIndexer implements Indexer {
                     }
                 }
             }
-            currentCommit.getChildren().forEach(x -> stack.push(Pair.of(x.getChild(), currentDistance + 1)));
         }
-
     }
 
 

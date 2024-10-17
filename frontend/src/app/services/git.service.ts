@@ -9,13 +9,13 @@ import {
   GitCommitDiffHunkDto,
   GitCommitDiffLineChangeDto,
   GitCommitDto,
+  GitCommitGroupDto,
   GitDiffControllerService
 } from "../../api";
 import { EMPTY, expand, lastValueFrom, tap } from "rxjs";
 import { CompositeKeyMap } from "../utils/CompositeKeyMap";
 import { NodeDefinition } from "cytoscape";
 import { v4 as uuidv4 } from "uuid";
-import { ExtendedGitCommitDto } from "../utils/ExtendedGitCommitDto";
 
 @Injectable({
   providedIn: 'root'
@@ -26,13 +26,15 @@ export class GitService {
 
   private readonly COMMIT_PAGE_SIZE = 100;
 
+  private readonly COMMIT_GROUP_PAGE_SIZE = 1000;
+
   private readonly BRANCH_TRACKING_PAGE_SIZE = 1000;
 
   private branchById = new Map<string, GitBranchDto>;
 
-  private commitById = new Map<string, ExtendedGitCommitDto>;
+  private commitById = new Map<string, GitCommitDto>;
 
-  private commitCompound = new Map<string, NodeDefinition>;
+  private commitGroupsById = new Map<string, GitCommitGroupDto>;
 
   private branchIdsByCommitId = new Map<string, string[]>;
 
@@ -56,23 +58,45 @@ export class GitService {
   ) {
   }
 
-  async getCommits(): Promise<ExtendedGitCommitDto[]> {
+  async getCommits(): Promise<GitCommitDto[]> {
     if (this.commitById.size === 0) {
       await this.loadCommits();
     }
     return Array.from(this.commitById.values());
   }
 
-  async getCommitCompounds(): Promise<NodeDefinition[]> {
-    if (this.commitById.size === 0) {
-      await this.loadCommits();
+  async getCommitGroups(): Promise<GitCommitGroupDto[]> {
+    if (this.commitGroupsById.size === 0) {
+      await this.loadCommitGroups();
     }
-    return Array.from(this.commitCompound.values());
+    return Array.from(this.commitGroupsById.values());
+  }
+
+  async loadCommitGroups(): Promise<void> {
+    const groupPages = this.gitCommitService.findAllCommitGroups({page: 0, size: this.COMMIT_GROUP_PAGE_SIZE}).pipe(
+            expand(groupPage => {
+              if (!groupPage.last && groupPage.number !== undefined) {
+                return this.gitCommitService.findAllCommitGroups({
+                  page: groupPage.number + 1,
+                  size: this.COMMIT_GROUP_PAGE_SIZE
+                });
+              } else {
+                return EMPTY;
+              }
+            }),
+            tap(groupPage => {
+              (groupPage.content || []).forEach(group => {
+                if (group.id) {
+                  this.commitGroupsById.set(group.id, group);
+                }
+              });
+            }));
+    await lastValueFrom(groupPages);
   }
 
   async getCommitById(commitId: string): Promise<GitCommitDto | undefined> {
-    // TODO: remove this extra loading of commits?
-    return this.commitById.get(commitId) || (await this.getCommitAndAncestory(commitId, 0))[ 0 ];
+    return this.commitById.get(commitId) || (await lastValueFrom(this.gitCommitService.findAncestors(commitId,
+            0)))[ 0 ];
   }
 
   async getBranches(): Promise<GitBranchDto[]> {
@@ -209,11 +233,6 @@ export class GitService {
     await lastValueFrom(branchTrackingPages);
   }
 
-  async getCommitAndAncestory(commitId: string, maxDepth: number = 100) {
-    // TODO: Document that this is not cached.
-    return await lastValueFrom(this.gitCommitService.findAncestors(commitId, maxDepth));
-  }
-
   private async loadCommits(): Promise<void> {
     if (this.commitById.size > 0) {
       return;
@@ -238,46 +257,23 @@ export class GitService {
       if (visited.has(currentCommitId)) {
         continue;
       }
-      const loadedCommits = await lastValueFrom(this.gitCommitService.findAncestors(currentCommitId,
-              this.COMMIT_PAGE_SIZE));
-      const extendedLoadedCommits = loadedCommits
-              .filter(commit => !this.commitById.has(commit.id || ""))
-              .map(commit => {
-                const extendedCommit = commit as ExtendedGitCommitDto;
-                this.commitById.set(commit.id || "", extendedCommit);
-                return extendedCommit;
-              });
+      const loadedCommits =
+              (await lastValueFrom(this.gitCommitService.findAncestors(currentCommitId, this.COMMIT_PAGE_SIZE)))
+                      .filter(commit => !this.commitById.has(commit.id || ""))
+                      .map(commit => {
+                        this.commitById.set(commit.id || "", commit);
+                        return commit;
+                      });
       let index = 0;
-      for (const extendedLoadedCommit of extendedLoadedCommits) {
+      for (const loadedCommit of loadedCommits) {
         index++;
-        if (visited.has(extendedLoadedCommit.id || "")) {
+        if (visited.has(loadedCommit.id || "")) {
           break;
         }
-        if (extendedLoadedCommit.parentIds &&
-                (extendedLoadedCommit.parentIds.length > 1 || index === extendedLoadedCommits.length)) {
-          extendedLoadedCommit.parentIds.forEach(parentId => stack.push(parentId));
+        if (loadedCommit.parentIds && (loadedCommit.parentIds.length > 1 || index === loadedCommits.length)) {
+          loadedCommit.parentIds.forEach(parentId => stack.push(parentId));
         }
-        visited.add(extendedLoadedCommit.id || "");
-
-        // Composite node handling
-        if ((extendedLoadedCommit.parentIds && extendedLoadedCommit.parentIds?.length != 1)
-                || (extendedLoadedCommit.headOfBranchesIds && extendedLoadedCommit.headOfBranchesIds?.length > 0)
-        ) {
-          // new composite node required
-          compositeNode = {data: {id: uuidv4()}};
-          // those commits may not be part of a composite
-          extendedLoadedCommit.parent = undefined;
-
-        } else {
-          if (extendedLoadedCommit.childIds && extendedLoadedCommit.childIds?.length > 1) {
-            // new composite node required
-            compositeNode = {data: {id: uuidv4()}};
-          }
-          if (compositeNode.data.id && !this.commitCompound.has(compositeNode.data.id)) {
-            this.commitCompound.set(compositeNode.data.id, compositeNode);
-          }
-          extendedLoadedCommit.parent = compositeNode.data.id || "";
-        }
+        visited.add(loadedCommit.id || "");
       }
     }
   }

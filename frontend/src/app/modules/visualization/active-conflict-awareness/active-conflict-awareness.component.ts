@@ -11,6 +11,7 @@ import { MatDialog } from "@angular/material/dialog";
 import {
   ActiveConflictAwarenessDiffComponent
 } from "./active-conflict-awareness-diff/active-conflict-awareness-diff.component";
+import { ExtendedGitCommitDto } from "../../../utils/ExtendedGitCommitDto";
 
 @Component({
   selector: 'app-active-conflict-awareness',
@@ -55,21 +56,21 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     await this.loadReferenceBranchTrackingStatus();
     await this.fillBranchHeadCommitMap();
 
+    (await this.gitService.getCommitGroups()).forEach(group => {
+      this.cytoscapeCommits.push({data: group, selectable: false, selected: false} as NodeDefinition);
+    });
+
     for (const commit of await this.gitService.getCommits()) {
-      this.cytoscapeCommits.push({
-        data: commit, selectable: true, selected: false
-      })
+      const node = {
+        data: commit as ExtendedGitCommitDto, selectable: true, selected: false
+      };
+      node.data.parent = node.data.groupId;
+      this.cytoscapeCommits.push(node)
       commit.parentIds?.forEach(parentId => this.cytoscapeCommitRelationships.push({
         data: {
           id: commit.id + "-" + parentId, source: parentId, target: commit.id || ""
         }
       }))
-    }
-    const commitCompounds = await this.gitService.getCommitCompounds();
-    for (const commitCompound of commitCompounds) {
-      this.cytoscapeCommits.push({
-        data: commitCompound.data, selectable: false, selected: false
-      })
     }
 
     // preselect commit if provided in the route.
@@ -108,6 +109,14 @@ export class ActiveConflictAwarenessComponent implements OnInit {
             "text-valign": "center",
             "text-halign": "center"
           }
+        },
+        {
+          selector: ':parent',
+          css: {
+            "text-valign": "top",
+            "text-halign": "center",
+            "shape": "round-rectangle"
+          }
         }
       ],
       layout: {
@@ -123,6 +132,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     });
     this.loading = false;
     this.cy.on('click', 'node', (e: EventObject) => {
+      if (!e.target._private.selectable) {
+        return;
+      }
       this.selectedCommitsBranches = undefined
       const commit = e.target._private.data as GitCommitDto;
       this.selectCommit(commit, false);
