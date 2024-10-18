@@ -58,7 +58,7 @@ public interface CommitService {
     /**
      * Takes a GitCommit id and returns ancestors. Ancestors are returned to a depth of maxDepth or less if a
      * multi-parent commit is reached. In such a case, the multi parent commit is returned, however the lookup will not
-     * go further into depth. The commits are returned in topological order (leaf to root).
+     * go further into depth. The commits are returned without any order.
      *
      * @param gitCommitId The id of the commit to search ancestors commits for
      * @param maxDepth    The maximum amount of commits to be returned

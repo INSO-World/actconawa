@@ -16,12 +16,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @Order(2)
 /**
- * Index maximum distance to root commit. required to return the ancestry tree of a commit in order.
- * Further index the grouping information of commits
+ * Index grouping information of commits
  */
 public class CommitGraphHelperIndexer implements Indexer {
 
@@ -46,56 +46,55 @@ public class CommitGraphHelperIndexer implements Indexer {
             LOG.error("Multi-Root Commit and Empty Repositories are not supported yet");
             // TODO Support multiple root commits (detached ones?)? Check if there are common cases.
         }
-        writeCommitRootDistance(rootCommits.get(0));
+        collectCommitGroups(rootCommits.get(0));
 
     }
 
     @Override
     public String getIndexedContentDescription() {
-        return "distance to root commit and grouping infos";
+        return "commit grouping infos";
     }
 
-    private void writeCommitRootDistance(GitCommit rootCommit) {
+    private void collectCommitGroups(GitCommit rootCommit) {
         if (rootCommit == null) {
             return;
         }
-        Stack<Pair<GitCommit, Integer>> stack = new Stack<>();
-        stack.add(Pair.of(rootCommit, 0));
+        Stack<Pair<GitCommit, GitCommitGroup>> stack = new Stack<>();
+        stack.add(Pair.of(rootCommit, new GitCommitGroup()));
         Set<UUID> visited = new HashSet<>();
 
-        GitCommitGroup group = new GitCommitGroup();
+        var commits = gitCommitRepository.findAll();
+        LOG.debug("Indexing grouping of {} commits", commits.size());
+        var commitsMap = commits.stream().collect(Collectors.toMap(GitCommit::getId, commit -> commit));
         while (!stack.isEmpty()) {
-            Pair<GitCommit, Integer> current = stack.pop();
-            Integer currentDistance = current.getSecond();
+            Pair<GitCommit, GitCommitGroup> current = stack.pop();
+            GitCommitGroup group = current.getSecond();
             GitCommit currentCommit = current.getFirst();
 
-            if (currentCommit.getMaxDistanceFromRoot() == null
-                    || currentCommit.getMaxDistanceFromRoot() < currentDistance) {
-                currentCommit.setMaxDistanceFromRoot(currentDistance);
-            }
-            currentCommit.getChildren().forEach(x -> stack.push(Pair.of(x.getChild(), currentDistance + 1)));
-
-            // For grouping of commits multiple visits may not occur, however above the max index is requiring
-            // all visits.
             if (visited.contains(currentCommit.getId())) {
                 continue;
             }
             visited.add(currentCommit.getId());
-            if (!currentCommit.getHeadOfBranches().isEmpty() || currentCommit.getParents().size() > 1 || Objects.equals(
-                    rootCommit,
-                    currentCommit)) {
-                if (group.getId() != null) {
-                    group = new GitCommitGroup();
-                }
 
+            LOG.debug("Indexing commit {}", currentCommit.getId());
+
+            var childCommitsIds = gitCommitRepository.findChildCommitIdsOfCommit(currentCommit);
+            var parentCommitsIds = gitCommitRepository.findParentCommitIdsOfCommit(currentCommit);
+            if (!currentCommit.getHeadOfBranches().isEmpty()
+                    || parentCommitsIds.size() > 1
+                    || Objects.equals(rootCommit, currentCommit)
+            ) {
+                childCommitsIds.forEach(x -> stack.push(Pair.of(commitsMap.get(x), new GitCommitGroup())));
             } else {
                 if (group.getId() == null) {
                     group = gitCommitGroupRepository.save(group);
                 }
                 currentCommit.setGroup(group);
-                if (currentCommit.getChildren().size() > 1) {
-                    if (group.getId() != null) {
-                        group = new GitCommitGroup();
+                if (childCommitsIds.size() > 1) {
+                    childCommitsIds.forEach(x -> stack.push(Pair.of(commitsMap.get(x), new GitCommitGroup())));
+                } else {
+                    for (UUID x : childCommitsIds) {
+                        stack.push(Pair.of(commitsMap.get(x), group));
                     }
                 }
             }

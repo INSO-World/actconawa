@@ -14,8 +14,6 @@ import {
 } from "../../api";
 import { EMPTY, expand, lastValueFrom, tap } from "rxjs";
 import { CompositeKeyMap } from "../utils/CompositeKeyMap";
-import { NodeDefinition } from "cytoscape";
-import { v4 as uuidv4 } from "uuid";
 
 @Injectable({
   providedIn: 'root'
@@ -237,45 +235,26 @@ export class GitService {
     if (this.commitById.size > 0) {
       return;
     }
-
-    const visited = new Set<string>;
-    const stack: string[] = [];
-
-    // Load branch heads
-    for (const branchDto of await this.getBranches()) {
-      const headCommitId = branchDto.headCommitId;
-      const headCommit = await this.getCommitById(headCommitId || "");
-      // Only load the branch head commits that have no children (== leafs). The others will be loaded anyway
-      if (headCommitId && headCommit?.childIds?.length == 0) {
-        stack.push(headCommitId);
-      }
-    }
-
-    let currentCommitId: string | undefined;
-    let compositeNode: NodeDefinition = {data: {id: uuidv4()}};
-    while ((currentCommitId = stack.pop()) !== undefined) {
-      if (visited.has(currentCommitId)) {
-        continue;
-      }
-      const loadedCommits =
-              (await lastValueFrom(this.gitCommitService.findAncestors(currentCommitId, this.COMMIT_PAGE_SIZE)))
-                      .filter(commit => !this.commitById.has(commit.id || ""))
-                      .map(commit => {
-                        this.commitById.set(commit.id || "", commit);
-                        return commit;
+    const commitPages = this.gitCommitService
+            .findAllCommits({page: 0, size: this.COMMIT_PAGE_SIZE}).pipe(
+                    expand(commitPage => {
+                      if (!commitPage.last && commitPage.number !== undefined) {
+                        return this.gitCommitService.findAllCommits({
+                          page: commitPage.number + 1,
+                          size: this.COMMIT_PAGE_SIZE
+                        });
+                      } else {
+                        return EMPTY;
+                      }
+                    }),
+                    tap(commit => {
+                      (commit.content || []).forEach(c => {
+                        if (c.id) {
+                          this.commitById.set(c.id || "", c);
+                        }
                       });
-      let index = 0;
-      for (const loadedCommit of loadedCommits) {
-        index++;
-        if (visited.has(loadedCommit.id || "")) {
-          break;
-        }
-        if (loadedCommit.parentIds && (loadedCommit.parentIds.length > 1 || index === loadedCommits.length)) {
-          loadedCommit.parentIds.forEach(parentId => stack.push(parentId));
-        }
-        visited.add(loadedCommit.id || "");
-      }
-    }
+                    }));
+    await lastValueFrom(commitPages);
   }
 
 }
