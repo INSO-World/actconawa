@@ -97,7 +97,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           selector: ".commit-dependency",
           style: {
             "border-color": "black",
-            "border-width": "5px"
+            "border-width": "3px"
           }
         },
         {
@@ -300,6 +300,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           for (const dep of dependencyCommitIds) {
             if (dep && dep.length > 0) {
               this.cy?.$('#' + dep).addClass("commit-dependency");
+              const commit = await this.gitService.getCommitById(dep);
+              this.cy?.$('#' + commit?.groupId).addClass("commit-dependency");
             }
           }
         }
