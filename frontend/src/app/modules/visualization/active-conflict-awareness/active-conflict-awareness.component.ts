@@ -3,6 +3,7 @@ import { GitBranchDto, GitBranchTrackingStatusDto, GitCommitDto } from '../../..
 import cytoscape, { EdgeDefinition, EventObject, NodeDefinition } from 'cytoscape';
 import cytoscapeDagre, { DagreLayoutOptions } from 'cytoscape-dagre';
 import cytoscapePopper, { PopperOptions, RefElement } from 'cytoscape-popper';
+import expandCollapse from 'cytoscape-expand-collapse'
 import { computePosition } from '@floating-ui/dom';
 import { GitService } from "../../../services/git.service";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -45,6 +46,17 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   private referenceBranchId = "";
 
+  private defaultLayout = {
+    name: 'dagre',
+    rankDir: "LR",
+    rankSep: 130,
+    nodeDimensionsIncludeLabels: true,
+    spacingFactor: 1.75,
+    fit: true,
+    animate: true,
+    animationDuration: 500,
+  } as DagreLayoutOptions;
+
   constructor(
           private el: ElementRef,
           private route: ActivatedRoute,
@@ -86,6 +98,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     // initialize graph
     cytoscape.use(cytoscapeDagre);
     cytoscape.use(cytoscapePopper(this.popperFactory));
+    cytoscape.use(expandCollapse);
+
     this.cy = cytoscape({
       container: this.el.nativeElement.querySelector('#cy'),
       elements: {
@@ -94,6 +108,18 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       },
       style: [
         {
+          selector: "node.cy-expand-collapse-collapsed-node",
+          style: {
+            "background-color": "dodgerblue",
+            "shape": "diamond",
+            "font-weight": "bold",
+            "color": "white",
+            "content": "+",
+            "text-valign": "center",
+            "text-halign": "center"
+          }
+        },
+        {
           selector: ".commit-dependency",
           style: {
             "border-color": "black",
@@ -101,38 +127,36 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           }
         },
         {
-          selector: ".commit-placeholder",
-          style: {
-            "shape": "diamond",
-            "font-weight": "bold",
-            "content": "+",
-            "text-valign": "center",
-            "text-halign": "center"
-          }
-        },
-        {
           selector: ':parent',
           css: {
-            "text-valign": "top",
+            "text-valign": "bottom",
             "text-halign": "center",
             "shape": "round-rectangle"
           }
         }
       ],
-      layout: {
-        name: 'dagre',
-        rankDir: "LR",
-        rankSep: 130,
-        nodeDimensionsIncludeLabels: true,
-        spacingFactor: 1.75,
-        fit: true,
-        animate: true,
-        animationDuration: 500,
-      } as DagreLayoutOptions
+      layout: this.defaultLayout
     });
+
+    var ec = this.cy.expandCollapse({
+      layoutBy: this.defaultLayout,
+      fisheye: false,
+      animate: true,
+      undoable: true,
+    });
+    ec.collapseAll();
+    ec.collapseAllEdges();
     this.loading = false;
     this.cy.on('click', 'node', (e: EventObject) => {
       if (!e.target._private.selectable) {
+        console.log(ec.isCollapsible(e.target) + " " + ec.isExpandable(e.target))
+        if (ec.isCollapsible(e.target)) {
+          ec.collapseEdges(e.target);
+          ec.collapse(e.target);
+        } else {
+          ec.expandEdges(e.target);
+          ec.expand(e.target);
+        }
         return;
       }
       this.selectedCommitsBranches = undefined
@@ -192,16 +216,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   resizeChart() {
     this.cy?.resize();
-    this.cy?.layout({
-      name: 'dagre',
-      rankDir: "LR",
-      rankSep: 130,
-      nodeDimensionsIncludeLabels: true,
-      spacingFactor: 1.75,
-      fit: true,
-      animate: true,
-      animationDuration: 500,
-    } as DagreLayoutOptions)
+    this.cy?.layout(this.defaultLayout)
   }
 
   openDiffDialog() {
