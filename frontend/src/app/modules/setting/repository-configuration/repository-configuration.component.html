@@ -1,1 +1,13 @@
-<p>repository-configuration works!</p>
+<mat-card class="settings-card">
+  <h4>Reference Branch</h4>
+  <mat-form-field class="ref-branch-setting">
+    <mat-label>Branch</mat-label>
+    <select (change)="onSelectReferenceBranch($event)" matNativeControl>
+      <option value=""></option>
+      @for (branch of branches; track branch) {
+      <option [value]="branch.name" [selected]="settingService.getReferenceBranchName() == branch.name">{{branch.name}}
+      <option>
+      }
+    </select>
+  </mat-form-field>
+</mat-card>

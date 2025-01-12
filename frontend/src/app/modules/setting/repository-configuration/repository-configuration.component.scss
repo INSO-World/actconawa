@@ -1,0 +1,21 @@
+@import 'common';
+
+.settings-card {
+  margin: $actconawa-container-standard-margin;
+  overflow: hidden;
+  padding: 1em;
+  height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin);
+  display: flex;
+  @media #{$mat-gt-sm} {
+    flex-basis: 60%;
+    width: 100%;
+  }
+  @media #{$mat-lt-md} {
+    width: auto;
+    flex-direction: column;
+  }
+}
+
+.ref-branch-setting {
+  width: 25em;
+}
