@@ -34,7 +34,7 @@ body {
     margin-left: auto;
     margin-right: auto;
     padding: 2px;
-    background-color: #888;
+    background-color: lightskyblue;
     width: fit-content;
 
     &.UNKNOWN_MERGE_BASE {
@@ -42,7 +42,7 @@ body {
     }
 
     &.CONFLICTS {
-      background-color: #ff0000;
+      background-color: #f86e6e;
     }
 
     &.TWO_WAY_MERGEABLE {
@@ -52,7 +52,158 @@ body {
     &.THREE_WAY_MERGEABLE {
       background-color: #50c878;
     }
+
+    &.MERGED {
+      background-color: #f3f3f3;
+    }
+
+    i {
+      border: white 1px solid;
+      border-radius: 0.6em;
+      font-size: 0.6em;
+      margin-left: -0.5em;
+      vertical-align: bottom;
+
+      &.bxs-check-circle {
+        color: green;
+        background-color: white;
+      }
+
+      &.bxs-rocket {
+        color: white;
+        background-color: darkgreen;
+      }
+
+      &.bxs-error-alt {
+        color: red;
+      }
+
+      &.bx-git-merge {
+        margin-left: 1em;
+        text-align: center;
+        vertical-align: center;
+        color: black;
+        border: black 0.1em solid;
+        padding: 0.1em;
+        border-radius: 0.70em;
+        font-weight: bolder;
+        font-size: 0.75em;
+      }
+
+    }
   }
+
+  .reference-hint {
+    color: lightgrey;
+    font-size: 0.65em;
+    margin-top: 0.5em;
+    font-weight: bold;
+  }
+
+  .description-header {
+    color: darkgrey;
+    font-weight: bold;
+  }
+
+  .reference-branch-infos {
+    color: lightgrey;
+    font-size: 0.65em;
+    margin-top: 0.5em;
+
+    .ahead-tag {
+      margin-left: -0.2em;
+      color: white;
+      background-color: darkseagreen;
+      border: darkseagreen 0.1em solid;
+      padding: 0.1em;
+      border-top-right-radius: 0.65em;
+      border-bottom-right-radius: 0.65em;
+
+      .bx-plus-circle {
+        font-size: 0.55em;
+        margin-left: -0.2em;
+      }
+    }
+
+    .behind-tag {
+      color: white;
+      background-color: cornflowerblue;
+      border: cornflowerblue 0.1em solid;
+      padding: 0.1em;
+      border-top-left-radius: 0.65em;
+      border-bottom-left-radius: 0.65em;
+
+      .bx-minus-circle {
+        font-size: 0.55em;
+        margin-left: -0.2em;
+      }
+    }
+
+    .conflicts-tag {
+      background-color: wheat;
+      color: white;
+      border: wheat 0.1em solid;
+      border-radius: 0.65em;
+      padding: 0.1em;
+
+      .bxs-zap {
+        font-size: 0.55em;
+        margin-left: -0.45em;
+      }
+    }
+
+    .behind-ahead-desc {
+      padding: 0.1em;
+    }
+
+    .conflicts-desc {
+      padding: 0.1em;
+    }
+  }
+
+  .other-branch-infos {
+    color: lightgrey;
+    font-size: 0.65em;
+    margin-top: 0.2em;
+
+    .count-label {
+      color: white;
+      border-radius: 0.65em;
+      vertical-align: center;
+      padding: 0.1em;
+
+      &.unknown-merge-base {
+        background-color: #8a0000;
+        border: #8a0000 0.1em solid;
+
+        .bx-help-circle {
+          font-size: 0.55em;
+          margin-left: -0.2em;
+        }
+      }
+
+      &.conflicts {
+        background-color: #f86e6e;
+        border: #f86e6e 0.1em solid;
+
+        .bx-x-circle {
+          font-size: 0.55em;
+          margin-left: -0.2em;
+        }
+      }
+
+      &.mergeable {
+        background-color: #afe1af;
+        border: #afe1af 0.1em solid;
+
+        .bx-check-circle {
+          font-size: 0.55em;
+          margin-left: -0.2em;
+        }
+      }
+    }
+  }
+
 }
 
 .dialog-100vw {

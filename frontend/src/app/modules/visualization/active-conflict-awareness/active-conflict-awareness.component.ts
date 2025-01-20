@@ -36,6 +36,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   private readonly branchHeadMap = new Map<string, GitBranchDto[]>();
 
+  private readonly branchHeadStatusMap = new Map<string, GitBranchTrackingStatusDto[]>();
+
   protected trackingStatusWithReferenceBranchByBranchId = new Map<string, GitBranchTrackingStatusDto>();
 
   protected selectedCommitsBranches?: GitBranchDto[];
@@ -65,8 +67,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   }
 
   async ngOnInit() {
-    await this.loadReferenceBranchTrackingStatus();
     await this.fillBranchHeadCommitMap();
+    await this.loadBranchTrackingStatus();
 
     (await this.gitService.getCommitGroups()).forEach(group => {
       this.cytoscapeCommits.push({data: group, selectable: false, selected: false} as NodeDefinition);
@@ -185,18 +187,83 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           const trackingStatus =
                   this.trackingStatusWithReferenceBranchByBranchId.get(branchHeadAtCommit[ 0 ].id || "");
           let branchTags = "";
+          let statusIcon = "";
+          if (trackingStatus) {
+            switch (trackingStatus.mergeStatus) {
+              case "MERGED":
+                statusIcon = `<i class='bx bx-git-merge'></i><i class='bx bxs-check-circle'></i>`;
+                break;
+              case "THREE_WAY_MERGEABLE":
+              case "TWO_WAY_MERGEABLE":
+                statusIcon = `<i class='bx bx-git-merge'></i><i class='bx bxs-rocket' ></i>`
+                break;
+              case "CONFLICTS":
+                statusIcon = `<i class='bx bx-git-merge'></i><i class='bx bxs-error-alt'></i>`;
+                break;
+              default:
+                statusIcon = `<i class='bx bx-git-merge'></i><i class='bx bxs-help-circle'></i>`;
+
+            }
+          }
           for (let branch of branchHeadAtCommit) {
-            branchTags += `<div class="popper-branch-tag ${trackingStatus?.mergeStatus}">${branch.name}</div>`
+            branchTags
+                    += `<div class="popper-branch-tag ${trackingStatus?.mergeStatus}">${branch.name}${statusIcon}</div>`
           }
           if (!trackingStatus) {
             div.innerHTML = `${branchTags}
-                           <span>Reference Branch</span>
+                           <span class="reference-hint">Selected reference</span>
                           `;
+          } else if (trackingStatus.mergeStatus === "MERGED") {
+            div.innerHTML = `${branchTags}`;
           } else {
+            const status = this.branchHeadStatusMap.get(trackingStatus.branchBId || "") || []
+            const conflicting = status.filter(x => x.mergeStatus === "CONFLICTS").length
+            const unknownMergeBase = status.filter(x => x.mergeStatus === "UNKNOWN_MERGE_BASE").length
+            const mergable = status.filter(x => x.mergeStatus
+                    === "TWO_WAY_MERGEABLE"
+                    || x.mergeStatus
+                    === "THREE_WAY_MERGEABLE").length;
+            let otherBranchTracking = "";
+            if (mergable > 0) {
+              otherBranchTracking += `
+                 <span class="count-label mergeable">
+                 <i class='bx bx-git-pull-request' ></i><i class='bx bx-check-circle' ></i>
+                 ${mergable}
+                 </span>
+              `;
+            }
+            if (conflicting > 0) {
+              otherBranchTracking += `
+                 <span class="count-label conflicts">
+                 <i class='bx bx-git-pull-request' ></i><i class='bx bx-x-circle' ></i>
+                 ${conflicting}
+                 </span>
+              `;
+            }
+            if (unknownMergeBase > 0) {
+              otherBranchTracking += `
+                 <span class="count-label unknown-merge-base">
+                 <i class='bx bx-git-pull-request' ></i><i class='bx bx-help-circle' ></i>
+                 ${unknownMergeBase}
+                 </span>
+              `;
+            }
+
             div.innerHTML = `${branchTags}
-                           <span>${trackingStatus?.behindCount} Behind / ${trackingStatus?.aheadCount} Ahead</span><br>
-                           <span>${trackingStatus?.conflictingFilePaths?.length} Conflicting Files</span>
+                           <div class="reference-branch-infos">
+                           <div class="description-header">Reference Branch</div>
+                           <span class="behind-tag"><i class='bx bx-git-commit' ></i><i class='bx bx-minus-circle'></i>${trackingStatus?.behindCount}</span>
+                           <span class="ahead-tag"><i class='bx bx-git-commit' ></i><i class='bx bx-plus-circle'></i>${trackingStatus?.aheadCount}</span>
+                           <span class="behind-ahead-desc">Commits</span>
+                           <span class="conflicts-tag"><i class='bx bx-file-blank'></i><i class='bx bxs-zap' ></i>${trackingStatus?.conflictingFilePaths?.length}</span>
+                           <span class="conflicts-desc"> Files Conflicting</span>
+                           </div>
+                           <div class="other-branch-infos">
+                           <div class="description-header">Other Branches</div>
+                           ${otherBranchTracking}
+                           </div>
                           `;
+
           }
           div.classList.add('popper-div');
           this.el.nativeElement.querySelector('#cy').appendChild(div);
@@ -279,17 +346,35 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     });
   }
 
-  private async loadReferenceBranchTrackingStatus() {
+  private async loadBranchTrackingStatus() {
     this.referenceBranchId = await this.settingService.getReferenceBranchId();
     const result = await this.gitService.getBranchTrackingStatusById(this.referenceBranchId)
+
     result.forEach(ts => {
               if (ts.branchAId === this.referenceBranchId && ts.branchBId) {
                 this.trackingStatusWithReferenceBranchByBranchId.set(ts.branchBId, ts);
-              } else if (ts.branchBId === this.referenceBranchId && ts.branchAId) {
-                this.trackingStatusWithReferenceBranchByBranchId.set(ts.branchAId, ts);
               }
             }
     );
+
+    const unmergedBranchIds = result
+            .filter(x => x.mergeStatus && x.mergeStatus != "MERGED")
+            .map(x => x.branchBId);
+
+    for (const branchA of unmergedBranchIds) {
+      for (const branchB of unmergedBranchIds) {
+        if (!branchA || !branchB || branchA === branchB) {
+          continue;
+        }
+        const status = await this.gitService.getBranchTrackingStatusByIds(branchA, branchB);
+        if (!this.branchHeadStatusMap.has(branchA)) {
+          this.branchHeadStatusMap.set(branchA, [])
+        }
+        if (status) {
+          this.branchHeadStatusMap.get(branchA)?.push(status);
+        }
+      }
+    }
   }
 
   private async fillBranchHeadCommitMap() {
