@@ -36,6 +36,9 @@ import {
 } from "./active-conflict-awareness/active-conflict-awareness-metadata/active-conflict-awareness-metadata-code-change-info/active-conflict-awareness-metadata-code-change-info.component";
 import { MatOption } from "@angular/material/autocomplete";
 import { MatSelect } from "@angular/material/select";
+import {
+  ActiveConflictAwarenessConflictsComponent
+} from "./active-conflict-awareness/active-conflict-awareness-conflicts/active-conflict-awareness-conflicts.component";
 
 @NgModule({
   declarations: [
@@ -67,6 +70,7 @@ import { MatSelect } from "@angular/material/select";
     ActiveConflictAwarenessMetadataCodeChangeInfoComponent,
     MatOption,
     MatSelect,
+    ActiveConflictAwarenessConflictsComponent,
   ]
 })
 export class VisualizationModule {

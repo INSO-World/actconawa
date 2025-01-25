@@ -32,6 +32,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected selectedCommit?: GitCommitDto;
 
+  protected selectedBranchHeads: GitBranchDto[] = [];
+
   protected parentCommits = new Map<string, GitCommitDto>();
 
   protected popperDivsByNodeId = new Map<string, HTMLElement>();
@@ -356,6 +358,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     this.gitService.getBranchesByCommitId(commit.id).then(branches => {
       return this.selectedCommitsBranches = branches.sort();
     })
+
+    this.selectedBranchHeads = this.branchHeadMap.get(commit.id) || [];
 
     this.loadDependencies(commit).then(() => {
     });

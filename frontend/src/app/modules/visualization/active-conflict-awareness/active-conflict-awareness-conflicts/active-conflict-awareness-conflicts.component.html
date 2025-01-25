@@ -1,0 +1,30 @@
+<div *ngIf="selectedBranches && selectedBranches.length > 0">
+  <ng-container>
+    <div *ngIf="getProblemBranchCount() === 0">
+      Congratulations. This Branch is conflict free with all other branches!
+    </div>
+  </ng-container>
+  <ng-container *ngFor="let t of trackingStatus">
+    <div *ngIf="t.mergeStatus === 'CONFLICTS' || t.mergeStatus == 'UNKNOWN_MERGE_BASE'">
+
+      <mat-list>
+        <div mat-subheader>
+          <div class="branch-tag-container">
+            <span appContentBasedColor class="branch-tag">
+                {{branchIdToBranchMap.get(t.branchBId || "")?.name}}
+            </span>
+          </div>
+        </div>
+        <div *ngIf="t.mergeStatus === 'UNKNOWN_MERGE_BASE'">Unknown/Unclear merge base.</div>
+        <mat-list-item *ngFor=" let cf of t.conflictingFilePaths">
+          <span matListItemLine>{{cf}}</span>
+        </mat-list-item>
+        <mat-divider *ngIf="getProblemBranchCount() > 1"></mat-divider>
+      </mat-list>
+    </div>
+
+  </ng-container>
+</div>
+<div *ngIf="!selectedBranches || selectedBranches.length == 0">
+  Please select a commit that is branch head from the visualization!
+</div>

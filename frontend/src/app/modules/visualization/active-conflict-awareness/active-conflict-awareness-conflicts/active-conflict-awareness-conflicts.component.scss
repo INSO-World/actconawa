@@ -1,0 +1,20 @@
+.branch-tag {
+  white-space: nowrap;
+  text-wrap: none;
+  overflow: visible;
+  text-overflow: ellipsis;
+  background-color: #eeeeee;
+  margin-right: 1px;
+  padding: 0.5em;
+  border-radius: 2em;
+  line-height: 0.5em;
+  height: 0.5em;
+}
+
+.branch-tag-container {
+  overflow: auto;
+  display: flex;
+  justify-content: left;
+  flex-flow: wrap;
+  max-height: 6em;
+}

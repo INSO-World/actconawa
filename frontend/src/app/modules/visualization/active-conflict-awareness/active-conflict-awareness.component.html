@@ -25,6 +25,23 @@
                 [branches]="selectedCommitsBranches">
         </app-active-conflict-awareness-commit>
       </mat-expansion-panel>
+      <ng-container>
+        <mat-expansion-panel [disabled]="!selectedCommit" [expanded]="selectedCommit" hideToggle>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Conflict overview
+            </mat-panel-title>
+            <mat-panel-description>
+              <small>Conflicts with other branches </small>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+          <app-active-conflict-awareness-conflicts
+                  *ngIf="selectedBranchHeads"
+                  [selectedBranches]="selectedBranchHeads">
+          </app-active-conflict-awareness-conflicts>
+
+        </mat-expansion-panel>
+      </ng-container>
       <ng-container *ngFor="let parentId of selectedCommit?.parentIds">
         <mat-expansion-panel class="commit-diff-extension-panel" hideToggle [disabled]="!selectedCommit">
           <mat-expansion-panel-header>
@@ -40,19 +57,6 @@
                   [selectedParentCommitId]="parentId"
                   *ngIf="selectedCommit">
           </app-active-conflict-awareness-metadata>
-        </mat-expansion-panel>
-      </ng-container>
-      <ng-container>
-        <mat-expansion-panel [disabled]="!selectedCommit" hideToggle>
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              Conflict overview
-            </mat-panel-title>
-            <mat-panel-description>
-              <small>Conflicts with other branches </small>
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-
         </mat-expansion-panel>
       </ng-container>
     </mat-accordion>
