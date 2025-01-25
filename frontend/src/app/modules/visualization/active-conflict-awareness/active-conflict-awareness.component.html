@@ -42,6 +42,19 @@
           </app-active-conflict-awareness-metadata>
         </mat-expansion-panel>
       </ng-container>
+      <ng-container>
+        <mat-expansion-panel [disabled]="!selectedCommit" hideToggle>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Conflict overview
+            </mat-panel-title>
+            <mat-panel-description>
+              <small>Conflicts with other branches </small>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+        </mat-expansion-panel>
+      </ng-container>
     </mat-accordion>
     <mat-card class="action-card">
       <mat-card-actions>

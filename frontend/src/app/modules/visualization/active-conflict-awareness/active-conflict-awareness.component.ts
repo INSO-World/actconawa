@@ -34,6 +34,12 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected parentCommits = new Map<string, GitCommitDto>();
 
+  protected popperDivsByNodeId = new Map<string, HTMLElement>();
+
+  protected popperDivsInMainCollapse: HTMLElement[] = [];
+
+  private readonly mainCollapseId = "main-collapse";
+
   private readonly branchHeadMap = new Map<string, GitBranchDto[]>();
 
   private readonly branchHeadStatusMap = new Map<string, GitBranchTrackingStatusDto[]>();
@@ -163,6 +169,12 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       }
       this.selectedCommitsBranches = undefined
       const commit = e.target._private.data as GitCommitDto;
+
+      // TODO: just for now onclick. should be collapsed by explicit settings
+      if (this.popperDivsInMainCollapse.length == 0) {
+        this.mainCollapse(e.target._private.data.id)
+      }
+
       this.selectCommit(commit, false);
     })
     const branchesByHeadCommitId = new Map<string, GitBranchDto[]>;
@@ -266,6 +278,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
           }
           div.classList.add('popper-div');
+          if (branchHeadAtCommit[ 0 ].headCommitId) {
+            this.popperDivsByNodeId.set(branchHeadAtCommit[ 0 ].headCommitId, div);
+          }
           this.el.nativeElement.querySelector('#cy').appendChild(div);
           return div;
         },
@@ -344,6 +359,38 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
     this.loadDependencies(commit).then(() => {
     });
+  }
+
+  private mainCollapse(commitId: string) {
+    this.cy?.add({data: {id: this.mainCollapseId}, selectable: false, selected: false} as NodeDefinition)
+            .on('expandcollapse.beforecollapse', () => {
+              this.hidePopper()
+            })
+            .on('expandcollapse.afterexpand', () => {
+              this.showHiddenPopper()
+            });
+    this.cy?.$('#' + commitId)
+            .successors()
+            .absoluteComplement()
+            .nodes().forEach(node => {
+      if (node.id() !== this.mainCollapseId && !node.data().parent) {
+        node.move({parent: this.mainCollapseId});
+        const popper = this.popperDivsByNodeId.get(node.id());
+        if (popper) {
+          this.popperDivsInMainCollapse.push(popper)
+        }
+      }
+      return true;
+    });
+    this.cy?.layout(this.defaultLayout).run();
+  }
+
+  private hidePopper() {
+    this.popperDivsInMainCollapse.forEach(x => x.classList.add("hidden"))
+  }
+
+  private showHiddenPopper() {
+    this.popperDivsInMainCollapse.forEach(x => x.classList.remove("hidden"))
   }
 
   private async loadBranchTrackingStatus() {

@@ -76,7 +76,6 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                     walk.markStart(refA);
                     walk.markStart(refB);
                     RevCommit mergeBase = walk.next();
-                    // TODO: investigate further
                     var gitCommitMergeBase = mergeBase == null
                             ? null
                             : gitCommitRepository.findByShaStartsWith(mergeBase.getName())

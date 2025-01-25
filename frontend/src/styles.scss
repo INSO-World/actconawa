@@ -23,6 +23,11 @@ body {
 }
 
 .popper-div {
+
+  &.hidden {
+    display: none;
+  }
+
   z-index: 9999;
   pointer-events: none;
   width: max-content;
@@ -140,9 +145,9 @@ body {
     }
 
     .conflicts-tag {
-      background-color: wheat;
+      background-color: orange;
       color: white;
-      border: wheat 0.1em solid;
+      border: orange 0.1em solid;
       border-radius: 0.65em;
       padding: 0.1em;
 
