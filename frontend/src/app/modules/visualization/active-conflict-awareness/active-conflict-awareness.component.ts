@@ -13,6 +13,7 @@ import {
   ActiveConflictAwarenessDiffComponent
 } from "./active-conflict-awareness-diff/active-conflict-awareness-diff.component";
 import { ExtendedGitCommitDto } from "../../../utils/ExtendedGitCommitDto";
+import ExpandCollapseAPI = cytoscape.ExpandCollapseAPI;
 
 @Component({
   selector: 'app-active-conflict-awareness',
@@ -30,6 +31,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   protected cy: cytoscape.Core | undefined;
 
+  protected ec: ExpandCollapseAPI | undefined;
+
   protected selectedCommit?: GitCommitDto;
 
   protected selectedBranchHeads: GitBranchDto[] = [];
@@ -41,6 +44,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   protected popperDivsInMainCollapse: HTMLElement[] = [];
 
   private readonly mainCollapseId = "main-collapse";
+
+  private mainCollapseSelected: boolean = false;
 
   private readonly branchHeadMap = new Map<string, GitBranchDto[]>();
 
@@ -60,6 +65,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     name: 'dagre',
     rankDir: "LR",
     rankSep: 130,
+    ranker: "network-simplex",
     nodeDimensionsIncludeLabels: true,
     spacingFactor: 1.75,
     fit: true,
@@ -119,7 +125,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       style: [
         {
           selector: "node.cy-expand-collapse-collapsed-node",
-          style: {
+          css: {
             "background-color": "dodgerblue",
             "shape": "diamond",
             "font-weight": "bold",
@@ -131,9 +137,29 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         },
         {
           selector: ".commit-dependency",
-          style: {
+          css: {
             "border-color": "black",
             "border-width": "3px"
+          }
+        },
+        {
+          selector: ".selected-branch-exlusive-commits",
+          css: {
+            "background-color": "lightgreen"
+          }
+        },
+        {
+          selector: ".conflicting-branch-exlusive-commits",
+          css: {
+            "background-color": "lightcoral",
+          }
+        },
+        {
+          selector: ":selected",
+          css: {
+            "border-color": "blue",
+            "border-width": "7px",
+            "shape": "star",
           }
         },
         {
@@ -148,32 +174,48 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       layout: this.defaultLayout
     });
 
-    var ec = this.cy.expandCollapse({
+    this.ec = this.cy.expandCollapse({
       layoutBy: this.defaultLayout,
       fisheye: false,
       animate: true,
       undoable: true,
     });
-    ec.collapseAll();
-    ec.collapseAllEdges();
+    this.ec.collapseAll();
+    this.ec.collapseAllEdges();
     this.loading = false;
     this.cy.on('click', 'node', (e: EventObject) => {
+      // Cleanup context specific classes that might change
+      this.cy?.nodes().removeClass(
+              "selected-branch-exlusive-commits conflicting-branch-exlusive-commits commit-dependency")
       if (!e.target._private.selectable) {
-        console.log(ec.isCollapsible(e.target) + " " + ec.isExpandable(e.target))
-        if (ec.isCollapsible(e.target)) {
-          ec.collapseEdges(e.target);
-          ec.collapse(e.target);
+        if (this.ec?.isCollapsible(e.target)) {
+          this.ec?.collapseEdges(e.target);
+          this.ec?.collapse(e.target);
         } else {
-          ec.expandEdges(e.target);
-          ec.expand(e.target);
+          this.ec?.expandEdges(e.target);
+          this.ec?.expand(e.target);
         }
+        // Workaround to several renderingbugs. Even if classes were set correctly in collapsed nodes,
+        // they were not rendered correctly (only on certain zoom levels).
+        // Therefore the logic to set the classes was removed and a shortcut to simply reselect the node
+        // was added. When no node is selected, anyway there is no context to be shown.
+        this.cy?.nodes().removeClass([
+          "selected-branch-exlusive-commits",
+          "conflicting-branch-exlusive-commits",
+          "commit-dependency"
+        ].join(" "))
+        if (this.selectedCommit) {
+          this.selectCommit(this.selectedCommit, false)
+        }
+
         return;
       }
       this.selectedCommitsBranches = undefined
       const commit = e.target._private.data as GitCommitDto;
 
       // TODO: just for now onclick. should be collapsed by explicit settings
-      if (this.popperDivsInMainCollapse.length == 0) {
+      if (!this.mainCollapseSelected) {
+        this.mainCollapseSelected = true;
         this.mainCollapse(e.target._private.data.id)
       }
 
@@ -363,6 +405,11 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
     this.loadDependencies(commit).then(() => {
     });
+
+    if (this.selectedBranchHeads.length > 0) {
+      this.markConflictingBranchCommits(this.selectedBranchHeads[ 0 ])
+    }
+
   }
 
   private mainCollapse(commitId: string) {
@@ -412,8 +459,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
             .filter(x => x.mergeStatus && x.mergeStatus != "MERGED")
             .map(x => x.branchBId);
 
-    for (const branchA of unmergedBranchIds) {
-      for (const branchB of unmergedBranchIds) {
+    const trackingAvailableBranchIds = result.map(x => x.branchBId);
+
+    for (const branchA of trackingAvailableBranchIds) {
+      for (const branchB of trackingAvailableBranchIds) {
         if (!branchA || !branchB || branchA === branchB) {
           continue;
         }
@@ -459,4 +508,46 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       }
     }
   }
+
+  private async markConflictingBranchCommits(branch: GitBranchDto) {
+    const status = this.branchHeadStatusMap.get(branch.id!)
+
+    if (!status) {
+      throw new Error("Branch head must have a status. Maybe index bug.");
+    }
+
+    const otherBranchIds = status.filter(s => s.mergeStatus === "CONFLICTS")
+            .map(s => s.branchBId!);
+
+    const commit1 = this.cy?.$("#" + branch.headCommitId);
+    const commit1Ancestry = commit1?.predecessors().union(commit1);
+
+    for (const otherBranchId of otherBranchIds) {
+      const otherBranch = await this.gitService.getBranchById(otherBranchId);
+      if (!otherBranch) {
+        throw new Error("BranchId must have a corresponding branch.");
+      }
+      const commit2 = this.cy?.$("#" + otherBranch.headCommitId);
+      const commit2Ancestry = commit2?.predecessors().union(commit2);
+
+      if (commit1Ancestry && commit2Ancestry) {
+        const ancestryDiff = commit1Ancestry?.symmetricDifference(commit2Ancestry!);
+        const commit1ExclusiveAncestry = commit1Ancestry.intersection(ancestryDiff).nodes();
+        const commit2ExclusiveAncestry = commit2Ancestry.intersection(ancestryDiff).nodes();
+
+        const result1CollapsedIds = this.ec
+                ?.getCollapsedChildren(commit1ExclusiveAncestry)?.nodes();
+        const result1Ids = result1CollapsedIds ?
+                result1CollapsedIds.union(commit1ExclusiveAncestry) : commit1ExclusiveAncestry;
+        const result2CollapsedIds = this.ec
+                ?.getCollapsedChildren(commit2ExclusiveAncestry)?.nodes();
+        const result2Ids = result2CollapsedIds ?
+                result2CollapsedIds.union(commit2ExclusiveAncestry) : commit2ExclusiveAncestry;
+        commit1ExclusiveAncestry?.nodes().addClass("selected-branch-exlusive-commits");
+        commit2ExclusiveAncestry?.nodes().addClass("conflicting-branch-exlusive-commits");
+
+      }
+    }
+  }
+
 }

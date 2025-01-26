@@ -57,7 +57,6 @@ export class ActiveConflictAwarenessConflictsComponent {
     this.clear()
     if (this.selectedBranches.length > 0) {
       this.trackingStatus = await this.gitService.getBranchTrackingStatusById(this.selectedBranches[ 0 ].id || "");
-      console.log(this.trackingStatus)
     }
   }
 
