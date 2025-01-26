@@ -38,6 +38,9 @@ declare namespace cytoscape {
     expand: (eles: cytoscape.Collection, options?: any) => void;
     expandRecursively: (eles: cytoscape.Collection, options?: any) => void;
     expandAll: () => void;
+    clearVisualCue: () => void;
+    enableCue: () => void;
+    disableCue: () => void;
 
     isExpandable: (ele: cytoscape.SingularElement) => boolean;
     isCollapsible: (ele: cytoscape.SingularElement) => boolean;
@@ -50,6 +53,8 @@ declare namespace cytoscape {
     expandEdgesBetweenNodes: (eles: cytoscape.Collection) => void;
     collapseAllEdges: (options?: any) => void;
     expandAllEdges: () => void;
+
+    getCollapsedChildren: (ele: cytoscape.SingularElement) => cytoscape.Collection;
   }
 
 }
