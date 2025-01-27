@@ -1,6 +1,6 @@
 import { Component, ElementRef, inject, OnInit } from '@angular/core';
 import { GitBranchDto, GitBranchTrackingStatusDto, GitCommitDto } from '../../../../api';
-import cytoscape, { EdgeDefinition, EventObject, NodeDefinition } from 'cytoscape';
+import cytoscape, { EdgeDefinition, EventObject, NodeDefinition, NodeSingular } from 'cytoscape';
 import cytoscapeDagre, { DagreLayoutOptions } from 'cytoscape-dagre';
 import cytoscapePopper, { PopperOptions, RefElement } from 'cytoscape-popper';
 import expandCollapse from 'cytoscape-expand-collapse'
@@ -212,13 +212,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       }
       this.selectedCommitsBranches = undefined
       const commit = e.target._private.data as GitCommitDto;
-
-      // TODO: just for now onclick. should be collapsed by explicit settings
-      if (!this.mainCollapseSelected) {
-        this.mainCollapseSelected = true;
-        this.mainCollapse(e.target._private.data.id)
-      }
-
       this.selectCommit(commit, false);
     })
     const branchesByHeadCommitId = new Map<string, GitBranchDto[]>;
@@ -337,6 +330,16 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       });
       branchHead.on('position', (branchHeadPopper as any).update());
     }
+    if (!this.mainCollapseSelected) {
+      const predecessors = this.cy.$('#'
+              + (await this.gitService.getBranchById(this.referenceBranchId))?.headCommitId).predecessors().nodes();
+      // rather "dirty" solution as the order of predecessor is undocumented...
+      const selectedMainCollapse = 10 < predecessors.size()
+              ? (predecessors as any)[ 10 ]
+              : (predecessors as any)[ predecessors.size() - 1 ]
+      this.mainCollapseSelected = true;
+      this.mainCollapse((selectedMainCollapse as NodeSingular).id())
+    }
 
   }
 
@@ -433,6 +436,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       }
       return true;
     });
+    const mainCollapseNode = this.cy?.$('#' + this.mainCollapseId);
+    if (mainCollapseNode) {
+      this.ec?.collapse(mainCollapseNode);
+    }
     this.cy?.layout(this.defaultLayout).run();
   }
 
@@ -510,6 +517,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   }
 
   private async markConflictingBranchCommits(branch: GitBranchDto) {
+    if (branch.id! == this.referenceBranchId) {
+      return;
+    }
     const status = this.branchHeadStatusMap.get(branch.id!)
 
     if (!status) {
