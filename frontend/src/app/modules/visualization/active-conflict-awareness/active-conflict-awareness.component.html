@@ -63,8 +63,14 @@
     <mat-card class="action-card">
       <mat-card-actions>
         <button mat-button [disabled]="!selectedCommit" (click)="openDiffDialog()">
-          SHOW DIFF
+          SHOW DIFF TO PARENTS
           <mat-icon>difference</mat-icon>
+        </button>
+      </mat-card-actions>
+      <mat-card-actions>
+        <button (click)="collapseAll()" mat-button>
+          COLLAPSE GRAPH NODES
+          <mat-icon>close_fullscreen</mat-icon>
         </button>
       </mat-card-actions>
     </mat-card>

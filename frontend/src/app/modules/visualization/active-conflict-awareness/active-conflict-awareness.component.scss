@@ -7,7 +7,7 @@
   flex-direction: column;
   flex-shrink: 1;
   @media #{$mat-gt-sm} {
-    flex-basis: 40%;
+    flex-basis: 30%;
     max-height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin);
   }
   min-width: 30em;
@@ -20,7 +20,7 @@
   height: calc(100vh - $actconawa-navbar-height - $actconawa-container-standard-margin);
   display: flex;
   @media #{$mat-gt-sm} {
-    flex-basis: 60%;
+    flex-basis: 70%;
     width: 100%;
   }
   @media #{$mat-lt-md} {

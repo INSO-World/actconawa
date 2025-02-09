@@ -45,7 +45,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   private readonly mainCollapseId = "main-collapse";
 
-  private mainCollapseSelected: boolean = false;
+  private mainCollapseSelected: NodeSingular | undefined;
 
   private readonly branchHeadMap = new Map<string, GitBranchDto[]>();
 
@@ -192,8 +192,21 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           this.ec?.collapseEdges(e.target);
           this.ec?.collapse(e.target);
         } else {
-          this.ec?.expandEdges(e.target);
-          this.ec?.expand(e.target);
+          // special handling needed for main collapse as maaany nodes might be collapsed into it.
+          // moving the expanded main collapse with all the nodes inside is performing quite bad.
+          // therefore expanding it, means removing the collapse.
+          if (e.target._private.data.id === this.mainCollapseId) {
+            this.ec?.expandEdges(e.target);
+            this.ec?.expand(e.target);
+            (e.target as cytoscape.NodeSingular).children().forEach(node => {
+              node.move({parent: null});
+              // TODO something with popper
+            });
+            (e.target as cytoscape.NodeSingular).remove();
+          } else {
+            this.ec?.expandEdges(e.target);
+            this.ec?.expand(e.target);
+          }
         }
         // Workaround to several renderingbugs. Even if classes were set correctly in collapsed nodes,
         // they were not rendered correctly (only on certain zoom levels).
@@ -337,8 +350,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       const selectedMainCollapse = 10 < predecessors.size()
               ? (predecessors as any)[ 10 ]
               : (predecessors as any)[ predecessors.size() - 1 ]
-      this.mainCollapseSelected = true;
-      this.mainCollapse((selectedMainCollapse as NodeSingular).id())
+      this.mainCollapseSelected = selectedMainCollapse;
+      this.mainCollapse(this.mainCollapseSelected!!.id())
     }
 
   }
@@ -415,32 +428,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   }
 
-  private mainCollapse(commitId: string) {
-    this.cy?.add({data: {id: this.mainCollapseId}, selectable: false, selected: false} as NodeDefinition)
-            .on('expandcollapse.beforecollapse', () => {
-              this.hidePopper()
-            })
-            .on('expandcollapse.afterexpand', () => {
-              this.showHiddenPopper()
-            });
-    this.cy?.$('#' + commitId)
-            .successors()
-            .absoluteComplement()
-            .nodes().forEach(node => {
-      if (node.id() !== this.mainCollapseId && !node.data().parent) {
-        node.move({parent: this.mainCollapseId});
-        const popper = this.popperDivsByNodeId.get(node.id());
-        if (popper) {
-          this.popperDivsInMainCollapse.push(popper)
-        }
-      }
-      return true;
-    });
-    const mainCollapseNode = this.cy?.$('#' + this.mainCollapseId);
-    if (mainCollapseNode) {
-      this.ec?.collapse(mainCollapseNode);
-    }
-    this.cy?.layout(this.defaultLayout).run();
+  protected collapseAll() {
+    this.ec?.collapseAll();
+    this.ec?.collapseAllEdges();
+    this.mainCollapse(this.mainCollapseSelected!!.id())
   }
 
   private hidePopper() {
@@ -514,6 +505,41 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         }
       }
     }
+  }
+
+  private mainCollapse(commitId: string) {
+    const existingCollapsedNode = this.cy?.$('#' + this.mainCollapseId);
+    if ((existingCollapsedNode?.length || 0) > 0 && existingCollapsedNode?.removed()) {
+      this.cy?.$('#' + this.mainCollapseId).restore();
+    } else if ((existingCollapsedNode?.length || 0) == 0) {
+      this.cy?.add({data: {id: this.mainCollapseId}, selectable: false, selected: false} as NodeDefinition)
+              .on('expandcollapse.beforecollapse', () => {
+                this.hidePopper()
+              })
+              .on('expandcollapse.afterexpand', () => {
+                this.showHiddenPopper()
+              });
+    } else {
+      return;
+    }
+    this.cy?.$('#' + commitId)
+            .successors()
+            .absoluteComplement()
+            .nodes().forEach(node => {
+      if (node.id() !== this.mainCollapseId && !node.data().parent) {
+        node.move({parent: this.mainCollapseId});
+        const popper = this.popperDivsByNodeId.get(node.id());
+        if (popper) {
+          this.popperDivsInMainCollapse.push(popper)
+        }
+      }
+      return true;
+    });
+    const mainCollapseNode = this.cy?.$('#' + this.mainCollapseId);
+    if (mainCollapseNode) {
+      this.ec?.collapse(mainCollapseNode);
+    }
+    this.cy?.layout(this.defaultLayout).run();
   }
 
   private async markConflictingBranchCommits(branch: GitBranchDto) {
