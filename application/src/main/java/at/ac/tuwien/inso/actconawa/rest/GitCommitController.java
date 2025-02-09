@@ -2,6 +2,7 @@ package at.ac.tuwien.inso.actconawa.rest;
 
 import at.ac.tuwien.inso.actconawa.api.CommitService;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDependencyDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitGroupDto;
@@ -71,6 +72,13 @@ public class GitCommitController {
             @NotNull
             @PathVariable UUID commitId) {
         return commitService.findBranches(commitId);
+    }
+
+    @GetMapping("/{commitId}/dependencies")
+    public GitCommitDependencyDto findCommitDependencies(
+            @NotNull
+            @PathVariable UUID commitId) {
+        return commitService.findDependencies(commitId);
     }
 
 }

@@ -194,6 +194,37 @@
         }
       }
     },
+    "/commits/{commitId}/dependencies": {
+      "get": {
+        "tags": [
+          "git-commit-controller"
+        ],
+        "operationId": "findCommitDependencies",
+        "parameters": [
+          {
+            "name": "commitId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitCommitDependencyDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/commits/{commitId}/branches": {
       "get": {
         "tags": [
@@ -663,19 +694,26 @@
       "PageGitCommitDto": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "first": {
             "type": "boolean"
           },
           "last": {
             "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
             "type": "integer",
@@ -694,13 +732,6 @@
           "sort": {
             "$ref": "#/components/schemas/SortObject"
           },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
-          },
-          "numberOfElements": {
-            "type": "integer",
-            "format": "int32"
-          },
           "empty": {
             "type": "boolean"
           }
@@ -709,19 +740,6 @@
       "PageableObject": {
         "type": "object",
         "properties": {
-          "offset": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
-          },
-          "paged": {
-            "type": "boolean"
-          },
-          "unpaged": {
-            "type": "boolean"
-          },
           "pageNumber": {
             "type": "integer",
             "format": "int32"
@@ -729,20 +747,49 @@
           "pageSize": {
             "type": "integer",
             "format": "int32"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "unpaged": {
+            "type": "boolean"
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
           }
         }
       },
       "SortObject": {
         "type": "object",
         "properties": {
-          "empty": {
+          "sorted": {
             "type": "boolean"
           },
           "unsorted": {
             "type": "boolean"
           },
-          "sorted": {
+          "empty": {
             "type": "boolean"
+          }
+        }
+      },
+      "GitCommitDependencyDto": {
+        "type": "object",
+        "properties": {
+          "commitId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "commitDependencyIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         }
       },
@@ -782,19 +829,26 @@
       "PageGitCommitRelationshipDto": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "first": {
             "type": "boolean"
           },
           "last": {
             "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
             "type": "integer",
@@ -812,13 +866,6 @@
           },
           "sort": {
             "$ref": "#/components/schemas/SortObject"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
-          },
-          "numberOfElements": {
-            "type": "integer",
-            "format": "int32"
           },
           "empty": {
             "type": "boolean"
@@ -855,19 +902,26 @@
       "PageGitCommitGroupDto": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "first": {
             "type": "boolean"
           },
           "last": {
             "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
             "type": "integer",
@@ -885,13 +939,6 @@
           },
           "sort": {
             "$ref": "#/components/schemas/SortObject"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
-          },
-          "numberOfElements": {
-            "type": "integer",
-            "format": "int32"
           },
           "empty": {
             "type": "boolean"
@@ -923,19 +970,26 @@
       "PageGitBranchDto": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "first": {
             "type": "boolean"
           },
           "last": {
             "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
             "type": "integer",
@@ -953,13 +1007,6 @@
           },
           "sort": {
             "$ref": "#/components/schemas/SortObject"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
-          },
-          "numberOfElements": {
-            "type": "integer",
-            "format": "int32"
           },
           "empty": {
             "type": "boolean"
@@ -1014,19 +1061,26 @@
       "PageGitBranchTrackingStatusDto": {
         "type": "object",
         "properties": {
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
           "totalElements": {
             "type": "integer",
             "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
           },
           "first": {
             "type": "boolean"
           },
           "last": {
             "type": "boolean"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
             "type": "integer",
@@ -1044,13 +1098,6 @@
           },
           "sort": {
             "$ref": "#/components/schemas/SortObject"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
-          },
-          "numberOfElements": {
-            "type": "integer",
-            "format": "int32"
           },
           "empty": {
             "type": "boolean"

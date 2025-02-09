@@ -10,9 +10,8 @@
  * Do not edit the class manually.
  */
 
-export interface SortObject {
-  sorted?: boolean;
-  unsorted?: boolean;
-  empty?: boolean;
+export interface GitCommitDependencyDto {
+  commitId?: string;
+  commitDependencyIds?: Array<string>;
 }
 

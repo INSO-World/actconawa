@@ -1,6 +1,7 @@
 package at.ac.tuwien.inso.actconawa.api;
 
 import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDependencyDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitGroupDto;
@@ -65,6 +66,15 @@ public interface CommitService {
      * @return A List of ancestor commits.
      */
     List<GitCommitDto> findAncestors(UUID gitCommitId, int maxDepth);
+
+
+    /**
+     * Takes a GitCommit id and returns {@link GitCommitDependencyDto} containing all ids of commits depending on.
+     *
+     * @param gitCommitId The id of the commit to search dependencies commits for
+     * @return A {@link GitCommitDependencyDto} containing all ids of commits depending on.
+     */
+    GitCommitDependencyDto findDependencies(UUID gitCommitId);
 
     // TODO: Move this into a internal service.
     RevCommit getRevCommitByGitCommitId(UUID commitId);

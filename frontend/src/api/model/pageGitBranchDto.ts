@@ -14,16 +14,16 @@ import { GitBranchDto } from './gitBranchDto';
 import { SortObject } from './sortObject';
 
 export interface PageGitBranchDto {
-  totalPages?: number;
   totalElements?: number;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
+  numberOfElements?: number;
+  pageable?: PageableObject;
   size?: number;
   content?: Array<GitBranchDto>;
   number?: number;
   sort?: SortObject;
-  pageable?: PageableObject;
-  numberOfElements?: number;
   empty?: boolean;
 }
 

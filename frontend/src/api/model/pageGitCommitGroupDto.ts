@@ -14,16 +14,16 @@ import { SortObject } from './sortObject';
 import { GitCommitGroupDto } from './gitCommitGroupDto';
 
 export interface PageGitCommitGroupDto {
-  totalPages?: number;
   totalElements?: number;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
+  numberOfElements?: number;
+  pageable?: PageableObject;
   size?: number;
   content?: Array<GitCommitGroupDto>;
   number?: number;
   sort?: SortObject;
-  pageable?: PageableObject;
-  numberOfElements?: number;
   empty?: boolean;
 }
 

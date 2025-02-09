@@ -27,6 +27,8 @@ import { Observable } from 'rxjs';
 // @ts-ignore
 import { GitCommitBranchRelationshipDto } from '../model/gitCommitBranchRelationshipDto';
 // @ts-ignore
+import { GitCommitDependencyDto } from '../model/gitCommitDependencyDto';
+// @ts-ignore
 import { GitCommitDiffFileDto } from '../model/gitCommitDiffFileDto';
 // @ts-ignore
 import { GitCommitDto } from '../model/gitCommitDto';
@@ -632,6 +634,93 @@ export class GitCommitControllerService {
     })}/branches`;
     return this.httpClient.request<GitCommitBranchRelationshipDto>('get',
             `${this.configuration.basePath}${localVarPath}`,
+            {
+              context: localVarHttpContext,
+              responseType: <any>responseType_,
+              withCredentials: this.configuration.withCredentials,
+              headers: localVarHeaders,
+              observe: observe,
+              transferCache: localVarTransferCache,
+              reportProgress: reportProgress
+            }
+    );
+  }
+
+  /**
+   * @param commitId
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to
+   *         returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public findCommitDependencies(commitId: string, observe?: 'body', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext,
+    transferCache?: boolean
+  }): Observable<GitCommitDependencyDto>;
+  public findCommitDependencies(commitId: string, observe?: 'response', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext,
+    transferCache?: boolean
+  }): Observable<HttpResponse<GitCommitDependencyDto>>;
+  public findCommitDependencies(commitId: string, observe?: 'events', reportProgress?: boolean, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext,
+    transferCache?: boolean
+  }): Observable<HttpEvent<GitCommitDependencyDto>>;
+  public findCommitDependencies(commitId: string, observe: any = 'body', reportProgress: boolean = false, options?: {
+    httpHeaderAccept?: 'application/json',
+    context?: HttpContext,
+    transferCache?: boolean
+  }): Observable<any> {
+    if (commitId === null || commitId === undefined) {
+      throw new Error('Required parameter commitId was null or undefined when calling findCommitDependencies.');
+    }
+
+    let localVarHeaders = this.defaultHeaders;
+
+    let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+    if (localVarHttpHeaderAcceptSelected === undefined) {
+      // to determine the Accept header
+      const httpHeaderAccepts: string[] = [
+        'application/json'
+      ];
+      localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+    }
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    let localVarHttpContext: HttpContext | undefined = options && options.context;
+    if (localVarHttpContext === undefined) {
+      localVarHttpContext = new HttpContext();
+    }
+
+    let localVarTransferCache: boolean | undefined = options && options.transferCache;
+    if (localVarTransferCache === undefined) {
+      localVarTransferCache = true;
+    }
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/commits/${this.configuration.encodeParam({
+      name: "commitId",
+      value: commitId,
+      in: "path",
+      style: "simple",
+      explode: false,
+      dataType: "string",
+      dataFormat: "uuid"
+    })}/dependencies`;
+    return this.httpClient.request<GitCommitDependencyDto>('get', `${this.configuration.basePath}${localVarPath}`,
             {
               context: localVarHttpContext,
               responseType: <any>responseType_,

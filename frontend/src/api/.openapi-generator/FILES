@@ -9,6 +9,7 @@ index.ts
 model/gitBranchDto.ts
 model/gitBranchTrackingStatusDto.ts
 model/gitCommitBranchRelationshipDto.ts
+model/gitCommitDependencyDto.ts
 model/gitCommitDiffCodeChangeDto.ts
 model/gitCommitDiffFileDto.ts
 model/gitCommitDiffHunkDto.ts

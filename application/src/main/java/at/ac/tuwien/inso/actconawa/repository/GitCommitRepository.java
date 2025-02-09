@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 public interface GitCommitRepository extends JpaRepository<GitCommit, UUID> {
@@ -45,8 +44,16 @@ public interface GitCommitRepository extends JpaRepository<GitCommit, UUID> {
     @Query("select r.parent.id from GitCommitRelationship r where r.child = :commit ")
     List<UUID> findParentCommitIdsOfCommit(GitCommit commit);
 
-    @Query("select c from GitCommit c inner join GitBranch b on c.id = b.headCommit.id")
-    Set<GitCommit> findBranchHeadCommits();
+    @Query(value = """
+            select hdc.commit_id from commit_relationship
+            join commit_diff_file cdf
+                on commit_relationship.id = cdf.commit_relationship_id
+                       and child_id = :commitId
+            join commit_diff_hunk cdh on cdf.id = cdh.diff_file_id
+            join hunk_dependency_commit hdc on cdh.id = hdc.hunk_id
+            """, nativeQuery = true)
+    List<UUID> findCommitDependencyCommitIds(UUID commitId);
+
 
     Optional<GitCommit> findByShaStartsWith(String sha);
 

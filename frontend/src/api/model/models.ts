@@ -1,6 +1,7 @@
 export * from './gitBranchDto';
 export * from './gitBranchTrackingStatusDto';
 export * from './gitCommitBranchRelationshipDto';
+export * from './gitCommitDependencyDto';
 export * from './gitCommitDiffCodeChangeDto';
 export * from './gitCommitDiffFileDto';
 export * from './gitCommitDiffHunkDto';

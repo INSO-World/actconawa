@@ -2,6 +2,7 @@ package at.ac.tuwien.inso.actconawa.service;
 
 import at.ac.tuwien.inso.actconawa.api.CommitService;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitBranchRelationshipDto;
+import at.ac.tuwien.inso.actconawa.dto.GitCommitDependencyDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDiffFileDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitDto;
 import at.ac.tuwien.inso.actconawa.dto.GitCommitGroupDto;
@@ -110,5 +111,15 @@ public class GitCommitService implements CommitService {
                 gitCommitId,
                 maxDepth);
         return gitCommitRepository.findAncestors(gitCommitId, maxDepth).stream().map(gitMapper::mapModelToDto).toList();
+    }
+
+    @Override
+    public GitCommitDependencyDto findDependencies(UUID gitCommitId) {
+        var result = new GitCommitDependencyDto();
+        result.setCommitDependencyIds(
+                gitCommitRepository.findCommitDependencyCommitIds(gitCommitId)
+        );
+        result.setCommitId(gitCommitId);
+        return result;
     }
 }
