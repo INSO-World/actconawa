@@ -36,6 +36,8 @@ export class GitService {
 
   private branchIdsByCommitId = new Map<string, string[]>;
 
+  private dependencyCommitIdsByCommitId = new Map<string, string[]>;
+
   private commitDiffFilesByCommitIds = new CompositeKeyMap<string, GitCommitDiffFileDto[]>;
 
   private trackingStatusByBranchIds = new CompositeKeyMap<string, GitBranchTrackingStatusDto>;
@@ -95,6 +97,15 @@ export class GitService {
   async getCommitById(commitId: string): Promise<GitCommitDto | undefined> {
     return this.commitById.get(commitId) || (await lastValueFrom(this.gitCommitService.findAncestors(commitId,
             0)))[ 0 ];
+  }
+
+  async getCommitDependencyIdsById(commitId: string): Promise<string[]> {
+    if (this.dependencyCommitIdsByCommitId.has(commitId)) {
+      return this.dependencyCommitIdsByCommitId.get(commitId) || [];
+    }
+    const result = await lastValueFrom(this.gitCommitService.findCommitDependencies(commitId));
+    this.dependencyCommitIdsByCommitId.set(commitId, result.commitDependencyIds || [])
+    return result.commitDependencyIds || [];
   }
 
   async getBranches(): Promise<GitBranchDto[]> {

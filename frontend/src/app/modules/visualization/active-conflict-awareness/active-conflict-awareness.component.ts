@@ -151,7 +151,13 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         {
           selector: ".conflicting-branch-exlusive-commits",
           css: {
-            "background-color": "lightcoral",
+            "background-color": "lightsalmon",
+          }
+        },
+        {
+          selector: ".pot-commit-conflict",
+          css: {
+            "background-color": "orangered"
           }
         },
         {
@@ -186,7 +192,11 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     this.cy.on('click', 'node', (e: EventObject) => {
       // Cleanup context specific classes that might change
       this.cy?.nodes().removeClass(
-              "selected-branch-exlusive-commits conflicting-branch-exlusive-commits commit-dependency")
+              "selected-branch-exlusive-commits"
+              + " conflicting-branch-exlusive-commits"
+              + " commit-dependency"
+              + " pot-commit-conflict"
+      )
       if (!e.target._private.selectable) {
         if (this.ec?.isCollapsible(e.target)) {
           this.ec?.collapseEdges(e.target);
@@ -215,6 +225,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         this.cy?.nodes().removeClass([
           "selected-branch-exlusive-commits",
           "conflicting-branch-exlusive-commits",
+          "pot-commit-conflict",
           "commit-dependency"
         ].join(" "))
         if (this.selectedCommit) {
@@ -571,19 +582,59 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         const commit1ExclusiveAncestry = commit1Ancestry.intersection(ancestryDiff).nodes();
         const commit2ExclusiveAncestry = commit2Ancestry.intersection(ancestryDiff).nodes();
 
-        const result1CollapsedIds = this.ec
-                ?.getCollapsedChildren(commit1ExclusiveAncestry)?.nodes();
+        const result1CollapsedIds = commit1ExclusiveAncestry
+                .map(x => this.ec?.getCollapsedChildren(x))
+                .filter(x => x)
+                .flatMap(x => x).pop()?.nodes();
         const result1Ids = result1CollapsedIds ?
                 result1CollapsedIds.union(commit1ExclusiveAncestry) : commit1ExclusiveAncestry;
-        const result2CollapsedIds = this.ec
-                ?.getCollapsedChildren(commit2ExclusiveAncestry)?.nodes();
+        const result2CollapsedIds = commit2ExclusiveAncestry
+                .map(x => this.ec?.getCollapsedChildren(x))
+                .filter(x => x)
+                .flatMap(x => x).pop()?.nodes();
         const result2Ids = result2CollapsedIds ?
                 result2CollapsedIds.union(commit2ExclusiveAncestry) : commit2ExclusiveAncestry;
         commit1ExclusiveAncestry?.nodes().addClass("selected-branch-exlusive-commits");
         commit2ExclusiveAncestry?.nodes().addClass("conflicting-branch-exlusive-commits");
+        this.markConflictingDependency(result1Ids, result2Ids);
 
       }
     }
   }
 
+  private async markConflictingDependency(
+          result1Ids: cytoscape.NodeCollection,
+          result2Ids: cytoscape.NodeCollection
+  ) {
+    const conflictingCommitIds: cytoscape.CollectionReturnValue[] = [];
+    for (const commit1 of result1Ids) {
+      for (const commit2 of result2Ids) {
+        if (this.ec?.isExpandable(commit1) ||
+                this.ec?.isCollapsible(commit1) ||
+                this.ec?.isExpandable(commit2) ||
+                this.ec?.isCollapsible(commit2)
+        ) {
+          continue;
+        }
+        const depsc1 = await this.gitService.getCommitDependencyIdsById(commit1.id());
+        const depsc2 = await this.gitService.getCommitDependencyIdsById(commit2.id());
+
+        const depsc2Set = new Set(depsc2);
+
+        if (depsc1.some(id => depsc2Set.has(id))) {
+          const parent1 = this.ec?.getParent(commit1.id());
+          if (parent1 && this.ec?.isExpandable(parent1)) {
+            parent1?.addClass("pot-commit-conflict")
+          }
+          const parent2 = this.ec?.getParent(commit2.id());
+          if (parent2 && this.ec?.isExpandable(parent2)) {
+            parent2?.addClass("pot-commit-conflict")
+          }
+
+          commit1.addClass("pot-commit-conflict");
+          commit2.addClass("pot-commit-conflict");
+        }
+      }
+    }
+  }
 }

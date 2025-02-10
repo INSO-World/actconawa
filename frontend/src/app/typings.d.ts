@@ -55,6 +55,7 @@ declare namespace cytoscape {
     expandAllEdges: () => void;
 
     getCollapsedChildren: (ele: cytoscape.SingularElement) => cytoscape.Collection;
+    getParent: (id: string) => cytoscape.SingularElement;
   }
 
 }
