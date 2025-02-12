@@ -5,6 +5,7 @@ import at.ac.tuwien.inso.actconawa.index.language.dto.DeclarationInfo;
 import at.ac.tuwien.inso.actconawa.index.language.dto.Resolution;
 import at.ac.tuwien.inso.actconawa.index.language.java.dto.DeclarationType;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.IntegerRange;
 
 import java.util.ArrayList;
@@ -56,6 +57,11 @@ public class DeclarationProcessUtils {
                         IntegerRange.of(ctx.getStart().getLine(), ctx.getStop().getLine()), Resolution.NORMAL);
             }
             return result;
+        } else if (tree instanceof TerminalNode ctx) {
+            return new DeclarationInfo(DeclarationType.UNKNOWN_TYPE,
+                    ctx.getText(),
+                    IntegerRange.of(-1, -1),
+                    Resolution.NORMAL);
         }
         throw new IllegalArgumentException("Unexpected tree");
     }

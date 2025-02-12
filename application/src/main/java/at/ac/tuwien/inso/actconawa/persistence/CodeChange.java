@@ -28,7 +28,7 @@ public class CodeChange {
     @Column
     private String type;
 
-    @Column(name = "identifier", nullable = false)
+    @Column(name = "identifier", nullable = false, columnDefinition = "TEXT")
     private String identifier;
 
     @Column(name = "src_line_start", nullable = false)
