@@ -13,6 +13,9 @@ import {
   ActiveConflictAwarenessDiffComponent
 } from "./active-conflict-awareness-diff/active-conflict-awareness-diff.component";
 import { ExtendedGitCommitDto } from "../../../utils/ExtendedGitCommitDto";
+import {
+  ActiveConflictAwarenessHelpComponent
+} from "./active-conflict-awareness-help/active-conflict-awareness-help.component";
 import ExpandCollapseAPI = cytoscape.ExpandCollapseAPI;
 
 @Component({
@@ -374,6 +377,13 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   openDiffDialog() {
     this.dialog.open(ActiveConflictAwarenessDiffComponent, {
       data: this.selectedCommit,
+      hasBackdrop: true,
+      panelClass: "dialog-100vw"
+    });
+  }
+
+  openHelpDialog() {
+    this.dialog.open(ActiveConflictAwarenessHelpComponent, {
       hasBackdrop: true,
       panelClass: "dialog-100vw"
     });

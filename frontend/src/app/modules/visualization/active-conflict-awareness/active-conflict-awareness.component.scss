@@ -27,6 +27,13 @@
     width: auto;
     flex-direction: column;
   }
+
+  .commit-graph-interaction-btns {
+    display: flex;
+    position: absolute;
+    right: 35%;
+    z-index: 9999;
+  }
 }
 
 .active-conflict-awareness-flex-container {

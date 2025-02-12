@@ -1,15 +1,11 @@
 import { Component } from '@angular/core';
-import { MatCard } from "@angular/material/card";
-import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader } from "@angular/material/expansion";
+import { MatDialogContent } from "@angular/material/dialog";
 
 @Component({
   selector: 'app-active-conflict-awareness-help',
   standalone: true,
   imports: [
-    MatCard,
-    MatAccordion,
-    MatExpansionPanel,
-    MatExpansionPanelHeader
+    MatDialogContent
   ],
   templateUrl: './active-conflict-awareness-help.component.html',
   styleUrl: './active-conflict-awareness-help.component.scss'
