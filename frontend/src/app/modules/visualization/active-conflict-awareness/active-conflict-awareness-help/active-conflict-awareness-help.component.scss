@@ -1,0 +1,216 @@
+
+.commit-graph-legend-card {
+  width: 100%;
+  display: block;
+  z-index: 9999;
+
+  .commit-node {
+    width: 1em;
+    height: 1em;
+    background: grey;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5em;
+
+    &.pot-commit-conflict {
+      background-color: orangered
+    }
+
+    &.conflicting-branch-exlusive-commits {
+      background-color: lightsalmon;
+    }
+
+    &.selected-branch-exlusive-commits {
+      background-color: lightgreen;
+    }
+  }
+
+  .selected-node {
+    width: 1em;
+    height: 1em;
+    background: blue;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5em;
+    position: relative;
+
+    span {
+      width: 0.7em;
+      height: 0.7em;
+      background: white;
+      border-radius: 50%;
+      display: inline-block;
+      position: absolute;
+      left: 0.16em;
+      top: 0.13em;
+    }
+  }
+
+  .dependency {
+    width: 1em;
+    height: 1em;
+    background: black;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5em;
+    position: relative;
+
+    span {
+      width: 0.7em;
+      height: 0.7em;
+      background: white;
+      border-radius: 50%;
+      display: inline-block;
+      position: absolute;
+      left: 0.16em;
+      top: 0.13em;
+    }
+  }
+
+  .collapsed-node {
+    background: dodgerblue;
+    height: 1em;
+    width: 1em;
+    text-align: center;
+    transform: rotate(45deg);
+    display: inline-block;
+    margin-right: 0.5em;
+    color: white;
+
+    span {
+      display: table-cell;
+      transform: rotate(-45deg);
+      vertical-align: middle;
+      position: absolute;
+      left: 0.2em;
+      top: -0.2em;
+    }
+  }
+
+  .branch-info {
+    span {
+      margin-right: 0.5em;
+    }
+
+    .ahead-tag {
+      font-size: 0.75em;
+      margin-left: -0.2em;
+      color: white;
+      background-color: darkseagreen;
+      border: darkseagreen 0.1em solid;
+      padding: 0.1em;
+      border-top-right-radius: 0.65em;
+      border-bottom-right-radius: 0.65em;
+
+      .bx-plus-circle {
+        font-size: 0.55em;
+        margin-left: -0.2em;
+      }
+    }
+
+    .behind-tag {
+      font-size: 0.75em;
+      color: white;
+      background-color: cornflowerblue;
+      border: cornflowerblue 0.1em solid;
+      padding: 0.1em;
+      border-top-left-radius: 0.65em;
+      border-bottom-left-radius: 0.65em;
+
+      .bx-minus-circle {
+        font-size: 0.55em;
+        margin-left: -0.2em;
+      }
+    }
+
+    .conflicts-tag {
+      font-size: 0.75em;
+      background-color: orange;
+      color: white;
+      border: orange 0.1em solid;
+      border-radius: 0.65em;
+      padding: 0.1em;
+
+      .bxs-zap {
+        font-size: 0.55em;
+        margin-left: -0.45em;
+      }
+    }
+
+    .behind-ahead-desc {
+      padding: 0.1em;
+    }
+
+    .conflicts-desc {
+      padding: 0.1em;
+    }
+
+    .count-label {
+      font-size: 0.75em;
+      color: white;
+      border-radius: 0.65em;
+      vertical-align: center;
+      padding: 0.1em;
+
+      &.unknown-merge-base {
+        background-color: #8a0000;
+        border: #8a0000 0.1em solid;
+
+        .bx-help-circle {
+          font-size: 0.55em;
+          margin-left: -0.2em;
+        }
+      }
+
+      &.conflicts {
+        background-color: #f86e6e;
+        border: #f86e6e 0.1em solid;
+
+        .bx-x-circle {
+          font-size: 0.55em;
+          margin-left: -0.2em;
+        }
+      }
+
+      &.mergeable {
+        background-color: #afe1af;
+        border: #afe1af 0.1em solid;
+
+        .bx-check-circle {
+          font-size: 0.55em;
+          margin-left: -0.2em;
+        }
+      }
+    }
+
+  }
+
+  .branch-label {
+    border-radius: 0.2em;
+    font-size: 0.75em;
+    padding: 0.2em;
+    border-color: grey;
+    background-color: lightskyblue;
+
+    &.unknown {
+      background-color: #8a0000;
+    }
+
+    &.conflict {
+      background-color: #f86e6e;
+    }
+
+    &.mergeable-two-way {
+      background-color: #afe1af;
+    }
+
+    &.mergeable-three-way {
+      background-color: #50c878;
+    }
+
+    &.merged {
+      background-color: #f3f3f3;
+    }
+  }
+
+}

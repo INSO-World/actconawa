@@ -59,6 +59,7 @@
           </app-active-conflict-awareness-metadata>
         </mat-expansion-panel>
       </ng-container>
+      <app-active-conflict-awareness-help></app-active-conflict-awareness-help>
     </mat-accordion>
     <mat-card class="action-card">
       <mat-card-actions>
@@ -71,6 +72,12 @@
         <button (click)="collapseAll()" mat-button>
           COLLAPSE GRAPH NODES
           <mat-icon>close_fullscreen</mat-icon>
+        </button>
+      </mat-card-actions>
+      <mat-card-actions>
+        <button (click)="expandAll()" mat-button>
+          EXPAND GRAPH NODES
+          <mat-icon>open_in_full</mat-icon>
         </button>
       </mat-card-actions>
     </mat-card>

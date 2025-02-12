@@ -165,7 +165,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           css: {
             "border-color": "blue",
             "border-width": "7px",
-            "shape": "star",
           }
         },
         {
@@ -443,6 +442,15 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     this.ec?.collapseAll();
     this.ec?.collapseAllEdges();
     this.mainCollapse(this.mainCollapseSelected!!.id())
+  }
+
+  protected expandAll() {
+    this.ec?.expandAll();
+    this.ec?.expandAllEdges();
+    this.cy?.$('#' + this.mainCollapseId).children().forEach(node => {
+      node.move({parent: null});
+    });
+    this.cy?.$('#' + this.mainCollapseId).remove();
   }
 
   private hidePopper() {

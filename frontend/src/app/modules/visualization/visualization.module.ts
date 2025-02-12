@@ -39,6 +39,9 @@ import { MatSelect } from "@angular/material/select";
 import {
   ActiveConflictAwarenessConflictsComponent
 } from "./active-conflict-awareness/active-conflict-awareness-conflicts/active-conflict-awareness-conflicts.component";
+import {
+  ActiveConflictAwarenessHelpComponent
+} from "./active-conflict-awareness/active-conflict-awareness-help/active-conflict-awareness-help.component";
 
 @NgModule({
   declarations: [
@@ -71,6 +74,7 @@ import {
     MatOption,
     MatSelect,
     ActiveConflictAwarenessConflictsComponent,
+    ActiveConflictAwarenessHelpComponent,
   ]
 })
 export class VisualizationModule {
