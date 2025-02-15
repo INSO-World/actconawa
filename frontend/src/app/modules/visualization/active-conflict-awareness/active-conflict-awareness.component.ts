@@ -427,6 +427,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     if (selectOnGraph) {
       this.cy?.$('#' + commit.id).select();
     }
+
+    // Load parents. this is just used to display sha for the diff button.
     this.parentCommits = new Map<string, GitCommitDto>();
     commit.parentIds
             ?.map(parentId => this.gitService.getCommitById(parentId))
@@ -435,13 +437,13 @@ export class ActiveConflictAwarenessComponent implements OnInit {
                 this.parentCommits.set(parent.id || "", parent)
               }
             }))
+
     this.gitService.getBranchesByCommitId(commit.id).then(branches => {
       return this.selectedCommitsBranches = branches.sort();
     })
-
     this.selectedBranchHeads = this.branchHeadMap.get(commit.id) || [];
 
-    this.loadDependencies(commit).then(() => {
+    this.loadAndMarkDependencies(commit).then(() => {
     });
 
     if (this.selectedBranchHeads.length > 0) {
@@ -518,23 +520,13 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     });
   }
 
-  private async loadDependencies(commit: GitCommitDto) {
-    this.cy?.$("node").removeClass("commit-dependency");
-    for (const parentId of commit.parentIds || "") {
-      const files =
-              await this.gitService.getModifiedFilesByCommitIds(commit.id || "", parentId) || [];
-      for (const file of files) {
-        const hunks = await this.gitService.getHunksByDiffFileId(file.id || "") || [];
-        for (const hunk of hunks) {
-          const dependencyCommitIds = hunk.commitDependencyIds || [];
-          for (const dep of dependencyCommitIds) {
-            if (dep && dep.length > 0) {
-              this.cy?.$('#' + dep).addClass("commit-dependency");
-              const commit = await this.gitService.getCommitById(dep);
-              this.cy?.$('#' + commit?.groupId).addClass("commit-dependency");
-            }
-          }
-        }
+  private async loadAndMarkDependencies(commit: GitCommitDto) {
+    this.cy?.nodes().removeClass("commit-dependency");
+    for (const dep of await this.gitService.getCommitDependencyIdsById(commit.id || "")) {
+      if (dep && dep.length > 0) {
+        this.cy?.$('#' + dep).addClass("commit-dependency");
+        const commit = await this.gitService.getCommitById(dep);
+        this.cy?.$('#' + commit?.groupId).addClass("commit-dependency");
       }
     }
   }
