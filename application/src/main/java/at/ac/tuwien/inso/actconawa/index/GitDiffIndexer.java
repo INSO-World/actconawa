@@ -91,7 +91,6 @@ public class GitDiffIndexer implements Indexer {
             }
             commitDiffFiles.addAll(processDiffData(cr));
         });
-        // TODO: Empty commits?
 
         gitCommitDiffLineChangeRepository.saveAll(
                 commitDiffFiles.stream()

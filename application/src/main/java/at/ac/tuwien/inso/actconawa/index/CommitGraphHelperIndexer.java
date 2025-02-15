@@ -11,6 +11,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -44,7 +45,6 @@ public class CommitGraphHelperIndexer implements Indexer {
         var rootCommits = gitCommitRepository.findCommitsWithoutParents();
         if (rootCommits.size() != 1) {
             LOG.error("Multi-Root Commit and Empty Repositories are not supported yet");
-            // TODO Support multiple root commits (detached ones?)? Check if there are common cases.
         }
         collectCommitGroups(rootCommits.get(0));
 
@@ -62,6 +62,7 @@ public class CommitGraphHelperIndexer implements Indexer {
         Stack<Pair<GitCommit, GitCommitGroup>> stack = new Stack<>();
         stack.add(Pair.of(rootCommit, new GitCommitGroup()));
         Set<UUID> visited = new HashSet<>();
+        var groupMap = new HashMap<GitCommitGroup, HashSet<GitCommit>>();
 
         var commits = gitCommitRepository.findAll();
         LOG.debug("Indexing grouping of {} commits", commits.size());
@@ -76,7 +77,7 @@ public class CommitGraphHelperIndexer implements Indexer {
             }
             visited.add(currentCommit.getId());
 
-            LOG.debug("Indexing commit {}", currentCommit.getId());
+            LOG.debug("Grouping commits {}", currentCommit.getId());
 
             var childCommitsIds = gitCommitRepository.findChildCommitIdsOfCommit(currentCommit);
             var parentCommitsIds = gitCommitRepository.findParentCommitIdsOfCommit(currentCommit);
@@ -86,10 +87,10 @@ public class CommitGraphHelperIndexer implements Indexer {
             ) {
                 childCommitsIds.forEach(x -> stack.push(Pair.of(commitsMap.get(x), new GitCommitGroup())));
             } else {
-                if (group.getId() == null) {
-                    group = gitCommitGroupRepository.save(group);
+                if (!groupMap.containsKey(group)) {
+                    groupMap.put(group, new HashSet<>());
                 }
-                currentCommit.setGroup(group);
+                groupMap.get(group).add(currentCommit);
                 if (childCommitsIds.size() > 1) {
                     childCommitsIds.forEach(x -> stack.push(Pair.of(commitsMap.get(x), new GitCommitGroup())));
                 } else {
@@ -99,6 +100,13 @@ public class CommitGraphHelperIndexer implements Indexer {
                 }
             }
         }
+
+        groupMap.forEach((group, commitSet) -> {
+            if (commitSet.size() > 1) {
+                var persistedGroup = gitCommitGroupRepository.save(group);
+                commitSet.forEach(commit -> commit.setGroup(persistedGroup));
+            }
+        });
     }
 
 
