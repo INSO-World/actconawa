@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { GitService } from "../../../services/git.service";
 import { GitBranchDto } from "../../../../api";
 import { SettingService } from "../../../services/setting.service";
@@ -9,7 +9,7 @@ import { SettingService } from "../../../services/setting.service";
   templateUrl: './repository-configuration.component.html',
   styleUrls: ['./repository-configuration.component.scss']
 })
-export class RepositoryConfigurationComponent {
+export class RepositoryConfigurationComponent implements OnInit {
 
   protected gitService = inject(GitService)
 

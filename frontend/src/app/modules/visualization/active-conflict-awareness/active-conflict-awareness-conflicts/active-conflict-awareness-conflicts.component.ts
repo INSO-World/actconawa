@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
 import { MatTab, MatTabGroup } from "@angular/material/tabs";
 import { AsyncPipe, JsonPipe, NgForOf, NgIf, SlicePipe } from "@angular/common";
 import { GitService } from "../../../../services/git.service";
@@ -28,7 +28,7 @@ import { MatIcon } from "@angular/material/icon";
   templateUrl: './active-conflict-awareness-conflicts.component.html',
   styleUrl: './active-conflict-awareness-conflicts.component.scss'
 })
-export class ActiveConflictAwarenessConflictsComponent {
+export class ActiveConflictAwarenessConflictsComponent implements OnInit, OnChanges {
   @Input()
   selectedBranches: GitBranchDto[] = [];
 
@@ -42,10 +42,7 @@ export class ActiveConflictAwarenessConflictsComponent {
   }
 
   async ngOnInit(): Promise<void> {
-
-    const branches = (await this.gitService.getBranches())
-            .map(b => this.branchIdToBranchMap.set(b.id || "", b));
-
+    (await this.gitService.getBranches()).forEach(b => this.branchIdToBranchMap.set(b.id || "", b));
     await this.refresh()
   }
 

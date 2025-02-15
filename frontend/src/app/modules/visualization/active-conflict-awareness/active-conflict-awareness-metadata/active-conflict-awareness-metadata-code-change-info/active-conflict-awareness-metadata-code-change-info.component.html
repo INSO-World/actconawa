@@ -42,7 +42,7 @@
     <div *ngFor="let child of codechanges?.childrenIds">
       {{child}}
     </div>
-    <div *ngIf="!codechanges?.childrenIds || codechanges?.childrenIds?.length == 0">
+    <div *ngIf="!codechanges?.childrenIds || codechanges?.childrenIds?.length === 0">
       n/a
     </div>
   </div>

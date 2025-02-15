@@ -15,7 +15,7 @@
       <div><strong>File Database ID</strong></div>
       <div>{{selectedFile.id}}</div>
     </div>
-    <div *ngIf="selectedFile.oldFilePath != selectedFile.newFilePath && selectedFile.oldFilePath"
+    <div *ngIf="selectedFile.oldFilePath !== selectedFile.newFilePath && selectedFile.oldFilePath"
          class="metadata-info-file-row">
       <div><strong>Old File Path</strong></div>
       <div>{{selectedFile.oldFilePath}}</div>
@@ -36,7 +36,7 @@
         </div>
       </mat-tab>
       <mat-tab label="Code Changes"
-               [disabled]="!changedCodeByFileId.get(selectedFile.id + '') || changedCodeByFileId.get(selectedFile.id + '')?.length == 0">
+               [disabled]="!changedCodeByFileId.get(selectedFile.id + '') || changedCodeByFileId.get(selectedFile.id + '')?.length === 0">
         <div class="tab-segment" *ngFor="let codechanges of changedCodeByFileId.get(selectedFile.id + '')">
           <app-active-conflict-awareness-metadata-code-change-info [codechanges]="codechanges">
           </app-active-conflict-awareness-metadata-code-change-info>
@@ -46,6 +46,6 @@
   </ng-container>
 </div>
 <div *ngIf="!commit
-|| this.diffFilesByParentCommitId.get(selectedParentCommitId + '')?.length || 0 == 0">
+|| this.diffFilesByParentCommitId.get(selectedParentCommitId + '')?.length || 0 === 0">
   No changes
 </div>

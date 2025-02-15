@@ -5,7 +5,7 @@
     </div>
   </ng-container>
   <ng-container *ngFor="let t of trackingStatus">
-    <div *ngIf="t.mergeStatus === 'CONFLICTS' || t.mergeStatus == 'UNKNOWN_MERGE_BASE'">
+    <div *ngIf="t.mergeStatus === 'CONFLICTS' || t.mergeStatus === 'UNKNOWN_MERGE_BASE'">
 
       <mat-list>
         <div mat-subheader>
@@ -25,6 +25,6 @@
 
   </ng-container>
 </div>
-<div *ngIf="!selectedBranches || selectedBranches.length == 0">
+<div *ngIf="!selectedBranches || selectedBranches.length === 0">
   Please select a commit that is branch head from the visualization!
 </div>

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Inject, inject, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, inject, Input } from '@angular/core';
 import { GitService } from "../../../../services/git.service";
 import { GitCommitDto, GitPatchDto } from "../../../../../api";
 import { MAT_DIALOG_DATA } from "@angular/material/dialog";
@@ -10,7 +10,7 @@ import { Diff2HtmlUI } from "diff2html/lib-esm/ui/js/diff2html-ui";
   templateUrl: './active-conflict-awareness-diff.component.html',
   styleUrls: ['./active-conflict-awareness-diff.component.scss']
 })
-export class ActiveConflictAwarenessDiffComponent implements OnInit, AfterViewInit {
+export class ActiveConflictAwarenessDiffComponent implements AfterViewInit {
 
   protected gitService = inject(GitService)
 
@@ -28,9 +28,6 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, AfterViewIn
     this.commit = data;
   }
 
-  ngOnInit(): void {
-  }
-
   async ngAfterViewInit() {
     this.refresh();
   }
@@ -40,7 +37,7 @@ export class ActiveConflictAwarenessDiffComponent implements OnInit, AfterViewIn
     for (const parentId of this.commit?.parentIds || []) {
       const parentCommit = await this.gitService.getCommitById(parentId);
       this.shaByParentCommitId.set(parentId, parentCommit?.sha || "");
-      this.gitService.getModifiedFilesByCommitIds(this.commit.id || "", parentId).then(diffs => {
+      this.gitService.getModifiedFilesByCommitIds(this.commit.id || "", parentId).then(() => {
         this.gitService.getPatch(this.commit.id || "", parentId, this.pathContextLines).then(patch => {
           this.patchByParentCommitId.set(parentId, patch);
           const patchViewer = this.el.nativeElement.querySelector('#patch-viewer-' + parentId)

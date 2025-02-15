@@ -5,7 +5,7 @@
     <select (change)="onSelectReferenceBranch($event)" matNativeControl>
       <option value=""></option>
       @for (branch of branches; track branch) {
-      <option [value]="branch.name" [selected]="settingService.getReferenceBranchName() == branch.name">{{branch.name}}
+      <option [value]="branch.name" [selected]="settingService.getReferenceBranchName() === branch.name">{{branch.name}}
       <option>
       }
     </select>

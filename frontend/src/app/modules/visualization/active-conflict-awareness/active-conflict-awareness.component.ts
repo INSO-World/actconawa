@@ -238,11 +238,11 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     })
 
     // Add branch labels/tags to graph with popper
-    for (let branchHeadAtCommit of branchesByHeadCommitId.values()) {
+    for (const branchHeadAtCommit of branchesByHeadCommitId.values()) {
       const branchHead = this.cy.$('#' + branchHeadAtCommit[ 0 ].headCommitId);
-      let branchHeadPopper = branchHead.popper({
+      const branchHeadPopper = branchHead.popper({
         content: () => {
-          let div = document.createElement('div');
+          const div = document.createElement('div');
 
           // Taking first one is sufficient
           const trackingStatus =
@@ -266,7 +266,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
             }
           }
-          for (let branch of branchHeadAtCommit) {
+          for (const branch of branchHeadAtCommit) {
             branchTags
                     += `<div class="popper-branch-tag ${trackingStatus?.mergeStatus}">${branch.name}${statusIcon}</div>`
           }
@@ -337,7 +337,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           placement: 'bottom',
         },
       });
-      this.cy.on('pan zoom resize drag', (e: EventObject) => {
+      this.cy.on('pan zoom resize drag', () => {
         (branchHeadPopper as any).update(this.cy?.zoom());
       });
       branchHead.on('position', (branchHeadPopper as any).update());
@@ -349,8 +349,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       const selectedMainCollapse = 10 < predecessors.size()
               ? (predecessors as any)[ 10 ]
               : (predecessors as any)[ predecessors.size() - 1 ]
-      this.mainCollapseSelected = selectedMainCollapse;
-      this.mainCollapse(this.mainCollapseSelected!!.id())
+      if (selectedMainCollapse) {
+        this.mainCollapseSelected = selectedMainCollapse;
+        this.mainCollapse(selectedMainCollapse.id());
+      }
     }
 
   }
@@ -455,7 +457,9 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   protected collapseAll() {
     this.ec?.collapseAll();
     this.ec?.collapseAllEdges();
-    this.mainCollapse(this.mainCollapseSelected!!.id())
+    if (this.mainCollapseSelected) {
+      this.mainCollapse(this.mainCollapseSelected.id())
+    }
   }
 
   protected expandAll() {
@@ -486,10 +490,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
               }
             }
     );
-
-    const unmergedBranchIds = result
-            .filter(x => x.mergeStatus && x.mergeStatus != "MERGED")
-            .map(x => x.branchBId);
 
     const trackingAvailableBranchIds = result.map(x => x.branchBId);
 
@@ -538,10 +538,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     } else if ((existingCollapsedNode?.length || 0) == 0) {
       this.cy?.add({data: {id: this.mainCollapseId}, selectable: false, selected: false} as NodeDefinition)
               .on('expandcollapse.beforecollapse', () => {
-                this.hidePopper()
+                this.hidePopper();
               })
               .on('expandcollapse.afterexpand', () => {
-                this.showHiddenPopper()
+                this.showHiddenPopper();
               });
     } else {
       return;
@@ -554,7 +554,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         node.move({parent: this.mainCollapseId});
         const popper = this.popperDivsByNodeId.get(node.id());
         if (popper) {
-          this.popperDivsInMainCollapse.push(popper)
+          this.popperDivsInMainCollapse.push(popper);
         }
       }
       return true;
@@ -619,7 +619,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
           result1Ids: cytoscape.NodeCollection,
           result2Ids: cytoscape.NodeCollection
   ) {
-    const conflictingCommitIds: cytoscape.CollectionReturnValue[] = [];
     for (const commit1 of result1Ids) {
       for (const commit2 of result2Ids) {
         if (this.ec?.isExpandable(commit1) ||
