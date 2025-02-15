@@ -42,9 +42,6 @@ public class GitCommit implements Serializable {
     @Column(nullable = false)
     private LocalDateTime commitDate;
 
-    @Column(name = "max_distance_from_root")
-    private Integer maxDistanceFromRoot;
-
     @OneToMany(mappedBy = "child", cascade = CascadeType.PERSIST)
     private List<GitCommitRelationship> parents;
 
@@ -115,14 +112,6 @@ public class GitCommit implements Serializable {
 
     public void setCommitDate(LocalDateTime commitDate) {
         this.commitDate = commitDate;
-    }
-
-    public Integer getMaxDistanceFromRoot() {
-        return maxDistanceFromRoot;
-    }
-
-    public void setMaxDistanceFromRoot(Integer distanceFromRoot) {
-        this.maxDistanceFromRoot = distanceFromRoot;
     }
 
     public List<GitCommitRelationship> getParents() {

@@ -45,8 +45,6 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
 
     private final Repository repository;
 
-    ;
-
     public GitBranchTrackingStatusIndexer(
             GitBranchRepository gitBranchRepository,
             GitCommitRepository gitCommitRepository,
