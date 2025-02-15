@@ -191,6 +191,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
     this.ec.collapseAll();
     this.ec.collapseAllEdges();
     this.loading = false;
+
+    // Click handling
     this.cy.on('click', 'node', (e: EventObject) => {
       // Cleanup context specific classes that might change
       this.cy?.nodes().removeClass(
@@ -226,19 +228,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       const commit = e.target._private.data as GitCommitDto;
       this.selectCommit(commit, false);
     })
-    const branchesByHeadCommitId = new Map<string, GitBranchDto[]>;
-    const branches = await this.gitService.getBranches();
-    branches.forEach(b => {
-      const existing = branchesByHeadCommitId.get(b.headCommitId || "");
-      if (existing) {
-        existing.push(b);
-      } else {
-        branchesByHeadCommitId.set(b.headCommitId || "", [b]);
-      }
-    })
+
 
     // Add branch labels/tags to graph with popper
-    for (const branchHeadAtCommit of branchesByHeadCommitId.values()) {
+    for (const branchHeadAtCommit of this.branchHeadMap.values()) {
       const branchHead = this.cy.$('#' + branchHeadAtCommit[ 0 ].headCommitId);
       const branchHeadPopper = branchHead.popper({
         content: () => {
@@ -342,6 +335,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       });
       branchHead.on('position', (branchHeadPopper as any).update());
     }
+
+    // Handle main-collapse
     if (!this.mainCollapseSelected) {
       const predecessors = this.cy.$('#'
               + (await this.gitService.getBranchById(this.referenceBranchId))?.headCommitId).predecessors().nodes();
