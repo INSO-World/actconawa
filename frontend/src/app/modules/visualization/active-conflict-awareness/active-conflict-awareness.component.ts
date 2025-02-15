@@ -104,16 +104,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       }))
     }
 
-    // preselect commit if provided in the route.
-    const presetCommitId = this.route.snapshot.queryParamMap.get('commitId');
-    if (presetCommitId) {
-      this.gitService.getCommitById(presetCommitId).then(presetCommit => {
-        if (presetCommit) {
-          this.selectCommit(presetCommit, true);
-        }
-      });
-    }
-
     // initialize graph
     cytoscape.use(cytoscapeDagre);
     cytoscape.use(cytoscapePopper(this.popperFactory));
@@ -348,6 +338,16 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         this.mainCollapseSelected = selectedMainCollapse;
         this.mainCollapse(selectedMainCollapse.id());
       }
+    }
+
+    // preselect commit if provided in the route. should be the last thing of initialization.
+    const presetCommitId = this.route.snapshot.queryParamMap.get('commitId');
+    if (presetCommitId) {
+      this.gitService.getCommitById(presetCommitId).then(presetCommit => {
+        if (presetCommit) {
+          this.selectCommit(presetCommit, true);
+        }
+      });
     }
 
   }
