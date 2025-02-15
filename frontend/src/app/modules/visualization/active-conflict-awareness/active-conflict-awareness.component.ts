@@ -195,7 +195,10 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         if (this.ec?.isCollapsible(e.target)) {
           this.ec?.collapseEdges(e.target);
           this.ec?.collapse(e.target);
+
+          console.log(e.target)
         } else {
+          console.log(e.target)
           // special handling needed for main collapse as maaany nodes might be collapsed into it.
           // moving the expanded main collapse with all the nodes inside is performing quite bad.
           // therefore expanding it, means removing the collapse.
@@ -592,41 +595,42 @@ export class ActiveConflictAwarenessComponent implements OnInit {
         const commit1ExclusiveAncestry = commit1Ancestry.intersection(ancestryDiff).nodes();
         const commit2ExclusiveAncestry = commit2Ancestry.intersection(ancestryDiff).nodes();
 
-        const result1CollapsedIds = commit1ExclusiveAncestry
-                .map(x => this.ec?.getCollapsedChildren(x))
-                .filter(x => x)
-                .flatMap(x => x).pop()?.nodes();
-        const result1Ids = result1CollapsedIds ?
-                result1CollapsedIds.union(commit1ExclusiveAncestry) : commit1ExclusiveAncestry;
-        const result2CollapsedIds = commit2ExclusiveAncestry
-                .map(x => this.ec?.getCollapsedChildren(x))
-                .filter(x => x)
-                .flatMap(x => x).pop()?.nodes();
-        const result2Ids = result2CollapsedIds ?
-                result2CollapsedIds.union(commit2ExclusiveAncestry) : commit2ExclusiveAncestry;
         commit1ExclusiveAncestry?.nodes().addClass("selected-branch-exlusive-commits");
         commit2ExclusiveAncestry?.nodes().addClass("conflicting-branch-exlusive-commits");
-        this.markConflictingDependency(result1Ids, result2Ids);
+
+        this.markConflictingDependency(commit1ExclusiveAncestry, commit2ExclusiveAncestry);
 
       }
     }
   }
 
   private async markConflictingDependency(
-          result1Ids: cytoscape.NodeCollection,
-          result2Ids: cytoscape.NodeCollection
+          nodesBranchOne: cytoscape.NodeCollection,
+          nodesBranchTwo: cytoscape.NodeCollection
   ) {
-    for (const commit1 of result1Ids) {
-      for (const commit2 of result2Ids) {
-        if (this.ec?.isExpandable(commit1) ||
-                this.ec?.isCollapsible(commit1) ||
-                this.ec?.isExpandable(commit2) ||
-                this.ec?.isCollapsible(commit2)
-        ) {
+    for (const commit1 of nodesBranchOne) {
+      for (const commit2 of nodesBranchTwo) {
+        let depsc1: string[] = [];
+        let depsc2: string[] = [];
+        if (this.ec?.isExpandable(commit1)) {
+          for (const child of this.ec.getCollapsedChildren(commit1).nodes()) {
+            (await this.gitService.getCommitDependencyIdsById(child.id())).forEach(x => depsc1.push(x));
+          }
+        } else if (this.ec?.isCollapsible(commit1)) {
           continue;
+        } else {
+          depsc1 = await this.gitService.getCommitDependencyIdsById(commit1.id());
         }
-        const depsc1 = await this.gitService.getCommitDependencyIdsById(commit1.id());
-        const depsc2 = await this.gitService.getCommitDependencyIdsById(commit2.id());
+
+        if (this.ec?.isExpandable(commit2)) {
+          for (const child of this.ec.getCollapsedChildren(commit2).nodes()) {
+            (await this.gitService.getCommitDependencyIdsById(child.id())).forEach(x => depsc2.push(x));
+          }
+        } else if (this.ec?.isCollapsible(commit2)) {
+          continue;
+        } else {
+          depsc2 = await this.gitService.getCommitDependencyIdsById(commit2.id());
+        }
 
         const depsc2Set = new Set(depsc2);
 
