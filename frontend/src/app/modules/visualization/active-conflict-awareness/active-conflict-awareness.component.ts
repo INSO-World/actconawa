@@ -212,7 +212,6 @@ export class ActiveConflictAwarenessComponent implements OnInit {
             this.ec?.expand(e.target);
             (e.target as cytoscape.NodeSingular).children().forEach(node => {
               node.move({parent: null});
-              // TODO something with popper
             });
             (e.target as cytoscape.NodeSingular).remove();
           } else {
@@ -220,20 +219,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
             this.ec?.expand(e.target);
           }
         }
-        // Workaround to several renderingbugs. Even if classes were set correctly in collapsed nodes,
-        // they were not rendered correctly (only on certain zoom levels).
-        // Therefore the logic to set the classes was removed and a shortcut to simply reselect the node
-        // was added. When no node is selected, anyway there is no context to be shown.
-        this.cy?.nodes().removeClass([
-          "selected-branch-exlusive-commits",
-          "conflicting-branch-exlusive-commits",
-          "pot-commit-conflict",
-          "commit-dependency"
-        ].join(" "))
-        if (this.selectedCommit) {
-          this.selectCommit(this.selectedCommit, false)
-        }
-
+        this.postExpandReselectWorkaround();
         return;
       }
       this.selectedCommitsBranches = undefined
@@ -369,6 +355,22 @@ export class ActiveConflictAwarenessComponent implements OnInit {
 
   }
 
+  postExpandReselectWorkaround() {
+    // Workaround to several renderingbugs. Even if classes were set correctly in collapsed nodes,
+    // they were not rendered correctly (only on certain zoom levels).
+    // Therefore the logic to set the classes was removed and a shortcut to simply reselect the node
+    // was added. When no node is selected, anyway there is no context to be shown.
+    this.cy?.nodes().removeClass([
+      "selected-branch-exlusive-commits",
+      "conflicting-branch-exlusive-commits",
+      "pot-commit-conflict",
+      "commit-dependency"
+    ].join(" "))
+    if (this.selectedCommit) {
+      this.selectCommit(this.selectedCommit, false)
+    }
+  }
+
   resizeChart() {
     this.cy?.resize();
     this.cy?.layout(this.defaultLayout)
@@ -461,6 +463,7 @@ export class ActiveConflictAwarenessComponent implements OnInit {
       node.move({parent: null});
     });
     this.cy?.$('#' + this.mainCollapseId).remove();
+    this.postExpandReselectWorkaround();
   }
 
   private hidePopper() {
