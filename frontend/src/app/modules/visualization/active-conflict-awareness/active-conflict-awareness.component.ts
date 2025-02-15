@@ -450,6 +450,8 @@ export class ActiveConflictAwarenessComponent implements OnInit {
   }
 
   protected collapseAll() {
+    // First expand all to avoid strange behavior of the expande/collapse visualization
+    this.expandAll();
     this.ec?.collapseAll();
     this.ec?.collapseAllEdges();
     if (this.mainCollapseSelected) {
