@@ -3,83 +3,94 @@
 </h2>
 <mat-dialog-content>
   <div class="commit-graph-legend-card">
-    <strong>Commit Nodes in Graph</strong>
-    <div>Click to select or expand.</div>
-    <div>Clicking on Branch Head Commit selects Branch</div>
-    <br>
-    <div>
-      <div class="commit-node"></div>
-      Commit
+    <div class="commit-legend">
+      <strong>Commit Nodes in Graph</strong>
+      <div>Click to select or expand.</div>
+      <div>Clicking on Branch Head Commit selects Branch</div>
+      <br>
+      <div>
+        <div class="commit-node"></div>
+        Commit
+      </div>
+      <div>
+        <div class="selected-node"><span></span></div>
+        Selected Commit
+      </div>
+      <div>
+        <div class="dependency"><span></span></div>
+        Commit Dependency
+      </div>
+      <div>
+        <div class="commit-node selected-branch-exlusive-commits"></div>
+        Selected branch commits ahead (to conflict)
+      </div>
+      <div>
+        <div class="commit-node conflicting-branch-exlusive-commits"></div>
+        Conflicting branch commit ahead
+      </div>
+      <div>
+        <div class="commit-node pot-commit-conflict"></div>
+        Conflict prone (common deps)
+      </div>
+      <div>
+        <div class="collapsed-node"><span>+</span></div>
+        Collapsed commit node (click to expand)
+      </div>
     </div>
-    <div>
-      <div class="selected-node"><span></span></div>
-      Selected Commit
+
+    <div class="branch-legend">
+      <strong>Branch Labels in Graph</strong>
+      <div>Represents the status towards reference branch</div>
+      <br>
+      <div>
+        <div><span class="branch-label reference">main</span> Reference Branch (or same commit)</div>
+        <div><span class="branch-label merged">main</span> Merged into reference branch</div>
+        <div><span class="branch-label mergeable-two-way">main</span> Mergeable (Two-Way)</div>
+        <div><span class="branch-label mergeable-three-way">main</span> Mergeable (Three-Way)</div>
+        <div><span class="branch-label conflict">main</span> Conflict</div>
+        <div><span class="branch-label unknown">main</span> Unknown merge-base</div>
+      </div>
     </div>
-    <div>
-      <div class="dependency"><span></span></div>
-      Commit Dependency
+
+    <div class="reference-branch-legend">
+      <strong>Reference-Branch Info</strong>
+      <br>
+      <div class="branch-info"><span class="behind-tag"><i class='bx bx-git-commit'></i><i
+              class='bx bx-minus-circle'></i>11</span>
+        <span class="ahead-tag"><i class='bx bx-git-commit'></i><i class='bx bx-plus-circle'></i>12</span>
+        Commits Behind/Ahead to reference branch
+      </div>
+      <div class="branch-info">
+        <span class="conflicts-tag"><i class='bx bx-file-blank'></i><i class='bx bxs-zap'></i>3</span>
+        <span class="conflicts-desc"> Files Conflicting to conflicting branch</span>
+      </div>
     </div>
-    <div>
-      <div class="commit-node selected-branch-exlusive-commits"></div>
-      Selected branch commits ahead (to conflict)
-    </div>
-    <div>
-      <div class="commit-node conflicting-branch-exlusive-commits"></div>
-      Conflicting branch commit ahead
-    </div>
-    <div>
-      <div class="commit-node pot-commit-conflict"></div>
-      Conflict prone (common deps)
-    </div>
-    <div>
-      <div class="collapsed-node"><span>+</span></div>
-      Collapsed commit node (click to expand)
-    </div>
-    <br>
-    <strong>Branch Labels in Graph</strong>
-    <div>Represents the status towards reference branch</div>
-    <br>
-    <div>
-      <div><span class="branch-label reference">main</span> Reference Branch (or same commit)</div>
-      <div><span class="branch-label merged">main</span> Merged into reference branch</div>
-      <div><span class="branch-label mergeable-two-way">main</span> Mergeable (Two-Way)</div>
-      <div><span class="branch-label mergeable-three-way">main</span> Mergeable (Three-Way)</div>
-      <div><span class="branch-label conflict">main</span> Conflict</div>
-      <div><span class="branch-label unknown">main</span> Unknown merge-base</div>
-    </div>
-    <br>
-    <strong>Reference-Branch Info</strong>
-    <br>
-    <div class="branch-info"><span class="behind-tag"><i class='bx bx-git-commit'></i><i class='bx bx-minus-circle'></i>11</span>
-      <span class="ahead-tag"><i class='bx bx-git-commit'></i><i class='bx bx-plus-circle'></i>12</span>
-      Commits Behind/Ahead to reference branch
-    </div>
-    <div class="branch-info">
-      <span class="conflicts-tag"><i class='bx bx-file-blank'></i><i class='bx bxs-zap'></i>3</span>
-      <span class="conflicts-desc"> Files Conflicting to conflicting branch</span>
-    </div>
-    <br>
-    <strong>Other Branches Info</strong>
-    <div class="branch-info">
+
+    <div class="other-branch-legend">
+      <strong>Other Branches Info</strong>
+      <div class="branch-info">
           <span class="count-label mergeable">
             <i class='bx bx-git-pull-request'></i><i class='bx bx-check-circle'></i>
             3
           </span>
-      Branch is having no conflicts with 3 other branches
-    </div>
-    <div class="branch-info">
+        Branch is having no conflicts with 3 other branches
+      </div>
+      <div class="branch-info">
            <span class="count-label conflicts">
              <i class='bx bx-git-pull-request'></i><i class='bx bx-x-circle'></i>
              5
            </span>
-      Branch is having conflicts with 5 other branches
-    </div>
-    <div class="branch-info">
+        Branch is having conflicts with 5 other branches
+      </div>
+      <div class="branch-info">
          <span class="count-label unknown-merge-base">
           <i class='bx bx-git-pull-request'></i><i class='bx bx-help-circle'></i>
           6
         </span>
-      Unclear merge-base with 6 other branches
+        Unclear merge-base with 6 other branches
+      </div>
     </div>
+
+
   </div>
 </mat-dialog-content>

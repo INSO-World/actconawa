@@ -70,23 +70,26 @@
     </mat-card>
   </div>
 
-  <mat-card class="commit-graph-card" (appResize)="resizeChart()">
-    <div id="cy" style="height: 100%; width: 100%"></div>
-    <div class="commit-graph-interaction-btns">
-      <button (click)="collapseAll()" mat-raised-button>
-        <mat-icon>close_fullscreen</mat-icon>
-        Collapse All
-      </button>
-      <button (click)="expandAll()" mat-raised-button>
-        <mat-icon>open_in_full</mat-icon>
-        Expand All
-      </button>
-      <button (click)="openHelpDialog()" mat-raised-button>
-        <mat-icon>help</mat-icon>
-        Help
-      </button>
-    </div>
-  </mat-card>
+  <div class="commit-graph-help-container">
+    <mat-card (appResize)="resizeChart()" class="commit-graph-card">
+      <div id="cy" style="height: 100%; width: 100%"></div>
+      <div class="commit-graph-interaction-btns">
+        <button (click)="collapseAll()" mat-raised-button>
+          <mat-icon>close_fullscreen</mat-icon>
+          Collapse All
+        </button>
+        <button (click)="expandAll()" mat-raised-button>
+          <mat-icon>open_in_full</mat-icon>
+          Expand All
+        </button>
+      </div>
+    </mat-card>
+    <mat-card class="commit-graph-help-card">
+      <app-active-conflict-awareness-help>
+      </app-active-conflict-awareness-help>
+    </mat-card>
+  </div>
+
 
 </div>
 

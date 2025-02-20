@@ -1,7 +1,15 @@
+@import 'common';
 
 .commit-graph-legend-card {
-  width: 100%;
-  display: block;
+  display: flex;
+  gap: 2em;
+
+  @media #{$mat-gt-sm} {
+  }
+  @media #{$mat-lt-md} {
+    flex-direction: column;
+  }
+
   z-index: 9999;
 
   .commit-node {
