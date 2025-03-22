@@ -1,8 +1,9 @@
-<h2>
-  Help
-</h2>
-<mat-dialog-content>
-  <div class="commit-graph-legend-card">
+<mat-card class="commit-graph-legend-card">
+  <mat-card-header class="help-header">
+    <h2>Help</h2>
+  </mat-card-header>
+  <mat-card-content class="commit-graph-legend-card">
+
     <div class="commit-legend">
       <strong>Commit Nodes in Graph</strong>
       <div>Click to select or expand.</div>
@@ -37,7 +38,7 @@
         Collapsed commit node (click to expand)
       </div>
     </div>
-
+    <br>
     <div class="branch-legend">
       <strong>Branch Labels in Graph</strong>
       <div>Represents the status towards reference branch</div>
@@ -51,7 +52,7 @@
         <div><span class="branch-label unknown">main</span> Unknown merge-base</div>
       </div>
     </div>
-
+    <br>
     <div class="reference-branch-legend">
       <strong>Reference-Branch Info</strong>
       <br>
@@ -65,7 +66,7 @@
         <span class="conflicts-desc"> Files Conflicting to conflicting branch</span>
       </div>
     </div>
-
+    <br>
     <div class="other-branch-legend">
       <strong>Other Branches Info</strong>
       <div class="branch-info">
@@ -90,7 +91,5 @@
         Unclear merge-base with 6 other branches
       </div>
     </div>
-
-
-  </div>
-</mat-dialog-content>
+  </mat-card-content>
+</mat-card>

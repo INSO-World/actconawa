@@ -42,6 +42,7 @@ import {
 import {
   ActiveConflictAwarenessHelpComponent
 } from "./active-conflict-awareness/active-conflict-awareness-help/active-conflict-awareness-help.component";
+import { MatDrawer, MatDrawerContainer, MatDrawerContent } from "@angular/material/sidenav";
 
 @NgModule({
   declarations: [
@@ -75,6 +76,9 @@ import {
     MatSelect,
     ActiveConflictAwarenessConflictsComponent,
     ActiveConflictAwarenessHelpComponent,
+    MatDrawerContainer,
+    MatDrawer,
+    MatDrawerContent
   ]
 })
 export class VisualizationModule {

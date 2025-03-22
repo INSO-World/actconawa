@@ -1,14 +1,18 @@
 @import 'common';
 
-.commit-graph-legend-card {
-  display: flex;
-  gap: 2em;
+.help-header {
+  padding-top: 0;
+  padding-bottom: 0;
 
-  @media #{$mat-gt-sm} {
+  h2 {
+    margin-bottom: 0;
   }
-  @media #{$mat-lt-md} {
-    flex-direction: column;
-  }
+}
+
+.commit-graph-legend-card {
+  display: block;
+  padding: 1em;
+  height: 100%;
 
   z-index: 9999;
 
