@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { GitService } from "../../../services/git.service";
 import { GitBranchDto } from "../../../../api";
 import { SettingService } from "../../../services/setting.service";
+import { MatCheckboxChange } from "@angular/material/checkbox";
 
 @Component({
   selector: 'app-repository-configuration',
@@ -23,5 +24,9 @@ export class RepositoryConfigurationComponent implements OnInit {
 
   onSelectReferenceBranch(event: Event) {
     this.settingService.setReferenceBranchName((event.target as HTMLSelectElement).value)
+  }
+
+  onBranchLabelColoringSettingChanged(change: MatCheckboxChange) {
+    this.settingService.setBranchLabelColoringEnabled(change.checked)
   }
 }

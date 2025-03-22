@@ -10,4 +10,8 @@
       }
     </select>
   </mat-form-field>
+  <mat-label>Branch-Label Colorization</mat-label>
+  <mat-checkbox (change)="onBranchLabelColoringSettingChanged($event)"
+                [checked]="settingService.getBranchLabelColoringEnabled()">Enable Branch label coloring
+  </mat-checkbox>
 </mat-card>

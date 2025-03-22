@@ -25,6 +25,19 @@ export class SettingService {
     localStorage.setItem('referenceBranch', referenceBranchName)
   }
 
+  getBranchLabelColoringEnabled() {
+    const ref = localStorage.getItem('branchLabelColoringEnabled') === '1';
+    if (!ref) {
+      localStorage.setItem('branchLabelColoringEnabled', '0');
+      return false;
+    }
+    return ref;
+  }
+
+  setBranchLabelColoringEnabled(enabled: boolean) {
+    localStorage.setItem('branchLabelColoringEnabled', enabled ? '1' : '0')
+  }
+
   async getReferenceBranchId(): Promise<string> {
     const result =
             (await this.gitService.getBranches()).find(x => x.name === this.getReferenceBranchName());

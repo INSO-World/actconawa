@@ -6,6 +6,7 @@ import { RepositoryConfigurationComponent } from './repository-configuration/rep
 import { MatFormField, MatLabel } from "@angular/material/form-field";
 import { MatCard } from "@angular/material/card";
 import { MatInput } from "@angular/material/input";
+import { MatCheckbox } from "@angular/material/checkbox";
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { MatInput } from "@angular/material/input";
     MatLabel,
     MatFormField,
     MatCard,
-    MatInput
+    MatInput,
+    MatCheckbox
   ]
 })
 export class SettingModule { }

@@ -1,4 +1,5 @@
-import { AfterViewInit, Directive, ElementRef } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, inject } from '@angular/core';
+import { SettingService } from "../services/setting.service";
 
 @Directive({
   selector: '[appContentBasedColor]',
@@ -6,11 +7,15 @@ import { AfterViewInit, Directive, ElementRef } from '@angular/core';
 })
 export class ContentBasedColorDirective implements AfterViewInit {
 
+  protected settingService = inject(SettingService)
+
   constructor(private el: ElementRef) {
   }
 
   ngAfterViewInit(): void {
-    this.colorize(this.el.nativeElement.textContent)
+    if (this.settingService.getBranchLabelColoringEnabled()) {
+      this.colorize(this.el.nativeElement.textContent)
+    }
   }
 
   colorize(text: string) {
