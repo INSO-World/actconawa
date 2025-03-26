@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.4.4</version>
         <relativePath/>
     </parent>
     <groupId>at.ac.tuwien.inso</groupId>
@@ -20,14 +20,13 @@
     <properties>
         <java.version>17</java.version>
 
-        <jgit.version>6.5.0.202303070854</jgit.version>
-        <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <spring-boot-config-processor.version>3.2.0</spring-boot-config-processor.version>
-        <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
-        <java-parser.version>3.25.6</java-parser.version>
-        <antlr.version>4.10.1</antlr.version>
+        <jgit.version>7.2.0.202503040940</jgit.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <spring-boot-config-processor.version>3.4.4</spring-boot-config-processor.version>
+        <springdoc-openapi.version>2.8.6</springdoc-openapi.version>
+        <antlr.version>4.13.2</antlr.version>
         <mojo.version>3.0.0</mojo.version>
-        <commons-lang3.version>3.13.0</commons-lang3.version>
+        <commons-lang3.version>3.17.0</commons-lang3.version>
     </properties>
 
     <dependencyManagement>
