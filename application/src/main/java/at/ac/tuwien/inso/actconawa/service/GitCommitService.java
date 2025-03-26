@@ -19,6 +19,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,9 @@ public class GitCommitService implements CommitService {
     private final GitMapper gitMapper;
 
     private final Git git;
+
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
 
 
     public GitCommitService(GitCommitRepository gitCommitRepository,
@@ -116,9 +120,17 @@ public class GitCommitService implements CommitService {
     @Override
     public GitCommitDependencyDto findDependencies(UUID gitCommitId) {
         var result = new GitCommitDependencyDto();
-        result.setCommitDependencyIds(
-                gitCommitRepository.findCommitDependencyCommitIds(gitCommitId)
-        );
+
+        if (this.activeProfile.contains("postgres")) {
+            result.setCommitDependencyIds(
+                    gitCommitRepository.findCommitDependencyCommitIds(gitCommitId)
+            );
+        } else {
+            result.setCommitDependencyIds(
+                    gitCommitRepository.findCommitDependencyCommitIdsH2List(gitCommitId)
+            );
+        }
+
         result.setCommitId(gitCommitId);
         return result;
     }

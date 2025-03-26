@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public interface GitCommitRepository extends JpaRepository<GitCommit, UUID> {
 
@@ -54,6 +55,22 @@ public interface GitCommitRepository extends JpaRepository<GitCommit, UUID> {
             """, nativeQuery = true)
     List<UUID> findCommitDependencyCommitIds(UUID commitId);
 
+    @Query(value = """
+            select hdc.commit_id from commit_relationship
+            join commit_diff_file cdf
+                on commit_relationship.id = cdf.commit_relationship_id
+                       and child_id = :commitId
+            join commit_diff_hunk cdh on cdf.id = cdh.diff_file_id
+            join hunk_dependency_commit hdc on cdh.id = hdc.hunk_id
+            """, nativeQuery = true)
+    List<byte[]> findCommitDependencyCommitIdsH2ByteArrayList(UUID commitId);
+
+
+    default List<UUID> findCommitDependencyCommitIdsH2List(UUID commitId) {
+        return findCommitDependencyCommitIdsH2ByteArrayList(commitId).stream()
+                .map(UUID::nameUUIDFromBytes)
+                .collect(Collectors.toList());
+    }
 
     Optional<GitCommit> findByShaStartsWith(String sha);
 
