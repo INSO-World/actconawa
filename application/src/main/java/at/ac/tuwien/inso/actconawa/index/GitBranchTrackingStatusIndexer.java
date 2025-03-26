@@ -24,7 +24,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.stream.StreamSupport;
 
+import static org.eclipse.jgit.merge.MergeChunk.ConflictState.FIRST_CONFLICTING_RANGE;
+import static org.eclipse.jgit.merge.MergeChunk.ConflictState.NEXT_CONFLICTING_RANGE;
 import static org.eclipse.jgit.merge.MergeStrategy.RECURSIVE;
 import static org.eclipse.jgit.merge.MergeStrategy.SIMPLE_TWO_WAY_IN_CORE;
 
@@ -109,7 +112,31 @@ public class GitBranchTrackingStatusIndexer implements Indexer {
                                 // same files were changed, no conflict
                                 mergeStatus = MergeStatus.THREE_WAY_MERGEABLE;
                             } else {
-                                conflictingFilePaths.addAll(threeWayMerger.getUnmergedPaths());
+                                threeWayMerger.getMergeResults().forEach((key, value) -> {
+                                    if (value.containsConflicts()) {
+                                        // From the doc MergeResult javadoc:
+                                        // "sequences - contains the common predecessor sequence at position 0 followed by the merged sequences."
+                                        // since we want the conflicting lines of the the branch a.
+                                        var conflictingLines = StreamSupport
+                                                .stream(value.spliterator(), false)
+                                                .filter(x -> x.getSequenceIndex() == 1)
+                                                .filter(x -> x.getConflictState() == FIRST_CONFLICTING_RANGE
+                                                        || x.getConflictState() == NEXT_CONFLICTING_RANGE)
+                                                .map(x -> x.getEnd() - x.getBegin())
+                                                .reduce(0, Integer::sum);
+                                        // if conflictingLines is 0 even that there is a conflict means file was deleted
+                                        if (conflictingLines != 0) {
+                                            conflictingFilePaths.add(key
+                                                    + " - "
+                                                    + conflictingLines
+                                                    + " Lines conflicting");
+                                        } else {
+                                            conflictingFilePaths.add(key
+                                                    + " (deleted)");
+                                        }
+
+                                    }
+                                });
                                 LOG.error("Branch {} and {} conflicts on {} files",
                                         branchA.getName(),
                                         branchB.getName(),
